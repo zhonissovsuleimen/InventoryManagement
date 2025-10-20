@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
 
@@ -27,6 +28,20 @@ namespace InventoryManagement.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Guid = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -159,6 +174,111 @@ namespace InventoryManagement.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Inventories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Guid = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
+                    Owner_UserId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true, computedColumnSql: "to_tsvector('simple', coalesce(\"Title\", ''))", stored: true),
+                    SingleLine1_Title = table.Column<string>(type: "text", nullable: true),
+                    SingleLine1_Description = table.Column<string>(type: "text", nullable: true),
+                    SingleLine1_Position = table.Column<short>(type: "smallint", nullable: true),
+                    SingleLine1_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    SingleLine2_Title = table.Column<string>(type: "text", nullable: true),
+                    SingleLine2_Description = table.Column<string>(type: "text", nullable: true),
+                    SingleLine2_Position = table.Column<short>(type: "smallint", nullable: true),
+                    SingleLine2_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    SingleLine3_Title = table.Column<string>(type: "text", nullable: true),
+                    SingleLine3_Description = table.Column<string>(type: "text", nullable: true),
+                    SingleLine3_Position = table.Column<short>(type: "smallint", nullable: true),
+                    SingleLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    MultiLine1_Title = table.Column<string>(type: "text", nullable: true),
+                    MultiLine1_Description = table.Column<string>(type: "text", nullable: true),
+                    MultiLine1_Position = table.Column<short>(type: "smallint", nullable: true),
+                    MultiLine1_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    MultiLine2_Title = table.Column<string>(type: "text", nullable: true),
+                    MultiLine2_Description = table.Column<string>(type: "text", nullable: true),
+                    MultiLine2_Position = table.Column<short>(type: "smallint", nullable: true),
+                    MultiLine2_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    MultiLine3_Title = table.Column<string>(type: "text", nullable: true),
+                    MultiLine3_Description = table.Column<string>(type: "text", nullable: true),
+                    MultiLine3_Position = table.Column<short>(type: "smallint", nullable: true),
+                    MultiLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    NumericLine1_Title = table.Column<string>(type: "text", nullable: true),
+                    NumericLine1_Description = table.Column<string>(type: "text", nullable: true),
+                    NumericLine1_Position = table.Column<short>(type: "smallint", nullable: true),
+                    NumericLine1_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    NumericLine2_Title = table.Column<string>(type: "text", nullable: true),
+                    NumericLine2_Description = table.Column<string>(type: "text", nullable: true),
+                    NumericLine2_Position = table.Column<short>(type: "smallint", nullable: true),
+                    NumericLine2_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    NumericLine3_Title = table.Column<string>(type: "text", nullable: true),
+                    NumericLine3_Description = table.Column<string>(type: "text", nullable: true),
+                    NumericLine3_Position = table.Column<short>(type: "smallint", nullable: true),
+                    NumericLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    BoolLine1_Title = table.Column<string>(type: "text", nullable: true),
+                    BoolLine1_Description = table.Column<string>(type: "text", nullable: true),
+                    BoolLine1_Position = table.Column<short>(type: "smallint", nullable: true),
+                    BoolLine1_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    BoolLine2_Title = table.Column<string>(type: "text", nullable: true),
+                    BoolLine2_Description = table.Column<string>(type: "text", nullable: true),
+                    BoolLine2_Position = table.Column<short>(type: "smallint", nullable: true),
+                    BoolLine2_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    BoolLine3_Title = table.Column<string>(type: "text", nullable: true),
+                    BoolLine3_Description = table.Column<string>(type: "text", nullable: true),
+                    BoolLine3_Position = table.Column<short>(type: "smallint", nullable: true),
+                    BoolLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Inventories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Inventories_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Inventory_Owner",
+                        column: x => x.Owner_UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryAllowedUsers",
+                columns: table => new
+                {
+                    InventoryId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryAllowedUsers", x => new { x.InventoryId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_InventoryAllowedUsers_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InventoryAllowedUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -184,6 +304,21 @@ namespace InventoryManagement.Migrations
                 name: "IX_AspNetUserRoles_RoleId",
                 table: "AspNetUserRoles",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_CategoryId",
+                table: "Inventories",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_Owner_UserId",
+                table: "Inventories",
+                column: "Owner_UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryAllowedUsers_UserId",
+                table: "InventoryAllowedUsers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -237,7 +372,16 @@ namespace InventoryManagement.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "InventoryAllowedUsers");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Inventories");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Users");

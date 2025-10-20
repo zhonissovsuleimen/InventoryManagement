@@ -2,6 +2,7 @@
 using InventoryManagement.Areas.Identity.Pages.Account;
 using InventoryManagement.Data;
 using InventoryManagement.Models;
+using InventoryManagement.Models.Inventory;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ namespace InventoryManagement.Database
         public static async Task SeedAll(IServiceProvider services)
         {
             await SeedUsersAsync(services);
+            await SeedCategoriesAsync(services);
         }
 
         public static async Task SeedUsersAsync(IServiceProvider services)
@@ -48,6 +50,27 @@ namespace InventoryManagement.Database
 
                 await userManager.CreateAsync(user, input.Password);
             }
+        }
+
+        public static async Task SeedCategoriesAsync(IServiceProvider service)
+        {
+            var context = service.GetRequiredService<ApplicationDbContext>();
+            if (await context.Categories.AnyAsync())
+            {
+                return;
+            }
+
+            var categories = new List<Category>
+            {
+                new Category { Name = "Electronics" },
+                new Category { Name = "Books" },
+                new Category { Name = "Clothing" },
+                new Category { Name = "Home & Kitchen" },
+                new Category { Name = "Sports" }
+            };
+
+            await context.Categories.AddRangeAsync(categories);
+            await context.SaveChangesAsync();
         }
     }
 }
