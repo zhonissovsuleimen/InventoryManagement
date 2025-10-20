@@ -1,13 +1,13 @@
 using InventoryManagement.Data;
+using InventoryManagement.Database;
 using InventoryManagement.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagement
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             // Add services to the container.
@@ -26,6 +26,15 @@ namespace InventoryManagement
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
+                // dotnet run seed
+                if (args.Length > 0 && args[0].Equals("seed", StringComparison.OrdinalIgnoreCase))
+                {
+                    using var scope = app.Services.CreateScope();
+                    Console.WriteLine("Seeding data");
+                    await Seed.SeedAll(scope.ServiceProvider);
+                    Console.WriteLine("Seeding data done");
+                    return;
+                }
             }
             else
             {
