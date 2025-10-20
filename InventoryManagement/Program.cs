@@ -1,6 +1,7 @@
 using InventoryManagement.Data;
 using InventoryManagement.Database;
 using InventoryManagement.Models;
+using InventoryManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagement
@@ -19,6 +20,7 @@ namespace InventoryManagement
             builder.Services.AddDefaultIdentity<AppUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddRazorPages();
+            builder.Services.AddScoped<UserSearch>();
 
             var app = builder.Build();
 
@@ -49,6 +51,14 @@ namespace InventoryManagement
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+
+            app.MapGet("/api/search/users", async (string query, UserSearch search) =>
+            {
+                var results = await search.Search(query);
+                return Results.Ok(results);
+            });
+
 
             app.MapStaticAssets();
             app.MapRazorPages()
