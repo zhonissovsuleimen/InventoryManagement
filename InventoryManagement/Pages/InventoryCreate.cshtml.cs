@@ -26,6 +26,9 @@ namespace InventoryManagement.Pages
             _env = env;
         }
 
+        [BindProperty(SupportsGet = true)]
+        public int Step { get; set; } = 1;
+
         public class CreateInputModel
         {
             [Required]
@@ -61,6 +64,7 @@ namespace InventoryManagement.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
+            Step = ClampStep(Step);
             await LoadCategoriesAsync();
             return Page();
         }
@@ -72,6 +76,7 @@ namespace InventoryManagement.Pages
         {
             if (!ModelState.IsValid)
             {
+                Step = DetermineStepFromModelState();
                 await LoadCategoriesAsync();
                 return Page();
             }
@@ -80,6 +85,7 @@ namespace InventoryManagement.Pages
             if (category == null)
             {
                 ModelState.AddModelError("Input.CategoryId", "Invalid category selected.");
+                Step = 1;
                 await LoadCategoriesAsync();
                 return Page();
             }
@@ -88,6 +94,7 @@ namespace InventoryManagement.Pages
             if (owner == null)
             {
                 ModelState.AddModelError(string.Empty, "User not found.");
+                Step = 1;
                 await LoadCategoriesAsync();
                 return Page();
             }
@@ -109,6 +116,7 @@ namespace InventoryManagement.Pages
             if (!anyUsedAndValid)
             {
                 ModelState.AddModelError(string.Empty, "Add at least one valid custom field.");
+                Step = 2;
                 await LoadCategoriesAsync();
                 return Page();
             }
@@ -154,6 +162,30 @@ namespace InventoryManagement.Pages
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
+        }
+
+        private int ClampStep(int step) => Math.Clamp(step, 1, 3);
+
+        private int DetermineStepFromModelState()
+        {
+            var keysWithErrors = ModelState
+                .Where(kvp => kvp.Value is { Errors.Count: > 0 })
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            bool isStep1 = keysWithErrors.Any(k =>
+                k.StartsWith("Input.Title") ||
+                k.StartsWith("Input.Description") ||
+                k.StartsWith("Input.CategoryId") ||
+                k.StartsWith("Input.Image"));
+            if (isStep1) return 1;
+
+            bool isStep3 = keysWithErrors.Any(k =>
+                k.StartsWith("Input.IsPublic") ||
+                k.StartsWith("Input.UserIds"));
+            if (isStep3) return 3;
+
+            return 2;
         }
 
         private async Task LoadCategoriesAsync()

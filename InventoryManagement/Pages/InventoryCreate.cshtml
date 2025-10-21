@@ -6,357 +6,445 @@
 }
 
 <h1>Create Inventory</h1>
+<h4 id="step-title">Inventory</h4>
 
-<h4>Inventory</h4>
 <hr />
 <div class="row">
     <div class="col-md-8">
         <form method="post" enctype="multipart/form-data" id="inventory-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Step" id="step-field" />
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            
-            <div class="form-group">
-                <label asp-for="Input.Title" class="control-label"></label>
-                <input asp-for="Input.Title" class="form-control" />
-                <span asp-validation-for="Input.Title" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="Input.Description" class="control-label"></label>
-                <textarea asp-for="Input.Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Input.Description" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="Input.CategoryId" class="control-label">Category</label>
-                <select asp-for="Input.CategoryId" class="form-control" asp-items="Model.Categories">
-                </select>
-                <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="Input.Image" class="control-label">Image</label>
-                <input asp-for="Input.Image" type="file" accept="image/*" class="form-control" id="image-input" />
-                <img id="image-preview" src="#" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px;" />
-                <span asp-validation-for="Input.Image" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Input.IsPublic" /> @Html.DisplayNameFor(model => model.Input.IsPublic)
-                </label>
-            </div>
 
-            <div id="allowed-users-section" class="mt-3" style="display:none;">
-                <label class="form-label">Allowed Users</label>
-                <div class="form-text mb-2">Type a name to find users and add them. Visible only when inventory is not public.</div>
-                <div class="position-relative">
-                    <input type="text" id="user-search" class="form-control" placeholder="Search users..." autocomplete="off" />
-                    <div id="user-suggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
+            <section data-step="1">
+                <div class="form-group">
+                    <label asp-for="Input.Title" class="control-label"></label>
+                    <input asp-for="Input.Title" class="form-control" />
+                    <span asp-validation-for="Input.Title" class="text-danger"></span>
                 </div>
-                <div id="selected-users" class="d-flex flex-wrap gap-2 mt-2"></div>
-                <div id="user-ids-container" class="d-none">
-                    <input type="hidden" asp-for="Input.UserIds" data-template="user-id" disabled />
+                
+                <div class="form-group">
+                    <label asp-for="Input.Description" class="control-label"></label>
+                    <textarea asp-for="Input.Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Input.Description" class="text-danger"></span>
                 </div>
-                <span asp-validation-for="Input.UserIds" class="text-danger"></span>
-            </div>
-            
-            <h5 class="mt-4">Custom Fields</h5>
-            <div class="form-text mb-3">Up to 3 of each type. Drag the card to reorder.</div>
-
-            <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-                <button type="button" class="btn btn-outline-primary" data-add-type="SingleLine">
-                    Single Line <span class="badge bg-secondary ms-1" data-count="SingleLine">0/3</span>
-                </button>
-                <button type="button" class="btn btn-outline-primary" data-add-type="MultiLine">
-                    Multi Line <span class="badge bg-secondary ms-1" data-count="MultiLine">0/3</span>
-                </button>
-                <button type="button" class="btn btn-outline-primary" data-add-type="NumericLine">
-                    Numeric <span class="badge bg-secondary ms-1" data-count="NumericLine">0/3</span>
-                </button>
-                <button type="button" class="btn btn-outline-primary" data-add-type="BoolLine">
-                    Boolean <span class="badge bg-secondary ms-1" data-count="BoolLine">0/3</span>
-                </button>
-            </div>
-
-            <div id="custom-fields" class="d-grid gap-2">
-                <div class="card shadow-sm" data-type="SingleLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Single Line</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.SingleLine1.Title">Title</label>
-                                <input asp-for="Input.SingleLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.SingleLine1.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.SingleLine1.Description">Description</label>
-                                <input asp-for="Input.SingleLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.SingleLine1.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.SingleLine1.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.SingleLine1.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+                
+                <div class="form-group">
+                    <label asp-for="Input.CategoryId" class="control-label">Category</label>
+                    <select asp-for="Input.CategoryId" class="form-control" asp-items="Model.Categories">
+                    </select>
+                    <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
                 </div>
-                <div class="card shadow-sm" data-type="SingleLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Single Line</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.SingleLine2.Title">Title</label>
-                                <input asp-for="Input.SingleLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.SingleLine2.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.SingleLine2.Description">Description</label>
-                                <input asp-for="Input.SingleLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.SingleLine2.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.SingleLine2.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.SingleLine2.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
-                </div>
-                <div class="card shadow-sm" data-type="SingleLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Single Line</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.SingleLine3.Title">Title</label>
-                                <input asp-for="Input.SingleLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.SingleLine3.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.SingleLine3.Description">Description</label>
-                                <input asp-for="Input.SingleLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.SingleLine3.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.SingleLine3.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.SingleLine3.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+                
+                <div class="form-group">
+                    <label asp-for="Input.Image" class="control-label">Image</label>
+                    <input asp-for="Input.Image" type="file" accept="image/*" class="form-control" id="image-input" />
+                    <img id="image-preview" src="#" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px;" />
+                    <span asp-validation-for="Input.Image" class="text-danger"></span>
                 </div>
 
-                <div class="card shadow-sm" data-type="MultiLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Multi Line</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.MultiLine1.Title">Title</label>
-                                <input asp-for="Input.MultiLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.MultiLine1.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.MultiLine1.Description">Description</label>
-                                <input asp-for="Input.MultiLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.MultiLine1.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.MultiLine1.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.MultiLine1.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-primary" data-next>Next</a>
                 </div>
-                <div class="card shadow-sm" data-type="MultiLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Multi Line</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.MultiLine2.Title">Title</label>
-                                <input asp-for="Input.MultiLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.MultiLine2.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.MultiLine2.Description">Description</label>
-                                <input asp-for="Input.MultiLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.MultiLine2.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.MultiLine2.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.MultiLine2.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+            </section>
+
+            <section data-step="2">
+                <div class="form-text mb-3">Up to 3 of each type. Drag the card to reorder.</div>
+
+                <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+                    <button type="button" class="btn btn-outline-primary" data-add-type="SingleLine">
+                        Single Line <span class="badge bg-secondary ms-1" data-count="SingleLine">0/3</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-add-type="MultiLine">
+                        Multi Line <span class="badge bg-secondary ms-1" data-count="MultiLine">0/3</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-add-type="NumericLine">
+                        Numeric <span class="badge bg-secondary ms-1" data-count="NumericLine">0/3</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-add-type="BoolLine">
+                        Boolean <span class="badge bg-secondary ms-1" data-count="BoolLine">0/3</span>
+                    </button>
                 </div>
-                <div class="card shadow-sm" data-type="MultiLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Multi Line</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.MultiLine3.Title">Title</label>
-                                <input asp-for="Input.MultiLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.MultiLine3.Title" class="text-danger small"></span>
+
+                <div id="custom-fields" class="d-grid gap-2">
+                    <div class="card shadow-sm" data-type="SingleLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Single Line</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
                             </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.MultiLine3.Description">Description</label>
-                                <input asp-for="Input.MultiLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.MultiLine3.Description" class="text-danger small"></span>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine1.Title">Title</label>
+                                    <input asp-for="Input.SingleLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.SingleLine1.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine1.Description">Description</label>
+                                    <input asp-for="Input.SingleLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.SingleLine1.Description" class="text-danger small"></span>
+                                </div>
                             </div>
+                            <input asp-for="Input.SingleLine1.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.SingleLine1.IsUsed" type="hidden" data-field="isUsed" />
                         </div>
-                        <input asp-for="Input.MultiLine3.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.MultiLine3.IsUsed" type="hidden" data-field="isUsed" />
+                    </div>
+                    <div class="card shadow-sm" data-type="SingleLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Single Line</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine2.Title">Title</label>
+                                    <input asp-for="Input.SingleLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.SingleLine2.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine2.Description">Description</label>
+                                    <input asp-for="Input.SingleLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.SingleLine2.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.SingleLine2.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.SingleLine2.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="SingleLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Single Line</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine3.Title">Title</label>
+                                    <input asp-for="Input.SingleLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.SingleLine3.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine3.Description">Description</label>
+                                    <input asp-for="Input.SingleLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.SingleLine3.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.SingleLine3.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.SingleLine3.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm" data-type="MultiLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Multi Line</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine1.Title">Title</label>
+                                    <input asp-for="Input.MultiLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.MultiLine1.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine1.Description">Description</label>
+                                    <input asp-for="Input.MultiLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.MultiLine1.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.MultiLine1.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.MultiLine1.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="MultiLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Multi Line</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine2.Title">Title</label>
+                                    <input asp-for="Input.MultiLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.MultiLine2.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine2.Description">Description</label>
+                                    <input asp-for="Input.MultiLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.MultiLine2.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.MultiLine2.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.MultiLine2.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="MultiLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Multi Line</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine3.Title">Title</label>
+                                    <input asp-for="Input.MultiLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.MultiLine3.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine3.Description">Description</label>
+                                    <input asp-for="Input.MultiLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.MultiLine3.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.MultiLine3.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.MultiLine3.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm" data-type="NumericLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Numeric</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine1.Title">Title</label>
+                                    <input asp-for="Input.NumericLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.NumericLine1.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine1.Description">Description</label>
+                                    <input asp-for="Input.NumericLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.NumericLine1.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.NumericLine1.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.NumericLine1.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="NumericLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Numeric</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine2.Title">Title</label>
+                                    <input asp-for="Input.NumericLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.NumericLine2.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine2.Description">Description</label>
+                                    <input asp-for="Input.NumericLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.NumericLine2.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.NumericLine2.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.NumericLine2.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="NumericLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Numeric</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine3.Title">Title</label>
+                                    <input asp-for="Input.NumericLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.NumericLine3.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine3.Description">Description</label>
+                                    <input asp-for="Input.NumericLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.NumericLine3.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.NumericLine3.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.NumericLine3.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm" data-type="BoolLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Boolean</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine1.Title">Title</label>
+                                    <input asp-for="Input.BoolLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.BoolLine1.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine1.Description">Description</label>
+                                    <input asp-for="Input.BoolLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.BoolLine1.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.BoolLine1.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.BoolLine1.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="BoolLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Boolean</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine2.Title">Title</label>
+                                    <input asp-for="Input.BoolLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.BoolLine2.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine2.Description">Description</label>
+                                    <input asp-for="Input.BoolLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.BoolLine2.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.BoolLine2.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.BoolLine2.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
+                    </div>
+                    <div class="card shadow-sm" data-type="BoolLine" data-used="false">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary">Boolean</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-start">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine3.Title">Title</label>
+                                    <input asp-for="Input.BoolLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <span asp-validation-for="Input.BoolLine3.Title" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12 col-md-8">
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine3.Description">Description</label>
+                                    <input asp-for="Input.BoolLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <span asp-validation-for="Input.BoolLine3.Description" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <input asp-for="Input.BoolLine3.Position" type="hidden" data-field="position" />
+                            <input asp-for="Input.BoolLine3.IsUsed" type="hidden" data-field="isUsed" />
+                        </div>
                     </div>
                 </div>
 
-                <div class="card shadow-sm" data-type="NumericLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Numeric</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.NumericLine1.Title">Title</label>
-                                <input asp-for="Input.NumericLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.NumericLine1.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.NumericLine1.Description">Description</label>
-                                <input asp-for="Input.NumericLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.NumericLine1.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.NumericLine1.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.NumericLine1.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+                <div class="d-flex justify-content-between gap-2 mt-3">
+                    <a href="@Url.Page(null, new { step = 1 })" class="btn btn-secondary" data-prev>Previous</a>
+                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-primary" data-next>Next</a>
                 </div>
-                <div class="card shadow-sm" data-type="NumericLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Numeric</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.NumericLine2.Title">Title</label>
-                                <input asp-for="Input.NumericLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.NumericLine2.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.NumericLine2.Description">Description</label>
-                                <input asp-for="Input.NumericLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.NumericLine2.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.NumericLine2.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.NumericLine2.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
-                </div>
-                <div class="card shadow-sm" data-type="NumericLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Numeric</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.NumericLine3.Title">Title</label>
-                                <input asp-for="Input.NumericLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.NumericLine3.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.NumericLine3.Description">Description</label>
-                                <input asp-for="Input.NumericLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.NumericLine3.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.NumericLine3.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.NumericLine3.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+            </section>
+
+            <section data-step="3">
+                <div class="form-group form-check">
+                    <label class="form-check-label">
+                        <input class="form-check-input" asp-for="Input.IsPublic" /> @Html.DisplayNameFor(model => model.Input.IsPublic)
+                    </label>
                 </div>
 
-                <div class="card shadow-sm" data-type="BoolLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Boolean</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.BoolLine1.Title">Title</label>
-                                <input asp-for="Input.BoolLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.BoolLine1.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.BoolLine1.Description">Description</label>
-                                <input asp-for="Input.BoolLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.BoolLine1.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.BoolLine1.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.BoolLine1.IsUsed" type="hidden" data-field="isUsed" />
+                <div id="allowed-users-section" class="mt-3" style="display:none;">
+                    <label class="form-label">Allowed Users</label>
+                    <div class="form-text mb-2">Type a name to find users and add them. Visible only when inventory is not public.</div>
+                    <div class="position-relative">
+                        <input type="text" id="user-search" class="form-control" placeholder="Search users..." autocomplete="off" />
+                        <div id="user-suggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
                     </div>
-                </div>
-                <div class="card shadow-sm" data-type="BoolLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Boolean</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.BoolLine2.Title">Title</label>
-                                <input asp-for="Input.BoolLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.BoolLine2.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.BoolLine2.Description">Description</label>
-                                <input asp-for="Input.BoolLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.BoolLine2.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.BoolLine2.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.BoolLine2.IsUsed" type="hidden" data-field="isUsed" />
+                    <div id="selected-users" class="d-flex flex-wrap gap-2 mt-2"></div>
+                    <div id="user-ids-container" class="d-none">
+                        <input type="hidden" asp-for="Input.UserIds" data-template="user-id" disabled />
                     </div>
+                    <span asp-validation-for="Input.UserIds" class="text-danger"></span>
                 </div>
-                <div class="card shadow-sm" data-type="BoolLine" data-used="false">
-                    <div class="card-body p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge text-bg-secondary">Boolean</span>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
-                        </div>
-                        <div class="row g-2 align-items-start">
-                            <div class="col-12 col-md-4">
-                                <label class="form-label small mb-1" asp-for="Input.BoolLine3.Title">Title</label>
-                                <input asp-for="Input.BoolLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
-                                <span asp-validation-for="Input.BoolLine3.Title" class="text-danger small"></span>
-                            </div>
-                            <div class="col-12 col-md-8">
-                                <label class="form-label small mb-1" asp-for="Input.BoolLine3.Description">Description</label>
-                                <input asp-for="Input.BoolLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
-                                <span asp-validation-for="Input.BoolLine3.Description" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <input asp-for="Input.BoolLine3.Position" type="hidden" data-field="position" />
-                        <input asp-for="Input.BoolLine3.IsUsed" type="hidden" data-field="isUsed" />
-                    </div>
+
+                <div class="d-flex justify-content-between gap-2 mt-3">
+                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-secondary" data-prev>Previous</a>
+                    <button type="submit" class="btn btn-primary">Create</button>
                 </div>
-            </div>
-            
-            <div class="form-group mt-4">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
+            </section>
         </form>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // step navigation and visibility
+        (function(){
+            const sections = document.querySelectorAll('section[data-step]');
+            const stepField = document.getElementById('step-field');
+            const links = document.querySelectorAll('[data-step-link]');
+            const prevs = document.querySelectorAll('[data-prev]');
+            const nexts = document.querySelectorAll('[data-next]');
+            const titleEl = document.getElementById('step-title');
+            const titles = { 1: 'Details', 2: 'Custom Fields', 3: 'Visibility' };
+
+            function clamp(n){ return Math.max(1, Math.min(3, n|0)); }
+
+            function setUrlStep(step, replace=false){
+                const url = new URL(window.location.href);
+                url.searchParams.set('step', step);
+                if(replace) history.replaceState({}, '', url);
+                else history.pushState({}, '', url);
+            }
+
+            function setActiveNav(step){
+                document.querySelectorAll('.pagination .page-item').forEach(li => li.classList.remove('active'));
+                const active = document.querySelector(`.pagination [data-step-link="${step}"]`);
+                if (active) active.closest('.page-item').classList.add('active');
+            }
+
+            function showStep(step){
+                const s = clamp(step);
+                sections.forEach(sec => {
+                    sec.style.display = (sec.getAttribute('data-step') === String(s)) ? '' : 'none';
+                });
+                stepField.value = String(s);
+                setActiveNav(s);
+                if (titleEl) titleEl.textContent = titles[s] || 'Inventory';
+            }
+
+            function goTo(step, replace=false){
+                showStep(step);
+                setUrlStep(step, replace);
+            }
+
+            const initialStep = clamp(@Model.Step);
+            showStep(initialStep);
+            setUrlStep(initialStep, true);
+
+            links.forEach(a => a.addEventListener('click', e => {
+                e.preventDefault();
+                const step = clamp(parseInt(a.getAttribute('data-step-link')||'1'));
+                goTo(step);
+            }));
+
+            prevs.forEach(a => a.addEventListener('click', e => {
+                e.preventDefault();
+                const current = clamp(parseInt(stepField.value||'1'));
+                goTo(current-1);
+            }));
+            nexts.forEach(a => a.addEventListener('click', e => {
+                e.preventDefault();
+                const current = clamp(parseInt(stepField.value||'1'));
+                goTo(current+1);
+            }));
+
+            window.addEventListener('popstate', () => {
+                const url = new URL(window.location.href);
+                const s = clamp(parseInt(url.searchParams.get('step')||stepField.value||'1'));
+                showStep(s);
+            });
+        })();
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script> //image preview
         const input = document.getElementById('image-input');
@@ -475,7 +563,7 @@
                         if (!Array.isArray(items)) { clearSuggestions(); return; }
                         suggestions.innerHTML = '';
                         items
-                            .filter(item => !(selected.has(item.Guid)))
+                                   .filter(item => !(selected.has(item.guid)))
                             .forEach(item => suggestions.appendChild(renderSuggestion(item)));
                         suggestions.style.display = suggestions.childElementCount > 0 ? 'block' : 'none';
                     })
