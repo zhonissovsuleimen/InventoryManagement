@@ -45,6 +45,20 @@
                     <input class="form-check-input" asp-for="Input.IsPublic" /> @Html.DisplayNameFor(model => model.Input.IsPublic)
                 </label>
             </div>
+
+            <div id="allowed-users-section" class="mt-3" style="display:none;">
+                <label class="form-label">Allowed Users</label>
+                <div class="form-text mb-2">Type a name to find users and add them. Visible only when inventory is not public.</div>
+                <div class="position-relative">
+                    <input type="text" id="user-search" class="form-control" placeholder="Search users..." autocomplete="off" />
+                    <div id="user-suggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
+                </div>
+                <div id="selected-users" class="d-flex flex-wrap gap-2 mt-2"></div>
+                <div id="user-ids-container" class="d-none">
+                    <input type="hidden" asp-for="Input.UserIds" data-template="user-id" disabled />
+                </div>
+                <span asp-validation-for="Input.UserIds" class="text-danger"></span>
+            </div>
             
             <h5 class="mt-4">Custom Fields</h5>
             <div class="form-text mb-3">Up to 3 of each type. Drag the card to reorder.</div>
@@ -365,6 +379,121 @@
                 }
             });
         }
+    </script>
+    <script> // Allowed users search and selection
+        (function() {
+            const isPublicEl = document.getElementById('Input_IsPublic');
+            const section = document.getElementById('allowed-users-section');
+            const searchInput = document.getElementById('user-search');
+            const suggestions = document.getElementById('user-suggestions');
+            const selectedUsers = document.getElementById('selected-users');
+            const userIdsContainer = document.getElementById('user-ids-container');
+            const template = userIdsContainer ? userIdsContainer.querySelector('input[data-template="user-id"]') : null;
+            const selected = new Map();
+
+            function toggleSection() {
+                if (!isPublicEl) return;
+                section.style.display = isPublicEl.checked ? 'none' : '';
+            }
+
+            if (isPublicEl) {
+                isPublicEl.addEventListener('change', toggleSection);
+                toggleSection();
+            }
+
+            let debounceAmount = 200;
+            let debounceTimer = null;
+            let currentAbort = null;
+
+            function clearSuggestions() {
+                suggestions.innerHTML = '';
+                suggestions.style.display = 'none';
+            }
+
+            function renderSuggestion(item) {
+                const id = item.guid;
+                const first = item.firstName || '';
+                const last = item.lastName || '';
+                const name = (first + ' ' + last).trim();
+
+                const a = document.createElement('button');
+                a.type = 'button';
+                a.className = 'list-group-item list-group-item-action';
+                a.textContent = name;
+                a.addEventListener('click', () => {
+                    addUser(id, name);
+                    clearSuggestions();
+                    searchInput.value = '';
+                    searchInput.focus();
+                });
+                return a;
+            }
+
+            function addUser(id, name) {
+                if (!id || selected.has(id)) return;
+                selected.set(id, name);
+
+                const chip = document.createElement('span');
+                chip.className = 'badge rounded-pill text-bg-secondary d-inline-flex align-items-center gap-1 px-2 py-2';
+                chip.dataset.userId = id;
+                chip.textContent = name;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-close btn-close-white btn-sm ms-1';
+                btn.ariaLabel = 'Remove';
+                btn.addEventListener('click', () => removeUser(id));
+                chip.appendChild(btn);
+                selectedUsers.appendChild(chip);
+
+                if (template && userIdsContainer) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = template.getAttribute('name');
+                    hidden.value = id;
+                    hidden.dataset.userId = id;
+                    userIdsContainer.appendChild(hidden);
+                }
+            }
+
+            function removeUser(id) {
+                if (!selected.has(id)) return;
+                selected.delete(id);
+                const chip = selectedUsers.querySelector(`[data-user-id="${id}"]`);
+                if (chip) chip.remove();
+                const hidden = userIdsContainer.querySelector(`input[type="hidden"][data-user-id="${id}"]`);
+                if (hidden) hidden.remove();
+            }
+
+            function search(q) {
+                if (currentAbort) currentAbort.abort();
+                if (!q) { clearSuggestions(); return; }
+                const controller = new AbortController();
+                currentAbort = controller;
+                fetch(`/api/search/users?query=${encodeURIComponent(q)}`, { signal: controller.signal })
+                    .then(r => r.ok ? r.json() : [])
+                    .then(items => {
+                        if (!Array.isArray(items)) { clearSuggestions(); return; }
+                        suggestions.innerHTML = '';
+                        items
+                            .filter(item => !(selected.has(item.Guid)))
+                            .forEach(item => suggestions.appendChild(renderSuggestion(item)));
+                        suggestions.style.display = suggestions.childElementCount > 0 ? 'block' : 'none';
+                    })
+                    .catch(() => { clearSuggestions(); });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    window.clearTimeout(debounceTimer);
+                    debounceTimer = window.setTimeout(() => search(searchInput.value), debounceAmount);
+                });
+                document.addEventListener('click', (e) => {
+                    if (!suggestions.contains(e.target) && e.target !== searchInput) {
+                        clearSuggestions();
+                    }
+                });
+            }
+        })();
     </script>
     <script> // Custom fields
         const fieldsContainer = document.getElementById('custom-fields');

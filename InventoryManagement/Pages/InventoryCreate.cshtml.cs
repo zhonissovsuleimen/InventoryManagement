@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 using InventoryManagement.Data;
 
 namespace InventoryManagement.Pages
@@ -42,7 +41,7 @@ namespace InventoryManagement.Pages
 
             [Required]
             public bool IsPublic { get; set; } = false;
-            public List<Guid> UserGuids = [];
+            public List<string> UserIds { get; set; } = [];
 
             public CustomField? SingleLine1 { get; set; }
             public CustomField? SingleLine2 { get; set; }
@@ -118,6 +117,15 @@ namespace InventoryManagement.Pages
             string? imageUrl = null;
 
             List<AppUser> users = [];
+            if (!Input.IsPublic && Input.UserIds.Count > 0)
+            {
+                Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                users = await _context.Users
+                    .Where(u => Input.UserIds.Contains(u.Id))
+                    .ToListAsync();
+            }
+            Console.WriteLine($"{users}");
+
 
             var inventory = new Inventory
             {
