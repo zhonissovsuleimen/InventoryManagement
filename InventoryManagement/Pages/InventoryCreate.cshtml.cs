@@ -119,13 +119,10 @@ namespace InventoryManagement.Pages
             List<AppUser> users = [];
             if (!Input.IsPublic && Input.UserIds.Count > 0)
             {
-                Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
                 users = await _context.Users
                     .Where(u => Input.UserIds.Contains(u.Id))
                     .ToListAsync();
             }
-            Console.WriteLine($"{users}");
-
 
             var inventory = new Inventory
             {
