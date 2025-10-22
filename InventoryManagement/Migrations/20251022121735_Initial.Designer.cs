@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251021190626_Initial")]
+    [Migration("20251022121735_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -121,6 +121,59 @@ namespace InventoryManagement.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.CustomId", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomIds");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.AbstractElement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CustomId_Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ElementType")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("character varying(21)");
+
+                    b.Property<char?>("SeparatorAfter")
+                        .HasColumnType("character(1)");
+
+                    b.Property<char?>("SeparatorBefore")
+                        .HasColumnType("character(1)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomId_Id");
+
+                    b.ToTable("AbstractElement");
+
+                    b.HasDiscriminator<string>("ElementType").HasValue("AbstractElement");
+
+                    b.UseTphMappingStrategy();
+                });
+
             modelBuilder.Entity("InventoryManagement.Models.Inventory.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -155,6 +208,9 @@ namespace InventoryManagement.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("CustomIdId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -186,6 +242,8 @@ namespace InventoryManagement.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CustomIdId");
 
                     b.HasIndex("Owner_UserId");
 
@@ -328,6 +386,95 @@ namespace InventoryManagement.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.Bit20Element", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.Property<char?>("PaddingChar")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("character(1)");
+
+                    b.Property<int>("Radix")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("Bit20");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.Bit32Element", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.Property<char?>("PaddingChar")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("character(1)");
+
+                    b.Property<int>("Radix")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("Bit32");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.DateTimeElement", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.Property<string>("DateTimeFormat")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("DateTime");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.Digit6Element", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.Property<char?>("PaddingChar")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("character(1)");
+
+                    b.Property<int>("Radix")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("Digit6");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.Digit9Element", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.Property<char?>("PaddingChar")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("character(1)");
+
+                    b.Property<int>("Radix")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("Digit9");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.FixedTextElement", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.Property<string>("FixedText")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("FixedText");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.GuidElement", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.CustomId.Element.AbstractElement");
+
+                    b.HasDiscriminator().HasValue("Guid");
+                });
+
             modelBuilder.Entity("InventoryAllowedUsers", b =>
                 {
                     b.HasOne("InventoryManagement.Models.Inventory.Inventory", null)
@@ -345,11 +492,28 @@ namespace InventoryManagement.Migrations
                         .HasConstraintName("FK_InventoryAllowedUsers_UserId");
                 });
 
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.Element.AbstractElement", b =>
+                {
+                    b.HasOne("InventoryManagement.Models.CustomId.CustomId", "CustomId")
+                        .WithMany("Elements")
+                        .HasForeignKey("CustomId_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomId");
+                });
+
             modelBuilder.Entity("InventoryManagement.Models.Inventory.Inventory", b =>
                 {
                     b.HasOne("InventoryManagement.Models.Inventory.Category", "Category")
                         .WithMany("Inventories")
                         .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InventoryManagement.Models.CustomId.CustomId", "CustomId")
+                        .WithMany()
+                        .HasForeignKey("CustomIdId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -666,6 +830,8 @@ namespace InventoryManagement.Migrations
 
                     b.Navigation("Category");
 
+                    b.Navigation("CustomId");
+
                     b.Navigation("MultiLine1");
 
                     b.Navigation("MultiLine2");
@@ -741,6 +907,11 @@ namespace InventoryManagement.Migrations
             modelBuilder.Entity("InventoryManagement.Models.AppUser", b =>
                 {
                     b.Navigation("OwnedInventories");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.CustomId.CustomId", b =>
+                {
+                    b.Navigation("Elements");
                 });
 
             modelBuilder.Entity("InventoryManagement.Models.Inventory.Category", b =>

@@ -25,6 +25,8 @@ namespace InventoryManagement.Models.Inventory
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public NpgsqlTsVector? SearchVector { get; set; }
 
+        public CustomId.CustomId CustomId { get; set; }
+
         public CustomField? SingleLine1 { get; set; }
         public CustomField? SingleLine2 { get; set; }
         public CustomField? SingleLine3 { get; set; }

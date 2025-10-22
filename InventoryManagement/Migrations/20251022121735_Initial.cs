@@ -45,6 +45,19 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CustomIds",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Guid = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomIds", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -85,6 +98,33 @@ namespace InventoryManagement.Migrations
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AbstractElement",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SeparatorBefore = table.Column<char>(type: "character(1)", nullable: true),
+                    SeparatorAfter = table.Column<char>(type: "character(1)", nullable: true),
+                    Value = table.Column<string>(type: "text", nullable: false),
+                    CustomId_Id = table.Column<int>(type: "integer", nullable: false),
+                    ElementType = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
+                    Radix = table.Column<int>(type: "integer", nullable: true),
+                    PaddingChar = table.Column<char>(type: "character(1)", nullable: true),
+                    DateTimeFormat = table.Column<string>(type: "text", nullable: true),
+                    FixedText = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AbstractElement", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AbstractElement_CustomIds_CustomId_Id",
+                        column: x => x.CustomId_Id,
+                        principalTable: "CustomIds",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -190,6 +230,7 @@ namespace InventoryManagement.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true, computedColumnSql: "to_tsvector('simple', coalesce(\"Title\", ''))", stored: true),
+                    CustomIdId = table.Column<int>(type: "integer", nullable: false),
                     SingleLine1_Title = table.Column<string>(type: "text", nullable: true),
                     SingleLine1_Description = table.Column<string>(type: "text", nullable: true),
                     SingleLine1_Position = table.Column<short>(type: "smallint", nullable: true),
@@ -249,6 +290,12 @@ namespace InventoryManagement.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Inventories_CustomIds_CustomIdId",
+                        column: x => x.CustomIdId,
+                        principalTable: "CustomIds",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Inventory_Owner",
                         column: x => x.Owner_UserId,
                         principalTable: "Users",
@@ -280,6 +327,11 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AbstractElement_CustomId_Id",
+                table: "AbstractElement",
+                column: "CustomId_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -309,6 +361,11 @@ namespace InventoryManagement.Migrations
                 name: "IX_Inventories_CategoryId",
                 table: "Inventories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_CustomIdId",
+                table: "Inventories",
+                column: "CustomIdId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inventories_Owner_UserId",
@@ -357,6 +414,9 @@ namespace InventoryManagement.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AbstractElement");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
             migrationBuilder.DropTable(
@@ -382,6 +442,9 @@ namespace InventoryManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "CustomIds");
 
             migrationBuilder.DropTable(
                 name: "Users");

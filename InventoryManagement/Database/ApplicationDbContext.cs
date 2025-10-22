@@ -1,4 +1,6 @@
 ﻿using InventoryManagement.Models;
+using InventoryManagement.Models.CustomId;
+using InventoryManagement.Models.CustomId.Element;
 using InventoryManagement.Models.Inventory;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +17,15 @@ namespace InventoryManagement.Data
             ConfigureUsers(builder);
             ConfigureInventory(builder);
             ConfigureUserInventory(builder);
+
+            ConfigureCustomId(builder);
+            ConfigureCustomIdElement(builder);
+            ConfigureInventoryCustomId(builder);
         }
 
         public DbSet<Category> Categories { get; set; } = default!;
         public DbSet<Inventory> Inventories { get; set; } = default!;
+        public DbSet<CustomId> CustomIds { get; set; } = default!;
 
         private void ConfigureUsers(ModelBuilder builder)
         {
@@ -117,6 +124,33 @@ namespace InventoryManagement.Data
                         join.HasKey("InventoryId", "UserId");
                         join.HasIndex("UserId");
                     });
+        }
+
+        private void ConfigureCustomId(ModelBuilder builder)
+        {
+            builder.Entity<CustomId>()
+                .HasMany<AbstractElement>("Elements")
+                .WithOne(e => e.CustomId)
+                .HasForeignKey("CustomId_Id");
+        }
+
+        private void ConfigureCustomIdElement(ModelBuilder builder)
+        {
+            builder.Entity<AbstractElement>()
+                .HasDiscriminator<string>("ElementType")
+                .HasValue<FixedTextElement>("FixedText")
+                .HasValue<Bit20Element>("Bit20")
+                .HasValue<Bit32Element>("Bit32")
+                .HasValue<Digit6Element>("Digit6")
+                .HasValue<Digit9Element>("Digit9")
+                .HasValue<GuidElement>("Guid")
+                .HasValue<DateTimeElement>("DateTime");
+            //.HasValue<SequentialElement>("Sequential")
+        }
+
+        private void ConfigureInventoryCustomId(ModelBuilder builder)
+        {
+
         }
     }
 }
