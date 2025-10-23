@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using InventoryManagement.Data;
+using InventoryManagement.Models.CustomId;
+using InventoryManagement.Models.CustomId.Element;
 
 namespace InventoryManagement.Pages
 {
@@ -46,6 +48,7 @@ namespace InventoryManagement.Pages
             public bool IsPublic { get; set; } = false;
             public List<string> UserIds { get; set; } = [];
 
+            public List<CustomIdElementInput> CustomIdElements { get; set; } = [];
             public CustomField? SingleLine1 { get; set; }
             public CustomField? SingleLine2 { get; set; }
             public CustomField? SingleLine3 { get; set; }
@@ -58,6 +61,19 @@ namespace InventoryManagement.Pages
             public CustomField? BoolLine1 { get; set; }
             public CustomField? BoolLine2 { get; set; }
             public CustomField? BoolLine3 { get; set; }
+        }
+
+        public class CustomIdElementInput
+        {
+            [Required]
+            public string Type { get; set; } = string.Empty;
+            public string? SeparatorBefore { get; set; }
+            public string? SeparatorAfter { get; set; }
+
+            public string? FixedText { get; set; }
+            public string? DateTimeFormat { get; set; }
+            public string? PaddingChar { get; set; }
+            public string? Radix { get; set; }
         }
 
         public SelectList Categories { get; set; }
@@ -116,7 +132,7 @@ namespace InventoryManagement.Pages
             if (!anyUsedAndValid)
             {
                 ModelState.AddModelError(string.Empty, "Add at least one valid custom field.");
-                Step = 2;
+                Step = 3;
                 await LoadCategoriesAsync();
                 return Page();
             }
@@ -132,6 +148,35 @@ namespace InventoryManagement.Pages
                     .ToListAsync();
             }
 
+            CustomId? customId = null;
+            if (Input.CustomIdElements.Count > 0 )
+            {
+                customId = new CustomId
+                {
+                    Guid = Guid.NewGuid(),
+                    Elements = []
+                };
+
+                foreach (var e in Input.CustomIdElements)
+                {
+                    AbstractElement? element = e.Type switch
+                    {
+                        "FixedText" => new FixedTextElement { FixedText = e.FixedText ?? string.Empty },
+                        "Digit6" => new Digit6Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Digit9" => new Digit9Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Bit20" => new Bit20Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
+                        "Guid" => new GuidElement(),
+                        _ => null
+                    };
+                    if (element == null) continue;
+                    element.SeparatorBefore = ParseChar(e.SeparatorBefore);
+                    element.SeparatorAfter = ParseChar(e.SeparatorAfter);
+                    customId.Elements.Add(element);
+                }
+            }
+
             var inventory = new Inventory
             {
                 Guid = Guid.NewGuid(),
@@ -144,6 +189,7 @@ namespace InventoryManagement.Pages
                 Owner = owner,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                CustomId = customId!,
                 SingleLine1 = Input.SingleLine1,
                 SingleLine2 = Input.SingleLine2,
                 SingleLine3 = Input.SingleLine3,
@@ -164,7 +210,25 @@ namespace InventoryManagement.Pages
             return RedirectToPage("./Index");
         }
 
-        private int ClampStep(int step) => Math.Clamp(step, 1, 3);
+        private static char? ParseChar(string? s)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            return s[0];
+        }
+
+        private static Radix ParseRadix(string? s)
+        {
+            return s switch
+            {
+                "2" => Radix.Binary,
+                "8" => Radix.Octal,
+                "10" => Radix.Decimal,
+                "16" => Radix.Hexadecimal,
+                _ => Radix.Decimal
+            };
+        }
+
+        private int ClampStep(int step) => Math.Clamp(step, 1, 4);
 
         private int DetermineStepFromModelState()
         {
@@ -180,12 +244,16 @@ namespace InventoryManagement.Pages
                 k.StartsWith("Input.Image"));
             if (isStep1) return 1;
 
-            bool isStep3 = keysWithErrors.Any(k =>
+            bool isStep2 = keysWithErrors.Any(k =>
+                k.StartsWith("Input.CustomIdElements"));
+            if (isStep2) return 2;
+
+            bool isStep4 = keysWithErrors.Any(k =>
                 k.StartsWith("Input.IsPublic") ||
                 k.StartsWith("Input.UserIds"));
-            if (isStep3) return 3;
+            if (isStep4) return 4;
 
-            return 2;
+            return 0;
         }
 
         private async Task LoadCategoriesAsync()

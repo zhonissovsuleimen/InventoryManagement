@@ -6,14 +6,14 @@
 }
 
 <h1>Create Inventory</h1>
-<h4 id="step-title">Inventory</h4>
+<h4 id="stepTitle">Inventory</h4>
 
 <hr />
 <div class="row">
     <div class="col-md-8">
-        <form method="post" enctype="multipart/form-data" id="inventory-form">
+        <form method="post" enctype="multipart/form-data" id="inventoryForm">
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="Step" id="step-field" />
+            <input type="hidden" asp-for="Step" id="stepField" />
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -39,8 +39,8 @@
                 
                 <div class="form-group">
                     <label asp-for="Input.Image" class="control-label">Image</label>
-                    <input asp-for="Input.Image" type="file" accept="image/*" class="form-control" id="image-input" />
-                    <img id="image-preview" src="#" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px;" />
+                    <input asp-for="Input.Image" type="file" accept="image/*" class="form-control" id="imageInput" />
+                    <img id="imagePreview" src="#" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px;" />
                     <span asp-validation-for="Input.Image" class="text-danger"></span>
                 </div>
 
@@ -50,6 +50,96 @@
             </section>
 
             <section data-step="2">
+                <div class="form-text mb-2">Define a Custom Id pattern for items in this inventory. Reorder elements freely.</div>
+                <div class="card mb-3">
+                    <div class="card-body py-2 d-flex align-items-center gap-2">
+                        <strong class="me-2">Preview:</strong>
+                        <code id="customIdPreview" class="text-muted">(empty)</code>
+                    </div>
+                </div>
+
+                <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+                    <span class="me-2">Add element:</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="FixedText">Text</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit6">Random 6 digits</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit9">Random 9 digits</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit20">Random 20-bit</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit32">Random 32-bit</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="DateTime">Date/Time</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Guid">Guid</button>
+                </div>
+
+                <div id="customIdElements" class="d-grid gap-2"></div>
+
+                <template id="templateCustomIdRow">
+                    <div class="card shadow-sm" data-row>
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge text-bg-secondary" data-type-label>Element</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                            </div>
+                            <div class="row g-2 align-items-end">
+                                <input type="hidden" data-prop="Type" />
+                                <div class="col-auto">
+                                    <label class="form-label small mb-0">Separator before</label>
+                                    <input class="form-control form-control-sm" data-prop="SeparatorBefore" maxlength="1" placeholder="-" />
+                                </div>
+                                <div class="col-auto">
+                                    <label class="form-label small mb-0">Separator after</label>
+                                    <input class="form-control form-control-sm" data-prop="SeparatorAfter" maxlength="1" placeholder="-" />
+                                </div>
+                                <div class="col d-flex flex-wrap align-items-end gap-2" data-specific></div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template id="templateSpecificFixedText">
+                    <div class="d-flex flex-column">
+                        <label class="form-label small mb-0">Text</label>
+                        <input class="form-control form-control-sm" data-prop="FixedText" placeholder="Fixed text" />
+                    </div>
+                </template>
+
+                <template id="templateSpecificDateTime">
+                    <div class="d-flex flex-column">
+                        <label class="form-label small mb-0">Format</label>
+                        <input class="form-control form-control-sm" data-prop="DateTimeFormat" placeholder="yyyyMMdd-HHmm" />
+                    </div>
+                </template>
+
+                <template id="templateSpecificGuid">
+                    <div class="d-flex flex-column" style="min-width: 120px;">
+                        <label class="form-label small mb-0">Guid</label>
+                        <input class="form-control form-control-sm" value="auto" disabled />
+                    </div>
+                </template>
+
+                <template id="templateSpecificNumeric">
+                    <div class="d-flex flex-wrap align-items-end gap-2">
+                        <div class="d-flex flex-column" style="width: 80px;">
+                            <label class="form-label small mb-0">Padding</label>
+                            <input class="form-control form-control-sm" data-prop="PaddingChar" maxlength="1" placeholder="0" />
+                        </div>
+                        <div class="d-flex flex-column" style="width: 110px;">
+                            <label class="form-label small mb-0">Radix</label>
+                            <select class="form-select form-select-sm" data-prop="Radix">
+                                <option value="2">Binary</option>
+                                <option value="8">Octal</option>
+                                <option value="10" selected>Decimal</option>
+                                <option value="16">Hex</option>
+                            </select>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="d-flex justify-content-between gap-2 mt-3">
+                    <a href="@Url.Page(null, new { step = 1 })" class="btn btn-secondary" data-prev>Previous</a>
+                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-primary" data-next>Next</a>
+                </div>
+            </section>
+
+            <section data-step="3">
                 <div class="form-text mb-3">Up to 3 of each type. Drag the card to reorder.</div>
 
                 <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
@@ -67,7 +157,7 @@
                     </button>
                 </div>
 
-                <div id="custom-fields" class="d-grid gap-2">
+                <div id="customFields" class="d-grid gap-2">
                     <div class="card shadow-sm" data-type="SingleLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -338,34 +428,34 @@
                 </div>
 
                 <div class="d-flex justify-content-between gap-2 mt-3">
-                    <a href="@Url.Page(null, new { step = 1 })" class="btn btn-secondary" data-prev>Previous</a>
-                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-primary" data-next>Next</a>
+                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-secondary" data-prev>Previous</a>
+                    <a href="@Url.Page(null, new { step = 4 })" class="btn btn-primary" data-next>Next</a>
                 </div>
             </section>
 
-            <section data-step="3">
+            <section data-step="4">
                 <div class="form-group form-check">
                     <label class="form-check-label">
                         <input class="form-check-input" asp-for="Input.IsPublic" /> @Html.DisplayNameFor(model => model.Input.IsPublic)
                     </label>
                 </div>
 
-                <div id="allowed-users-section" class="mt-3" style="display:none;">
+                <div id="allowedUsersSection" class="mt-3" style="display:none;">
                     <label class="form-label">Allowed Users</label>
                     <div class="form-text mb-2">Type a name to find users and add them. Visible only when inventory is not public.</div>
                     <div class="position-relative">
-                        <input type="text" id="user-search" class="form-control" placeholder="Search users..." autocomplete="off" />
-                        <div id="user-suggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
+                        <input type="text" id="userSearch" class="form-control" placeholder="Search users..." autocomplete="off" />
+                        <div id="userSuggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
                     </div>
-                    <div id="selected-users" class="d-flex flex-wrap gap-2 mt-2"></div>
-                    <div id="user-ids-container" class="d-none">
+                    <div id="selectedUsers" class="d-flex flex-wrap gap-2 mt-2"></div>
+                    <div id="userIdsContainer" class="d-none">
                         <input type="hidden" asp-for="Input.UserIds" data-template="user-id" disabled />
                     </div>
                     <span asp-validation-for="Input.UserIds" class="text-danger"></span>
                 </div>
 
                 <div class="d-flex justify-content-between gap-2 mt-3">
-                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-secondary" data-prev>Previous</a>
+                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-secondary" data-prev>Previous</a>
                     <button type="submit" class="btn btn-primary">Create</button>
                 </div>
             </section>
@@ -379,14 +469,14 @@
         // step navigation and visibility
         (function(){
             const sections = document.querySelectorAll('section[data-step]');
-            const stepField = document.getElementById('step-field');
+            const stepField = document.getElementById('stepField');
             const links = document.querySelectorAll('[data-step-link]');
             const prevs = document.querySelectorAll('[data-prev]');
             const nexts = document.querySelectorAll('[data-next]');
-            const titleEl = document.getElementById('step-title');
-            const titles = { 1: 'Details', 2: 'Custom Fields', 3: 'Visibility' };
+            const titleEl = document.getElementById('stepTitle');
+            const titles = { 1: 'Details', 2: 'Custom Id', 3: 'Custom Fields', 4: 'Visibility' };
 
-            function clamp(n){ return Math.max(1, Math.min(3, n|0)); }
+            function clamp(n){ return Math.max(1, Math.min(4, n|0)); }
 
             function setUrlStep(step, replace=false){
                 const url = new URL(window.location.href);
@@ -447,8 +537,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script> //image preview
-        const input = document.getElementById('image-input');
-        const preview = document.getElementById('image-preview');
+        const input = document.getElementById('imageInput');
+        const preview = document.getElementById('imagePreview');
 
         const showPreview = file => {
             if (!file || !file.type.startsWith('image/')) return;
@@ -471,11 +561,11 @@
     <script> // Allowed users search and selection
         (function() {
             const isPublicEl = document.getElementById('Input_IsPublic');
-            const section = document.getElementById('allowed-users-section');
-            const searchInput = document.getElementById('user-search');
-            const suggestions = document.getElementById('user-suggestions');
-            const selectedUsers = document.getElementById('selected-users');
-            const userIdsContainer = document.getElementById('user-ids-container');
+            const section = document.getElementById('allowedUsersSection');
+            const searchInput = document.getElementById('userSearch');
+            const suggestions = document.getElementById('userSuggestions');
+            const selectedUsers = document.getElementById('selectedUsers');
+            const userIdsContainer = document.getElementById('userIdsContainer');
             const template = userIdsContainer ? userIdsContainer.querySelector('input[data-template="user-id"]') : null;
             const selected = new Map();
 
@@ -584,7 +674,7 @@
         })();
     </script>
     <script> // Custom fields
-        const fieldsContainer = document.getElementById('custom-fields');
+        const fieldsContainer = document.getElementById('customFields');
         const addButtons = document.querySelectorAll('[data-add-type]');
         const typeLimit = 3;
 
@@ -677,5 +767,120 @@
         }
 
         syncUiFromModel();
+    </script>
+    <script> // Custom Id builder using API
+        (function(){
+            const container = document.getElementById('customIdElements');
+            const previewEl = document.getElementById('customIdPreview');
+            const addBtns = document.querySelectorAll('[data-add-customid]');
+
+            const intMax = (2147483647 + 1);
+			const seed = parseInt(intMax * Math.random());
+
+            function collectElements(){
+                const items = [];
+                container.querySelectorAll('[data-row]').forEach(row => {
+                    const obj = {};
+                    const type = row.querySelector('[data-prop="Type"]').value;
+                    obj.Type = type;
+                    const sb = (row.querySelector('[data-prop="SeparatorBefore"]').value || '').slice(0,1);
+                    const sa = (row.querySelector('[data-prop="SeparatorAfter"]').value || '').slice(0,1);
+                    if (sb) obj.SeparatorBefore = sb;
+                    if (sa) obj.SeparatorAfter = sa;
+                    if (type === 'FixedText') {
+                        obj.FixedText = row.querySelector('[data-prop="FixedText"]').value || '';
+                    } else if (type === 'DateTime') {
+                        obj.DateTimeFormat = row.querySelector('[data-prop="DateTimeFormat"]').value || 'yyyy';
+                    } else if (type === 'Digit6' || type === 'Digit9' || type === 'Bit20' || type === 'Bit32') {
+                        const radix = row.querySelector('[data-prop="Radix"]').value || '10';
+                        const pad = (row.querySelector('[data-prop="PaddingChar"]').value || '').slice(0,1);
+                        obj.Radix = radix;
+                        if (pad) obj.PaddingChar = pad;
+                    }
+                    items.push(obj);
+                });
+                return items;
+            }
+
+            function setNames(){
+                const rows = container.querySelectorAll('[data-row]');
+                rows.forEach((row, idx) => {
+                    row.querySelectorAll('[data-prop]').forEach(input => {
+                        const prop = input.getAttribute('data-prop');
+                        input.name = `Input.CustomIdElements[${idx}].${prop}`;
+                    });
+                });
+            }
+
+            async function generatePreview(){
+                const elements = collectElements();
+                if (elements.length === 0){
+                    previewEl.textContent = '(empty)';
+                    return;
+                }
+                try {
+                    const resp = await fetch('/api/generate/customId', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ seed: seed, elements: elements })
+                    });
+                    if (!resp.ok) throw new Error('Failed');
+                    const text = await resp.text();
+                    previewEl.textContent = text || '(empty)';
+                } catch {
+                    previewEl.textContent = '(error)';
+                }
+            }
+
+            function createSpecific(type){
+                if (type === 'FixedText') return document.getElementById('templateSpecificFixedText').content.cloneNode(true);
+                if (type === 'DateTime') return document.getElementById('templateSpecificDateTime').content.cloneNode(true);
+                if (type === 'Guid') return document.getElementById('templateSpecificGuid').content.cloneNode(true);
+                return document.getElementById('templateSpecificNumeric').content.cloneNode(true);
+            }
+
+            function addRow(type){
+                const tpl = document.getElementById('templateCustomIdRow');
+                const node = tpl.content.cloneNode(true);
+                const card = node.querySelector('[data-row]');
+                card.querySelector('[data-type-label]').textContent =
+                    type === 'FixedText' ? 'Text' :
+                    type === 'Digit6' ? 'Random 6 digits' :
+                    type === 'Digit9' ? 'Random 9 digits' :
+                    type === 'Bit20' ? 'Random 20-bit' :
+                    type === 'Bit32' ? 'Random 32-bit' :
+                    type === 'DateTime' ? 'Date/Time' :
+                    type === 'Guid' ? 'Guid' : 'Element';
+                const typeInput = card.querySelector('[data-prop="Type"]');
+                typeInput.value = type;
+                const specificHost = card.querySelector('[data-specific]');
+                specificHost.appendChild(createSpecific(type));
+
+                card.querySelector('[data-remove]').addEventListener('click', () => {
+                    card.remove();
+                    setNames();
+                    generatePreview();
+                });
+                card.addEventListener('input', generatePreview);
+                container.appendChild(card);
+                setNames();
+                generatePreview();
+            }
+
+            addBtns.forEach(btn => {
+                btn.addEventListener('click', () => addRow(btn.getAttribute('data-add-customid')));
+            });
+
+            Sortable.create(container, {
+                animation: 100,
+                ghostClass: 'bg-light',
+                handle: '',
+                filter: 'button, input, textarea, select, label',
+                preventOnFilter: false,
+                onEnd: () => { setNames(); generatePreview(); }
+            });
+
+            generatePreview();
+        })();
     </script>
 }
