@@ -12,7 +12,7 @@ namespace InventoryManagement.Models.CustomId.Element
 
         public CustomId CustomId { get; set; }
 
-        public abstract string Generate(int seed);
+        public abstract string Generate(Random rng);
     }
 
 }

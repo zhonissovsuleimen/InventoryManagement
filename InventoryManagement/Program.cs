@@ -1,6 +1,8 @@
 using InventoryManagement.Data;
 using InventoryManagement.Database;
 using InventoryManagement.Models;
+using InventoryManagement.Models.CustomId;
+using InventoryManagement.Models.CustomId.Element;
 using InventoryManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +23,7 @@ namespace InventoryManagement
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddRazorPages();
             builder.Services.AddScoped<UserSearch>();
+            builder.Services.AddScoped<CustomIdGenerator>();
 
             var app = builder.Build();
 
@@ -57,6 +60,46 @@ namespace InventoryManagement
             {
                 var results = await search.Search(query);
                 return Results.Ok(results);
+            });
+            app.MapPost("/api/generate/customId", (CustomIdGenerator.PreviewRequest request, CustomIdGenerator gen) =>
+            {
+                static char? ParseChar(string? s) => string.IsNullOrEmpty(s) ? null : s[0];
+                static Radix ParseRadix(string? s) => s switch
+                {
+                    "2" => Models.CustomId.Element.Radix.Binary,
+                    "8" => Models.CustomId.Element.Radix.Octal,
+                    "10" => Models.CustomId.Element.Radix.Decimal,
+                    "16" => Models.CustomId.Element.Radix.Hexadecimal,
+                    _ => Models.CustomId.Element.Radix.Decimal
+                };
+
+                var customId = new CustomId
+                {
+                    Guid = Guid.NewGuid(),
+                    Elements = []
+                };
+
+                foreach (var e in request.Elements)
+                {
+                    AbstractElement? element = e.Type switch
+                    {
+                        "FixedText" => new Models.CustomId.Element.FixedTextElement { FixedText = e.FixedText ?? string.Empty },
+                        "Digit6" => new Models.CustomId.Element.Digit6Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Digit9" => new Models.CustomId.Element.Digit9Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Bit20" => new Models.CustomId.Element.Bit20Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Bit32" => new Models.CustomId.Element.Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "DateTime" => new Models.CustomId.Element.DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
+                        "Guid" => new Models.CustomId.Element.GuidElement(),
+                        _ => null
+                    };
+                    if (element == null) continue;
+                    element.SeparatorBefore = ParseChar(e.SeparatorBefore);
+                    element.SeparatorAfter = ParseChar(e.SeparatorAfter);
+                    customId.Elements.Add(element);
+                }
+
+                var result = gen.Generate(request.Seed, customId);
+                return Results.Text(result, "text/plain");
             });
 
 

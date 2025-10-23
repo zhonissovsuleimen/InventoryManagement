@@ -2,9 +2,8 @@
 {
     public class Bit32Element : AbstractNumericElement
     {
-        public override string Generate(int seed)
+        public override string Generate(Random rng)
         {
-            var rng = new Random(seed);
             uint value = (uint)rng.NextInt64(0xFFFFFFFFL + 1);
             var stringValue = Convert.ToString(value, (int)Radix);
             if (PaddingChar.HasValue)

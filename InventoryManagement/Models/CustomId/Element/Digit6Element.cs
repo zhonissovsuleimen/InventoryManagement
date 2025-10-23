@@ -2,10 +2,9 @@
 {
     public class Digit6Element : AbstractNumericElement
     {
-        public override string Generate(int seed)
+        public override string Generate(Random rng)
         {
             int digits = 6;
-            var rng = new Random(seed);
 
             long maxValueExclusive = (long)Math.Pow((double)Radix, digits);
             long value = rng.NextInt64(maxValueExclusive);

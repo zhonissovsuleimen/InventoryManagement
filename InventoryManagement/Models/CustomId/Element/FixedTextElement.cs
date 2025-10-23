@@ -3,7 +3,7 @@
     public class FixedTextElement : AbstractElement
     {
         public string FixedText { get; set; } = string.Empty;
-        public override string Generate(int seed)
+        public override string Generate(Random rng)
         {
             return FixedText;
         }

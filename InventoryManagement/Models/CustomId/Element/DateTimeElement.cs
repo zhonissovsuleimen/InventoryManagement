@@ -4,7 +4,7 @@
     {
         public string DateTimeFormat { get; set; } = "yyyy";
 
-        public override string Generate(int seed)
+        public override string Generate(Random rng)
         {
             return DateTime.UtcNow.ToString(DateTimeFormat);
         }

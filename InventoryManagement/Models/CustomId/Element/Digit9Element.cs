@@ -4,10 +4,9 @@ namespace InventoryManagement.Models.CustomId.Element
 {
     public class Digit9Element : AbstractNumericElement
     {
-        public override string Generate(int seed)
+        public override string Generate(Random rng)
         {
             int digits = 9;
-            var rng = new Random(seed);
 
             long maxValueExclusive = (long)Math.Pow((double)Radix, digits);
             long value = rng.NextInt64(maxValueExclusive);

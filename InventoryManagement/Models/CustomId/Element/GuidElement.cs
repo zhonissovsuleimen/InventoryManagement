@@ -2,9 +2,8 @@
 {
     public class GuidElement : AbstractElement
     {
-        public override string Generate(int seed)
+        public override string Generate(Random rng)
         {
-            var rng = new Random(seed);
             var guidBytes = new byte[16];
             rng.NextBytes(guidBytes);
             var guid = new Guid(guidBytes);
