@@ -14,7 +14,7 @@ namespace InventoryManagement
         {
             var builder = WebApplication.CreateBuilder(args);
             // Add services to the container.
-            var connectionString = @"Host=localhost;Username=project-user;Password=password123;Database=project";
+            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
