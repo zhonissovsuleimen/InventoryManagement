@@ -9,16 +9,17 @@ using System.ComponentModel.DataAnnotations;
 using InventoryManagement.Data;
 using InventoryManagement.Models.CustomId;
 using InventoryManagement.Models.CustomId.Element;
+using InventoryManagement.Services;
 
-namespace InventoryManagement.Pages
+namespace InventoryManagement.Pages.Inventory
 {
-    public class InventoryCreateModel : PageModel
+    public class CreateModel : PageModel
     {
-        private readonly InventoryManagement.Data.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IWebHostEnvironment _env;
 
-        public InventoryCreateModel(
+        public CreateModel(
             ApplicationDbContext context,
             UserManager<AppUser> userManager,
             IWebHostEnvironment env)
@@ -137,8 +138,11 @@ namespace InventoryManagement.Pages
                 return Page();
             }
 
-            //todo store image on azure web and get a url back
             string? imageUrl = null;
+            if (Input.Image != null)
+            {
+                imageUrl = await AzureBlobulator3000.UploadImageAsync(Input.Image);
+            }
 
             List<AppUser> users = [];
             if (!Input.IsPublic && Input.UserIds.Count > 0)
@@ -177,7 +181,7 @@ namespace InventoryManagement.Pages
                 }
             }
 
-            var inventory = new Inventory
+            var inventory = new Models.Inventory.Inventory
             {
                 Guid = Guid.NewGuid(),
                 Title = Input.Title,
