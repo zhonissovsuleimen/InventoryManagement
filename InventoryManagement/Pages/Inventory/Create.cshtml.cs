@@ -10,6 +10,8 @@ using InventoryManagement.Data;
 using InventoryManagement.Models.CustomId;
 using InventoryManagement.Models.CustomId.Element;
 using InventoryManagement.Services;
+using System.Text.Json;
+using Markdig;
 
 namespace InventoryManagement.Pages.Inventory
 {
@@ -212,6 +214,27 @@ namespace InventoryManagement.Pages.Inventory
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
+        }
+
+        public async Task<IActionResult> OnPostGenerateMarkdown()
+        {
+            using var reader = new StreamReader(Request.Body);
+            var body = await reader.ReadToEndAsync();
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return Content(string.Empty, "text/html");
+            }
+
+            var req = JsonSerializer.Deserialize<GenerateMarkdownRequest>(body);
+            var raw = req?.Text ?? string.Empty;
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+            var html = Markdown.ToHtml(raw, pipeline);
+            return Content(html, "text/html");
+        }
+
+        private sealed class GenerateMarkdownRequest
+        {
+            public string? Text { get; set; }
         }
 
         private static char? ParseChar(string? s)

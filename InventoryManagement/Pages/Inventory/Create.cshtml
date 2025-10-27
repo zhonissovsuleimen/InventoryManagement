@@ -26,7 +26,18 @@
                 
                 <div class="form-group">
                     <label asp-for="Input.Description" class="control-label"></label>
-                    <textarea asp-for="Input.Description" class="form-control" rows="3"></textarea>
+                    <ul class="nav nav-tabs mb-2" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link active" id="descTabRaw" role="tab">Raw</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link" id="descTabPreview" role="tab">Preview</button>
+                        </li>
+                    </ul>
+                    <div>
+                        <textarea asp-for="Input.Description" class="form-control" rows="6" id="inputDescription"></textarea>
+                        <div id="descriptionPreview" class="border rounded p-2" style="display:none; min-height:120px;"></div>
+                    </div>
                     <span asp-validation-for="Input.Description" class="text-danger"></span>
                 </div>
                 
@@ -881,6 +892,61 @@
             });
 
             generatePreview();
+        })();
+    </script>
+    <script> //description markdown
+        (function(){
+            const rawTab = document.getElementById('descTabRaw');
+            const previewTab = document.getElementById('descTabPreview');
+            const rawEl = document.getElementById('inputDescription');
+            const previewEl = document.getElementById('descriptionPreview');
+
+            let debounceAmount = 100;
+            let debounceTimer = null;
+
+            function showRaw(){
+                if (rawEl) rawEl.style.display = '';
+                if (previewEl) previewEl.style.display = 'none';
+                if (rawTab) rawTab.classList.add('active');
+                if (previewTab) previewTab.classList.remove('active');
+            }
+
+            function showPreview(){
+                if (rawEl) rawEl.style.display = 'none';
+                if (previewEl) previewEl.style.display = '';
+                if (rawTab) rawTab.classList.remove('active');
+                if (previewTab) previewTab.classList.add('active');
+            }
+
+            rawTab?.addEventListener('click', showRaw);
+            previewTab?.addEventListener('click', showPreview);
+
+            async function updatePreview(){
+                if (!rawEl || !previewEl) return;
+                const text = rawEl.value || '';
+                try {
+                    const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const token = tokenEl ? tokenEl.value : '';
+                    const resp = await fetch(window.location.pathname + '?handler=GenerateMarkdown', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                        body: JSON.stringify({ Text: text })
+                    });
+
+                    if (!resp.ok) throw new Error('Failed');
+                    const html = await resp.text();
+                    previewEl.innerHTML = html || '';
+                } catch {
+                    previewEl.textContent = '(error)';
+                }
+            }
+
+            rawEl?.addEventListener('input', () => {
+                window.clearTimeout(debounceTimer);
+                debounceTimer = window.setTimeout(() => updatePreview(), debounceAmount);
+            });
+
+            updatePreview();
         })();
     </script>
 }
