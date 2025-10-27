@@ -1,4 +1,5 @@
 ﻿using NpgsqlTypes;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace InventoryManagement.Models.Inventory
@@ -16,6 +17,7 @@ namespace InventoryManagement.Models.Inventory
         public Category Category { get; set; }
         public string? ImageUrl { get; set; }
         [Required]
+        [DisplayName("Visibility")]
         public bool IsPublic { get; set; } = false;
         [Required]
         public List<AppUser> AllowedUsers { get; set; } = [];
