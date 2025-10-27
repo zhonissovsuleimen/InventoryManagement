@@ -13,24 +13,31 @@ namespace InventoryManagement.Services
 
         private static readonly BlobServiceClient serviceClient = new(connectionString);
 
-        public static async Task<string> UploadImageAsync(IFormFile file)
+        public static async Task<string?> UploadImageAsync(IFormFile file)
         {
-            var container = serviceClient.GetBlobContainerClient("images");
-            var name = Guid.NewGuid().ToString();
-
-            var blobClient = container.GetBlobClient(name);
-
-            var blobHttpHeaders = new BlobHttpHeaders
+            try
             {
-                ContentType = file.ContentType
-            };
+                var container = serviceClient.GetBlobContainerClient("images");
+                var name = Guid.NewGuid().ToString();
 
-            await blobClient.UploadAsync(file.OpenReadStream(), new BlobUploadOptions
+                var blobClient = container.GetBlobClient(name);
+
+                var blobHttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = file.ContentType
+                };
+
+                await blobClient.UploadAsync(file.OpenReadStream(), new BlobUploadOptions
+                {
+                    HttpHeaders = blobHttpHeaders
+                });
+
+                return blobClient.Uri.ToString();
+            }
+            catch
             {
-                HttpHeaders = blobHttpHeaders
-            });
-
-            return blobClient.Uri.ToString();
+                return null;
+            }
         }
     }
 }
