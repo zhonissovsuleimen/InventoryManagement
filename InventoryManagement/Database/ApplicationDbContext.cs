@@ -1,7 +1,7 @@
 ﻿using InventoryManagement.Models;
-using InventoryManagement.Models.CustomId;
-using InventoryManagement.Models.CustomId.Element;
 using InventoryManagement.Models.Inventory;
+using InventoryManagement.Models.Inventory.CustomId;
+using InventoryManagement.Models.Inventory.CustomId.Element;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,15 +17,17 @@ namespace InventoryManagement.Data
             ConfigureUsers(builder);
             ConfigureInventory(builder);
             ConfigureUserInventory(builder);
+            ConfigureItems(builder);
 
             ConfigureCustomId(builder);
             ConfigureCustomIdElement(builder);
-            ConfigureInventoryCustomId(builder);
         }
 
         public DbSet<Category> Categories { get; set; } = default!;
         public DbSet<Inventory> Inventories { get; set; } = default!;
         public DbSet<CustomId> CustomIds { get; set; } = default!;
+        public DbSet<Item> Items { get; set; } = default!;
+
 
         private void ConfigureUsers(ModelBuilder builder)
         {
@@ -126,6 +128,24 @@ namespace InventoryManagement.Data
                     });
         }
 
+        private void ConfigureItems(ModelBuilder builder)
+        {
+            builder.Entity<Item>(entity =>
+            {
+                entity.HasOne(e => e.Inventory)
+                      .WithMany(i => i.Items)
+                      .HasForeignKey("InventoryId")
+                      .HasConstraintName("FK_Item_Inventory")
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Owner)
+                      .WithMany()
+                      .HasForeignKey("Owner_UserId")
+                      .HasConstraintName("FK_Item_Owner")
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+        }
+
         private void ConfigureCustomId(ModelBuilder builder)
         {
             builder.Entity<CustomId>()
@@ -146,11 +166,6 @@ namespace InventoryManagement.Data
                 .HasValue<GuidElement>("Guid")
                 .HasValue<DateTimeElement>("DateTime");
             //.HasValue<SequentialElement>("Sequential")
-        }
-
-        private void ConfigureInventoryCustomId(ModelBuilder builder)
-        {
-
         }
     }
 }

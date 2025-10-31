@@ -1,4 +1,4 @@
-﻿namespace InventoryManagement.Models.CustomId.Element
+﻿namespace InventoryManagement.Models.Inventory.CustomId.Element
 {
     public class Digit6Element : AbstractNumericElement
     {

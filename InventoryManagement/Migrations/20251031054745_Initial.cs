@@ -110,7 +110,7 @@ namespace InventoryManagement.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     SeparatorBefore = table.Column<char>(type: "character(1)", nullable: true),
                     SeparatorAfter = table.Column<char>(type: "character(1)", nullable: true),
-                    Value = table.Column<string>(type: "text", nullable: false),
+                    Position = table.Column<short>(type: "smallint", nullable: true),
                     CustomId_Id = table.Column<int>(type: "integer", nullable: false),
                     ElementType = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
                     Radix = table.Column<int>(type: "integer", nullable: true),
@@ -326,6 +326,46 @@ namespace InventoryManagement.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Items",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Guid = table.Column<Guid>(type: "uuid", nullable: false),
+                    InventoryId = table.Column<int>(type: "integer", nullable: false),
+                    Owner_UserId = table.Column<string>(type: "text", nullable: true),
+                    CustomId = table.Column<string>(type: "text", nullable: false),
+                    SingleLine1 = table.Column<string>(type: "text", nullable: true),
+                    SingleLine2 = table.Column<string>(type: "text", nullable: true),
+                    SingleLine3 = table.Column<string>(type: "text", nullable: true),
+                    MultiLine1 = table.Column<string>(type: "text", nullable: true),
+                    MultiLine2 = table.Column<string>(type: "text", nullable: true),
+                    MultiLine3 = table.Column<string>(type: "text", nullable: true),
+                    NumericLine1 = table.Column<double>(type: "double precision", nullable: true),
+                    NumericLine2 = table.Column<double>(type: "double precision", nullable: true),
+                    NumericLine3 = table.Column<double>(type: "double precision", nullable: true),
+                    BoolLine1 = table.Column<bool>(type: "boolean", nullable: true),
+                    BoolLine2 = table.Column<bool>(type: "boolean", nullable: true),
+                    BoolLine3 = table.Column<bool>(type: "boolean", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Items", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Item_Inventory",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Item_Owner",
+                        column: x => x.Owner_UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AbstractElement_CustomId_Id",
                 table: "AbstractElement",
@@ -376,6 +416,16 @@ namespace InventoryManagement.Migrations
                 name: "IX_InventoryAllowedUsers_UserId",
                 table: "InventoryAllowedUsers",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Items_InventoryId",
+                table: "Items",
+                column: "InventoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Items_Owner_UserId",
+                table: "Items",
+                column: "Owner_UserId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -433,6 +483,9 @@ namespace InventoryManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "InventoryAllowedUsers");
+
+            migrationBuilder.DropTable(
+                name: "Items");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

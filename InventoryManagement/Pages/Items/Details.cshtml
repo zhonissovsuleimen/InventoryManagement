@@ -1,0 +1,83 @@
+@page
+@model InventoryManagement.Pages.Items.DetailsModel
+
+@{
+    ViewData["Title"] = "Item Details";
+}
+
+<h1>Item Details</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-3">Custom ID</dt>
+            <dd class="col-sm-9">@Model.Item.CustomId</dd>
+
+            <dt class="col-sm-3">Inventory</dt>
+            <dd class="col-sm-9"><a asp-page="../Inventory/Details" asp-route-guid="@Model.Item.Inventory.Guid">@Model.Item.Inventory.Title</a></dd>
+
+            <dt class="col-sm-3">Owner</dt>
+            <dd class="col-sm-9">@Model.Item.Owner?.UserName (@Model.Item.Owner?.Email)</dd>
+
+            @{
+                var inv = Model.Item.Inventory;
+
+                var fields = new List<(string PropName, string Kind, short? Position, string Title, object? Value)>();
+
+                void Add(string propName, string kind, InventoryManagement.Models.Inventory.CustomField? cf, object? value)
+                {
+                    if (cf == null || !cf.IsUsed) return;
+                    var title = string.IsNullOrWhiteSpace(cf.Title) ? propName : cf.Title;
+                    fields.Add((propName, kind, cf.Position, title, value));
+                }
+
+                Add("SingleLine1", "single", inv?.SingleLine1, Model.Item.SingleLine1);
+                Add("SingleLine2", "single", inv?.SingleLine2, Model.Item.SingleLine2);
+                Add("SingleLine3", "single", inv?.SingleLine3, Model.Item.SingleLine3);
+
+                Add("MultiLine1", "multi", inv?.MultiLine1, Model.Item.MultiLine1);
+                Add("MultiLine2", "multi", inv?.MultiLine2, Model.Item.MultiLine2);
+                Add("MultiLine3", "multi", inv?.MultiLine3, Model.Item.MultiLine3);
+
+                Add("NumericLine1", "numeric", inv?.NumericLine1, Model.Item.NumericLine1);
+                Add("NumericLine2", "numeric", inv?.NumericLine2, Model.Item.NumericLine2);
+                Add("NumericLine3", "numeric", inv?.NumericLine3, Model.Item.NumericLine3);
+
+                Add("BoolLine1", "bool", inv?.BoolLine1, Model.Item.BoolLine1);
+                Add("BoolLine2", "bool", inv?.BoolLine2, Model.Item.BoolLine2);
+                Add("BoolLine3", "bool", inv?.BoolLine3, Model.Item.BoolLine3);
+
+                fields = fields.OrderBy(f => f.Position ?? short.MaxValue).ToList();
+
+            }
+
+            @foreach (var f in fields)
+            {
+                <dt class="col-sm-3">@f.Title</dt>
+                <dd class="col-sm-9">
+                    @if (f.Kind == "single")
+                    {
+                        @f.Value
+                    }
+                    else if (f.Kind == "multi")
+                    {
+                        <div style="white-space:pre-wrap;">@f.Value</div>
+                    }
+                    else if (f.Kind == "numeric")
+                    {
+                        @f.Value
+                    }
+                    else if (f.Kind == "bool")
+                    {
+                        var b = (f.Value as bool?) ?? false;
+                        @((b) ? "Yes" : "No")
+                    }
+                </dd>
+            }
+        </dl>
+
+        <div class="d-flex gap-2 mt-3">
+            <a asp-page="../Inventory/Details" asp-route-guid="@Model.Item.Inventory.Guid" class="btn btn-secondary btn-sm">Back to Inventory</a>
+        </div>
+    </div>
+</div>

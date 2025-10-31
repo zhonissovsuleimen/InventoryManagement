@@ -45,7 +45,7 @@
 <div class="row g-3">
     <div class="col-md-4">
         <div class="card">
-            <div class="card-body text-center">
+            <div class="card-body text-center d-flex flex-column">
                 @if (!string.IsNullOrWhiteSpace(inv?.ImageUrl))
                 {
                     <img src="@inv.ImageUrl" alt="Image" class="img-fluid mb-3" style="max-height:260px; object-fit:contain;" />
@@ -63,7 +63,12 @@
                     <p class="card-text text-muted small mb-0">@inv.Category.Name</p>
                 }
                 <hr />
-                <div class="card-text mt-2 text-break">@Html.Raw(Markdown.ToHtml(inv?.Description ?? ""))</div>
+                <div class="card-text mt-2 text-break mb-3">@Html.Raw(Markdown.ToHtml(inv?.Description ?? ""))</div>
+
+                <!-- Create Item button moved to bottom of the card -->
+                <div class="mt-auto w-100">
+                    <a asp-page="../Items/Create" asp-route-guid="@inv?.Guid" class="btn btn-primary btn-sm w-100">Create Item</a>
+                </div>
             </div>
         </div>
     </div>
@@ -118,8 +123,8 @@
                 {
                     var cf = customFieldList[i];
                     var index = i + 1;
-					var title = string.IsNullOrWhiteSpace(cf.Title) ? "(no title)" : cf.Title;
-					var desc = string.IsNullOrWhiteSpace(cf.Description) ? "(no description)" : cf.Description;
+                    var title = string.IsNullOrWhiteSpace(cf.Title) ? "(no title)" : cf.Title;
+                    var desc = string.IsNullOrWhiteSpace(cf.Description) ? "(no description)" : cf.Description;
 
                     <div class="card">
                         <div class="card-body">

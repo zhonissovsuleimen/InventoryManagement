@@ -1,0 +1,75 @@
+@page
+@model InventoryManagement.Pages.Items.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+
+<table class="table table-striped table-hover table-bordered">
+    <thead>
+        <tr>
+            <th class="me-4 text-end align-middle">#</th>
+            <th>Custom ID</th>
+            <th>Inventory</th>
+            <th>Creator</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.Items.Count; i++) {
+            var item = Model.Items[i];
+            <tr>
+                <td class="id">@(i + 1)</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(item.CustomId))
+                    {
+                        <a asp-page="./Details" asp-route-guid="@item.Guid">@item.CustomId</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Inventory != null)
+                    {
+                        <a asp-page="../Inventory/Details" asp-route-guid="@item.Inventory.Guid">@item.Inventory.Title</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Owner != null)
+                    {
+                        var ownerName = ($"{item.Owner.FirstName} {item.Owner.LastName}").Trim();
+                        if (!string.IsNullOrWhiteSpace(ownerName))
+                        {
+                            <span>@ownerName (@item.Owner.Email)</span>
+                        }
+                        else
+                        {
+                            <span>@(item.Owner.UserName ?? "-")
+                                @if (!string.IsNullOrWhiteSpace(item.Owner.Email)) { <text> (@item.Owner.Email)</text>; }
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<style>
+  .id { width: 1%; white-space: nowrap; }
+</style>

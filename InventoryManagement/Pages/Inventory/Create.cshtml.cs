@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using InventoryManagement.Data;
-using InventoryManagement.Models.CustomId;
-using InventoryManagement.Models.CustomId.Element;
 using InventoryManagement.Services;
 using System.Text.Json;
 using Markdig;
+using InventoryManagement.Models.Inventory.CustomId;
+using InventoryManagement.Models.Inventory.CustomId.Element;
 
 namespace InventoryManagement.Pages.Inventory
 {
@@ -132,9 +132,50 @@ namespace InventoryManagement.Pages.Inventory
                            || HasValid(Input.BoolLine2)
                            || HasValid(Input.BoolLine3);
 
-            if (!anyUsedAndValid)
+            var fields = new (string Name, CustomField? Field)[]
             {
-                ModelState.AddModelError(string.Empty, "Add at least one valid custom field.");
+                ("SingleLine1", Input.SingleLine1),
+                ("SingleLine2", Input.SingleLine2),
+                ("SingleLine3", Input.SingleLine3),
+                ("MultiLine1", Input.MultiLine1),
+                ("MultiLine2", Input.MultiLine2),
+                ("MultiLine3", Input.MultiLine3),
+                ("NumericLine1", Input.NumericLine1),
+                ("NumericLine2", Input.NumericLine2),
+                ("NumericLine3", Input.NumericLine3),
+                ("BoolLine1", Input.BoolLine1),
+                ("BoolLine2", Input.BoolLine2),
+                ("BoolLine3", Input.BoolLine3),
+            };
+
+            bool anyValid = false;
+            bool anyUsed = false;
+            foreach (var f in fields)
+            {
+                var cf = f.Field;
+                if (cf == null) continue;
+                if (!cf.IsUsed) continue;
+                anyUsed = true;
+                if (string.IsNullOrWhiteSpace(cf.Title))
+                {
+                    ModelState.AddModelError($"Input.{f.Name}.Title", "The title of the custom field is required.");
+                }
+                if (string.IsNullOrWhiteSpace(cf.Description))
+                {
+                    ModelState.AddModelError($"Input.{f.Name}.Description", "The description of the custom field is required.");
+                }
+                if (!string.IsNullOrWhiteSpace(cf.Title) && !string.IsNullOrWhiteSpace(cf.Description))
+                {
+                    anyValid = true;
+                }
+            }
+
+            if (!anyValid)
+            {
+                if (!anyUsed && fields.Length > 0)
+                {
+                    ModelState.AddModelError($"Input.{fields[0].Name}.IsUsed", "Enable and fill at least one custom field.");
+                }
                 Step = 3;
                 await LoadCategoriesAsync();
                 return Page();
@@ -232,9 +273,60 @@ namespace InventoryManagement.Pages.Inventory
             return Content(html, "text/html");
         }
 
+        public async Task<IActionResult> OnPostGenerateCustomId()
+        {
+            using var reader = new StreamReader(Request.Body);
+            var body = await reader.ReadToEndAsync();
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return Content(string.Empty, "text/plain");
+            }
+
+            var req = JsonSerializer.Deserialize<GenerateCustomIdRequest>(body);
+            if (req == null || req.Elements == null || req.Elements.Count == 0)
+            {
+                return Content(string.Empty, "text/plain");
+            }
+
+            CustomId? customId = new CustomId
+            {
+                Guid = Guid.NewGuid(),
+                Elements = []
+            };
+
+            foreach (var e in req.Elements)
+            {
+                AbstractElement? element = e.Type switch
+                {
+                    "FixedText" => new FixedTextElement { FixedText = e.FixedText ?? string.Empty },
+                    "Digit6" => new Digit6Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                    "Digit9" => new Digit9Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                    "Bit20" => new Bit20Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                    "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                    "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
+                    "Guid" => new GuidElement(),
+                    _ => null
+                };
+                if (element == null) continue;
+                element.SeparatorBefore = ParseChar(e.SeparatorBefore);
+                element.SeparatorAfter = ParseChar(e.SeparatorAfter);
+                customId.Elements.Add(element);
+            }
+
+            var tmp = new Models.Inventory.Inventory { CustomId = customId };
+            var result = tmp.GenerateCustomId(req.Seed);
+            return Content(result, "text/plain");
+        }
+
         private sealed class GenerateMarkdownRequest
         {
             public string? Text { get; set; }
+        }
+
+        private sealed class GenerateCustomIdRequest
+        {
+            public int? Seed { get; set; }
+            public List<CustomIdElementInput>? Elements { get; set; }
         }
 
         private static char? ParseChar(string? s)

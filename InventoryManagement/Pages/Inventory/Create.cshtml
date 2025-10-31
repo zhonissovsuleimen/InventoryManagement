@@ -830,9 +830,11 @@
                     return;
                 }
                 try {
-                    const resp = await fetch('/api/generate/customId', {
+                    const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+                    const token = tokenEl ? tokenEl.value : '';
+                    const resp = await fetch(window.location.pathname + '?handler=GenerateCustomId', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
                         body: JSON.stringify({ seed: seed, elements: elements })
                     });
                     if (!resp.ok) throw new Error('Failed');

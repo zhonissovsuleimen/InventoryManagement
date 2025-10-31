@@ -1,6 +1,6 @@
 ﻿using InventoryManagement.Database;
 
-namespace InventoryManagement.Models.CustomId.Element
+namespace InventoryManagement.Models.Inventory.CustomId.Element
 {
     public class Digit9Element : AbstractNumericElement
     {

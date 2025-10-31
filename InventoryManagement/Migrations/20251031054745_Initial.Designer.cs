@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251022121735_Initial")]
+    [Migration("20251031054745_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -153,15 +153,14 @@ namespace InventoryManagement.Migrations
                         .HasMaxLength(21)
                         .HasColumnType("character varying(21)");
 
+                    b.Property<short?>("Position")
+                        .HasColumnType("smallint");
+
                     b.Property<char?>("SeparatorAfter")
                         .HasColumnType("character(1)");
 
                     b.Property<char?>("SeparatorBefore")
                         .HasColumnType("character(1)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -248,6 +247,72 @@ namespace InventoryManagement.Migrations
                     b.HasIndex("Owner_UserId");
 
                     b.ToTable("Inventories");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.Item", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("BoolLine1")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("BoolLine2")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("BoolLine3")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("CustomId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MultiLine1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MultiLine2")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MultiLine3")
+                        .HasColumnType("text");
+
+                    b.Property<double?>("NumericLine1")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("NumericLine2")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("NumericLine3")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Owner_UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SingleLine1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SingleLine2")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SingleLine3")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("Owner_UserId");
+
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -853,6 +918,26 @@ namespace InventoryManagement.Migrations
                     b.Navigation("SingleLine3");
                 });
 
+            modelBuilder.Entity("InventoryManagement.Models.Item", b =>
+                {
+                    b.HasOne("InventoryManagement.Models.Inventory.Inventory", "Inventory")
+                        .WithMany("Items")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Item_Inventory");
+
+                    b.HasOne("InventoryManagement.Models.AppUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("Owner_UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_Item_Owner");
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -917,6 +1002,11 @@ namespace InventoryManagement.Migrations
             modelBuilder.Entity("InventoryManagement.Models.Inventory.Category", b =>
                 {
                     b.Navigation("Inventories");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.Inventory.Inventory", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,6 @@
-﻿using InventoryManagement.Models.CustomId.Element;
+﻿using InventoryManagement.Models.Inventory.CustomId.Element;
 
-namespace InventoryManagement.Models.CustomId
+namespace InventoryManagement.Models.Inventory.CustomId
 {
     public class CustomId
     {
