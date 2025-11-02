@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagement.Data;
-using InventoryManagement.Models.Inventory;
+using InventoryManagement.Models.Discussion;
 
 namespace InventoryManagement.Pages.Inventory
 {
+    //todo azure signalr later?
     public class DetailsModel : PageModel
     {
-        private readonly InventoryManagement.Data.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public DetailsModel(InventoryManagement.Data.ApplicationDbContext context)
+        public DetailsModel(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -44,6 +47,95 @@ namespace InventoryManagement.Pages.Inventory
             }
 
             return NotFound();
+        }
+
+        public class PostInput
+        {
+            public string? Content { get; set; }
+        }
+
+        public async Task<IActionResult> OnGetDiscussionAsync(Guid guid, int? afterId)
+        {
+            var inventory = await _context.Inventories.AsNoTracking().FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inventory == null) return NotFound();
+
+            var query = _context.DiscussionPosts
+                .AsNoTracking()
+                .Include(p => p.User)
+                .Where(p => p.InventoryId == inventory.Id);
+
+            if (afterId.HasValue && afterId.Value > 0)
+            {
+                query = query.Where(p => p.Id > afterId.Value);
+            }
+
+            var posts = await query.OrderBy(p => p.Id).Take(200).ToListAsync();
+
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+
+            var result = posts.Select(p => new
+            {
+                id = p.Id,
+                guid = p.Guid,
+                createdAtUtc = p.CreatedAtUtc.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fff"),
+                user = new
+                {
+                    id = p.User.Id,
+                    firstName = p.User.FirstName,
+                    lastName = p.User.LastName,
+                    userName = p.User.UserName
+                },
+                html = Markdown.ToHtml(p.ContentMarkdown ?? string.Empty, pipeline)
+            });
+
+            return new JsonResult(result);
+        }
+
+        public async Task<IActionResult> OnPostDiscussionAsync(Guid guid, [FromBody] PostInput input)
+        {
+            if (input == null || string.IsNullOrWhiteSpace(input.Content))
+            {
+                return BadRequest();
+            }
+
+            var inventory = await _context.Inventories.FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inventory == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var now = DateTime.UtcNow;
+            var post = new DiscussionPost
+            {
+                InventoryId = inventory.Id,
+                UserId = userId,
+                ContentMarkdown = input.Content.Trim(),
+                CreatedAtUtc = now
+            };
+
+            _context.DiscussionPosts.Add(post);
+            await _context.SaveChangesAsync();
+
+            post = await _context.DiscussionPosts.Include(p => p.User).FirstAsync(p => p.Id == post.Id);
+
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+
+            var result = new
+            {
+                id = post.Id,
+                guid = post.Guid,
+                createdAtUtc = post.CreatedAtUtc.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fff"),
+                user = new
+                {
+                    id = post.User.Id,
+                    firstName = post.User.FirstName,
+                    lastName = post.User.LastName,
+                    userName = post.User.UserName
+                },
+                html = Markdown.ToHtml(post.ContentMarkdown ?? string.Empty, pipeline)
+            };
+
+            return new JsonResult(result);
         }
     }
 }

@@ -2,6 +2,7 @@
 using InventoryManagement.Models.Inventory;
 using InventoryManagement.Models.Inventory.CustomId;
 using InventoryManagement.Models.Inventory.CustomId.Element;
+using InventoryManagement.Models.Discussion;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ namespace InventoryManagement.Data
             ConfigureInventory(builder);
             ConfigureUserInventory(builder);
             ConfigureItems(builder);
+            ConfigureDiscussion(builder);
 
             ConfigureCustomId(builder);
             ConfigureCustomIdElement(builder);
@@ -27,6 +29,7 @@ namespace InventoryManagement.Data
         public DbSet<Inventory> Inventories { get; set; } = default!;
         public DbSet<CustomId> CustomIds { get; set; } = default!;
         public DbSet<Item> Items { get; set; } = default!;
+        public DbSet<DiscussionPost> DiscussionPosts { get; set; } = default!;
 
 
         private void ConfigureUsers(ModelBuilder builder)
@@ -143,6 +146,27 @@ namespace InventoryManagement.Data
                       .HasForeignKey("Owner_UserId")
                       .HasConstraintName("FK_Item_Owner")
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+        }
+
+        private void ConfigureDiscussion(ModelBuilder builder)
+        {
+            builder.Entity<DiscussionPost>(entity =>
+            {
+                entity.ToTable("DiscussionPosts");
+                entity.HasKey(p => p.Id);
+                entity.HasIndex(p => new { p.InventoryId, p.CreatedAtUtc });
+                entity.HasOne(p => p.Inventory)
+                      .WithMany()
+                      .HasForeignKey(p => p.InventoryId)
+                      .HasConstraintName("FK_DiscussionPost_Inventory")
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(p => p.User)
+                      .WithMany()
+                      .HasForeignKey(p => p.UserId)
+                      .HasConstraintName("FK_DiscussionPost_User")
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.Property(p => p.ContentMarkdown).HasMaxLength(4000).IsRequired();
             });
         }
 

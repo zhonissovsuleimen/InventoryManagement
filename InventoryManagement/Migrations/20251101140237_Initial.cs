@@ -303,6 +303,35 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DiscussionPosts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Guid = table.Column<Guid>(type: "uuid", nullable: false),
+                    InventoryId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ContentMarkdown = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiscussionPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DiscussionPost_Inventory",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DiscussionPost_User",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InventoryAllowedUsers",
                 columns: table => new
                 {
@@ -398,6 +427,16 @@ namespace InventoryManagement.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DiscussionPosts_InventoryId_CreatedAtUtc",
+                table: "DiscussionPosts",
+                columns: new[] { "InventoryId", "CreatedAtUtc" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiscussionPosts_UserId",
+                table: "DiscussionPosts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Inventories_CategoryId",
                 table: "Inventories",
                 column: "CategoryId");
@@ -480,6 +519,9 @@ namespace InventoryManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "DiscussionPosts");
 
             migrationBuilder.DropTable(
                 name: "InventoryAllowedUsers");
