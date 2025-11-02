@@ -1,0 +1,110 @@
+@model InventoryManagement.Models.ViewModels.ItemsTableModel
+@{
+    var items = Model.Items ?? System.Array.Empty<InventoryManagement.Models.Item>();
+}
+@{
+    bool showInventory = Model.ShowInventoryColumn;
+    bool showLikeButton = User?.Identity?.IsAuthenticated == true;
+    var clientId = "itemsTable_" + System.Guid.NewGuid().ToString("N");
+}
+
+<div id="@clientId" class="items-table">
+    @if (showLikeButton)
+    {
+        <form method="post" class="d-none">
+            @Html.AntiForgeryToken()
+        </form>
+    }
+
+    <table class="table table-striped table-hover table-bordered">
+        <thead>
+            <tr>
+                <th style="width:1%;" class="me-4 text-end align-middle">#</th>
+                <th>Custom ID</th>
+                @if (showInventory)
+                {
+                    <th>Inventory</th>
+                }
+                <th>Creator</th>
+                <th style="width:1%;" class="text-end">Likes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var likeCount = item.Likes?.Count ?? 0;
+                var likedByMe = false;
+                if (User?.Identity?.IsAuthenticated == true)
+                {
+                    var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    likedByMe = item.Likes?.Any(l => l.User != null && l.User.Id == uid) == true;
+                }
+                <tr data-item-guid="@item.Guid">
+                    <td class="align-middle text-end">@(i + 1)</td>
+                    <td class="align-middle">
+                        <a asp-page="/Items/Details" asp-route-guid="@item.Guid">@item.CustomId</a>
+                    </td>
+                    @if (showInventory)
+                    {
+                        <td class="align-middle">
+                            @if (item.Inventory != null)
+                            {<a asp-page="/Inventory/Details" asp-route-guid="@item.Inventory.Guid">@item.Inventory.Title</a>}
+                            else
+                            {<span>-</span>}
+                        </td>
+                    }
+                    <td class="align-middle">@((item.Owner != null) ? (item.Owner.UserName + " (" + item.Owner.Email + ")") : "(unknown)")</td>
+                    <td class="align-middle text-end">
+                        @if (showLikeButton)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-primary like-btn @((likedByMe)?"active":"")" data-liked="@likedByMe.ToString().ToLower()" title="Like">
+                                <span class="like-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                      <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                                    </svg>
+                                </span>
+                                <span class="like-count">@likeCount</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="like-count">@likeCount</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('@clientId');
+  if (!root) return;
+  const headers = {};
+  const token = root.querySelector('input[name="__RequestVerificationToken"]')?.value;
+  if (token) {
+    headers['RequestVerificationToken'] = token;
+    headers['X-RequestVerificationToken'] = token;
+  }
+  root.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tr = btn.closest('tr');
+      const guid = tr?.getAttribute('data-item-guid');
+      if (!guid) return;
+      const res = await fetch(`/api/items/${encodeURIComponent(guid)}/like`, {
+        method: 'POST',
+        headers,
+        credentials: 'same-origin'
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const countEl = btn.querySelector('.like-count');
+      btn.dataset.liked = data.liked ? 'true' : 'false';
+      btn.classList.toggle('active', !!data.liked);
+      if (countEl) countEl.textContent = String(data.count ?? 0);
+    });
+  });
+})();
+</script>

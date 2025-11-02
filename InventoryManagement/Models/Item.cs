@@ -22,5 +22,6 @@ namespace InventoryManagement.Models
         public bool? BoolLine1 { get; set; }
         public bool? BoolLine2 { get; set; }
         public bool? BoolLine3 { get; set; }
+        public List<ItemLike> Likes { get; set; } = new();
     }
 }

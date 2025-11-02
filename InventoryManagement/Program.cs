@@ -3,6 +3,7 @@ using InventoryManagement.Database;
 using InventoryManagement.Models;
 using InventoryManagement.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace InventoryManagement
 {
@@ -22,6 +23,7 @@ namespace InventoryManagement
             builder.Services.AddRazorPages();
             builder.Services.AddScoped<UserSearch>();
             builder.Services.AddScoped<TagSearch>();
+            builder.Services.AddScoped<ItemLikeService>();
 
             var app = builder.Build();
 
@@ -65,6 +67,14 @@ namespace InventoryManagement
                 var results = await search.Search(query, 5);
                 return Results.Ok(results);
             });
+
+            app.MapPost("/api/items/{guid:guid}/like", async (Guid guid, ItemLikeService likes, HttpContext http) =>
+            {
+                var userId = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+                var (liked, count) = await likes.ToggleLikeByItemGuidAsync(guid, userId);
+                return Results.Ok(new { liked, count });
+            }).RequireAuthorization();
 
             app.MapStaticAssets();
             app.MapRazorPages()

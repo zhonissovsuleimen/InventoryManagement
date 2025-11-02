@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +24,8 @@ namespace InventoryManagement.Pages.Items
             var item = await _context.Items
                 .Include(i => i.Inventory)
                 .Include(i => i.Owner)
+                .Include(i => i.Likes)
+                    .ThenInclude(l => l.User)
                 .FirstOrDefaultAsync(i => i.Guid == guid.Value);
 
             if (item == null) return NotFound();

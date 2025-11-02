@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251102181932_Initial")]
+    [Migration("20251102210143_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -369,6 +369,26 @@ namespace InventoryManagement.Migrations
                     b.HasIndex("Owner_UserId");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.ItemLike", b =>
+                {
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now() at time zone 'utc'");
+
+                    b.HasKey("ItemId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ItemLikes", (string)null);
                 });
 
             modelBuilder.Entity("InventoryTags", b =>
@@ -1032,6 +1052,27 @@ namespace InventoryManagement.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("InventoryManagement.Models.ItemLike", b =>
+                {
+                    b.HasOne("InventoryManagement.Models.Item", "Item")
+                        .WithMany("Likes")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ItemLike_Item");
+
+                    b.HasOne("InventoryManagement.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ItemLike_User");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("InventoryTags", b =>
                 {
                     b.HasOne("InventoryManagement.Models.Inventory.Inventory", null)
@@ -1118,6 +1159,11 @@ namespace InventoryManagement.Migrations
             modelBuilder.Entity("InventoryManagement.Models.Inventory.Inventory", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.Item", b =>
+                {
+                    b.Navigation("Likes");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagement.Data;
@@ -25,6 +21,7 @@ namespace InventoryManagement.Pages.Items
             Items = await _context.Items
                 .Include(i => i.Inventory)
                 .Include(i => i.Owner)
+                .Include(i => i.Likes)
                 .OrderBy(i => i.Id)
                 .ToListAsync();
         }

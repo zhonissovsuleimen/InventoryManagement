@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using InventoryManagement.Data;
 using InventoryManagement.Models.Discussion;
 using InventoryManagement.Models.Inventory;
+using InventoryManagement.Models;
 
 namespace InventoryManagement.Pages.Inventory
 {
@@ -38,6 +39,9 @@ namespace InventoryManagement.Pages.Inventory
                 .Include(i => i.AllowedUsers)
                 .Include(i => i.Items)
                     .ThenInclude(it => it.Owner)
+                .Include(i => i.Items)
+                    .ThenInclude(it => it.Likes)
+                        .ThenInclude(l => l.User)
                 .Include(i => i.CustomId)
                     .ThenInclude(cid => cid.Elements)
                 .Include(i => i.Tags)
@@ -165,6 +169,41 @@ namespace InventoryManagement.Pages.Inventory
                 await _context.SaveChangesAsync();
             }
             return RedirectToPage(new { guid });
+        }
+
+        // Toggle like for an item. Returns JSON: { liked: bool, count: int }
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostLikeAsync(Guid guid, int itemId)
+        {
+            var inv = await _context.Inventories.AsNoTracking().FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inv == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            // check for existing like via shadow properties
+            var existing = await _context.ItemLikes
+                .FirstOrDefaultAsync(l => EF.Property<int>(l, "ItemId") == itemId && EF.Property<string>(l, "UserId") == userId);
+
+            bool liked;
+            if (existing == null)
+            {
+                // Attach stubs for navigation-only entity
+                var itemRef = new Item { Id = itemId };
+                _context.Attach(itemRef);
+                var userRef = new AppUser { Id = userId };
+                _context.Attach(userRef);
+                _context.ItemLikes.Add(new ItemLike { Item = itemRef, User = userRef });
+                liked = true;
+            }
+            else
+            {
+                _context.ItemLikes.Remove(existing);
+                liked = false;
+            }
+            await _context.SaveChangesAsync();
+
+            var count = await _context.ItemLikes.CountAsync(l => EF.Property<int>(l, "ItemId") == itemId);
+            return new JsonResult(new { liked, count });
         }
     }
 }

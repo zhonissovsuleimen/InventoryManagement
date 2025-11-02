@@ -25,6 +25,7 @@ namespace InventoryManagement.Data
             ConfigureCustomIdElement(builder);
 
             ConfigureTags(builder);
+            ConfigureItemLikes(builder);
         }
 
         public DbSet<Category> Categories { get; set; } = default!;
@@ -33,6 +34,7 @@ namespace InventoryManagement.Data
         public DbSet<Item> Items { get; set; } = default!;
         public DbSet<DiscussionPost> DiscussionPosts { get; set; } = default!;
         public DbSet<Tag> Tags { get; set; } = default!;
+        public DbSet<ItemLike> ItemLikes { get; set; } = default!;
 
 
         private void ConfigureUsers(ModelBuilder builder)
@@ -230,6 +232,29 @@ namespace InventoryManagement.Data
                         // Index to accelerate Inventory lookup by Tag
                         join.HasIndex("InventoryId");
                     });
+        }
+
+        private void ConfigureItemLikes(ModelBuilder builder)
+        {
+            builder.Entity<ItemLike>(entity =>
+            {
+                entity.ToTable("ItemLikes");
+                entity.HasKey("ItemId", "UserId");
+                entity.HasIndex("UserId");
+                entity.Property(l => l.CreatedAtUtc).HasDefaultValueSql("now() at time zone 'utc'");
+
+                entity.HasOne(l => l.Item)
+                      .WithMany(i => i.Likes)
+                      .HasForeignKey("ItemId")
+                      .HasConstraintName("FK_ItemLike_Item")
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(l => l.User)
+                      .WithMany()
+                      .HasForeignKey("UserId")
+                      .HasConstraintName("FK_ItemLike_User")
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

@@ -432,6 +432,31 @@ namespace InventoryManagement.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ItemLikes",
+                columns: table => new
+                {
+                    ItemId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now() at time zone 'utc'")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ItemLikes", x => new { x.ItemId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_ItemLike_Item",
+                        column: x => x.ItemId,
+                        principalTable: "Items",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ItemLike_User",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AbstractElement_CustomId_Id",
                 table: "AbstractElement",
@@ -502,6 +527,11 @@ namespace InventoryManagement.Migrations
                 name: "IX_InventoryTags_TagId",
                 table: "InventoryTags",
                 column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ItemLikes_UserId",
+                table: "ItemLikes",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Items_InventoryId",
@@ -583,13 +613,16 @@ namespace InventoryManagement.Migrations
                 name: "InventoryTags");
 
             migrationBuilder.DropTable(
-                name: "Items");
+                name: "ItemLikes");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Tags");
+
+            migrationBuilder.DropTable(
+                name: "Items");
 
             migrationBuilder.DropTable(
                 name: "Inventories");

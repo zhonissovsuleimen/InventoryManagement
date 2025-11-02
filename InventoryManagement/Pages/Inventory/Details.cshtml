@@ -229,28 +229,11 @@
                 <h5 class="mb-3">Items</h5>
                 @if (inv?.Items != null && inv.Items.Count > 0)
                 {
-                    <table class="table table-striped table-hover table-bordered">
-                        <thead>
-                            <tr>
-                                <th style="width:1%;">#</th>
-                                <th>Custom ID</th>
-                                <th>Creator</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (int i = 0; i < inv.Items.Count; i++)
-                            {
-                                var item = inv.Items[i];
-                                <tr>
-                                    <td class="align-middle text-end">@(i + 1)</td>
-                                    <td class="align-middle">
-                                        <a asp-page="../Items/Details" asp-route-guid="@item.Guid">@item.CustomId</a>
-                                    </td>
-                                    <td class="align-middle">@((item.Owner != null) ? (item.Owner.UserName + " (" + item.Owner.Email + ")") : "(unknown)")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                    @await Html.PartialAsync("~/Pages/Shared/_ItemsTable.cshtml", new InventoryManagement.Models.ViewModels.ItemsTableModel
+                    {
+                        Items = inv.Items,
+                        ShowInventoryColumn = false
+                    })
                 }
                 else
                 {
@@ -404,7 +387,6 @@
   const afEl = document.querySelector('#postForm input[name="__RequestVerificationToken"]');
   let lastId = 0;
 
-  // Tab anchor persistence
   const tabsRoot = document.getElementById('detailTabs');
   function activateFromHash() {
     const hash = window.location.hash;
@@ -471,14 +453,11 @@
     setInterval(fetchNew, 3000);
   }
 
-  // Always hook discussion tab show to load posts (works for logged and non-logged users)
   document.getElementById('discussion-tab')?.addEventListener('shown.bs.tab', initLoad, { once: true });
   if (window.location.hash === '#discussion') {
-    // If deep-linked to the discussion tab, load immediately
     initLoad();
   }
 
-  // Post submit only when form is present (logged in)
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -488,7 +467,7 @@
       const token = afEl?.value;
       if (token) {
         headers['RequestVerificationToken'] = token;
-        headers['X-RequestVerificationToken'] = token; // compatibility
+        headers['X-RequestVerificationToken'] = token;
       }
       const res = await fetch(`${window.location.pathname}?handler=Discussion`, {
         method: 'POST',
@@ -503,7 +482,6 @@
     });
   }
 
-  // Tag autocomplete for Add tag
   const newTagInput = document.getElementById('newTag');
   const tagList = document.getElementById('tagSuggestions');
   function clearTagList(){ tagList.innerHTML=''; tagList.style.display='none'; }
