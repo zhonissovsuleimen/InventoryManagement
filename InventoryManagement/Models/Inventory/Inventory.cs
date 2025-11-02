@@ -45,6 +45,8 @@ namespace InventoryManagement.Models.Inventory
         public CustomField? BoolLine2 { get; set; }
         public CustomField? BoolLine3 { get; set; }
 
+        public List<Tag> Tags { get; set; } = [];
+
         public string GenerateCustomId(int? seed = null)
         {
             if (CustomId == null || CustomId.Elements == null || CustomId.Elements.Count == 0)

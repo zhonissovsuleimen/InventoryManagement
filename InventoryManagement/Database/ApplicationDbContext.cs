@@ -23,6 +23,8 @@ namespace InventoryManagement.Data
 
             ConfigureCustomId(builder);
             ConfigureCustomIdElement(builder);
+
+            ConfigureTags(builder);
         }
 
         public DbSet<Category> Categories { get; set; } = default!;
@@ -30,6 +32,7 @@ namespace InventoryManagement.Data
         public DbSet<CustomId> CustomIds { get; set; } = default!;
         public DbSet<Item> Items { get; set; } = default!;
         public DbSet<DiscussionPost> DiscussionPosts { get; set; } = default!;
+        public DbSet<Tag> Tags { get; set; } = default!;
 
 
         private void ConfigureUsers(ModelBuilder builder)
@@ -190,6 +193,43 @@ namespace InventoryManagement.Data
                 .HasValue<GuidElement>("Guid")
                 .HasValue<DateTimeElement>("DateTime");
             //.HasValue<SequentialElement>("Sequential")
+        }
+
+        private void ConfigureTags(ModelBuilder builder)
+        {
+            builder.Entity<Tag>(entity =>
+            {
+                entity.ToTable("Tags");
+                entity.HasKey(t => t.Id);
+                entity.HasIndex(t => t.Name).IsUnique();
+                entity.Property(t => t.Name).HasMaxLength(64).IsRequired();
+            });
+
+            builder.Entity<Inventory>()
+                .HasMany(i => i.Tags)
+                .WithMany(t => t.Inventories)
+                .UsingEntity<Dictionary<string, object>>(
+                    "InventoryTags",
+                    right => right
+                        .HasOne<Tag>()
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .HasConstraintName("FK_InventoryTags_TagId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    left => left
+                        .HasOne<Inventory>()
+                        .WithMany()
+                        .HasForeignKey("InventoryId")
+                        .HasConstraintName("FK_InventoryTags_InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade),
+                    join =>
+                    {
+                        join.ToTable("InventoryTags");
+                        join.HasKey("InventoryId", "TagId");
+                        join.HasIndex("TagId");
+                        // Index to accelerate Inventory lookup by Tag
+                        join.HasIndex("InventoryId");
+                    });
         }
     }
 }

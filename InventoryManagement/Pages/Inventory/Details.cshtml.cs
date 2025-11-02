@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagement.Data;
 using InventoryManagement.Models.Discussion;
+using InventoryManagement.Models.Inventory;
 
 namespace InventoryManagement.Pages.Inventory
 {
@@ -39,6 +40,7 @@ namespace InventoryManagement.Pages.Inventory
                     .ThenInclude(it => it.Owner)
                 .Include(i => i.CustomId)
                     .ThenInclude(cid => cid.Elements)
+                .Include(i => i.Tags)
                 .FirstOrDefaultAsync(i => i.Guid == guid);
 
             if (inventory != null)
@@ -138,6 +140,31 @@ namespace InventoryManagement.Pages.Inventory
             };
 
             return new JsonResult(result);
+        }
+
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostAddTagAsync(Guid guid, string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag)) return RedirectToPage(new { guid });
+            var inv = await _context.Inventories.Include(i => i.Tags).FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inv == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var name = tag.Trim().ToLowerInvariant();
+            if (name.Length > 64) name = name.Substring(0, 64);
+            if (!inv.Tags.Any(t => t.Name == name))
+            {
+                var tagEntity = await _context.Tags.FirstOrDefaultAsync(t => t.Name == name) ?? new Tag { Name = name };
+                if (tagEntity.Id == 0)
+                {
+                    _context.Tags.Add(tagEntity);
+                    await _context.SaveChangesAsync();
+                }
+                inv.Tags.Add(tagEntity);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage(new { guid });
         }
     }
 }

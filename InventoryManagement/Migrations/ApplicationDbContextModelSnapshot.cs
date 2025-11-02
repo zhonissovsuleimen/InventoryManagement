@@ -281,6 +281,27 @@ namespace InventoryManagement.Migrations
                     b.ToTable("Inventories");
                 });
 
+            modelBuilder.Entity("InventoryManagement.Models.Inventory.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Tags", (string)null);
+                });
+
             modelBuilder.Entity("InventoryManagement.Models.Item", b =>
                 {
                     b.Property<int>("Id")
@@ -345,6 +366,23 @@ namespace InventoryManagement.Migrations
                     b.HasIndex("Owner_UserId");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("InventoryTags", b =>
+                {
+                    b.Property<int>("InventoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("InventoryId", "TagId");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("InventoryTags", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -989,6 +1027,23 @@ namespace InventoryManagement.Migrations
                     b.Navigation("Inventory");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("InventoryTags", b =>
+                {
+                    b.HasOne("InventoryManagement.Models.Inventory.Inventory", null)
+                        .WithMany()
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InventoryTags_InventoryId");
+
+                    b.HasOne("InventoryManagement.Models.Inventory.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_InventoryTags_TagId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

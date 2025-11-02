@@ -99,6 +99,16 @@
                 <hr />
                 <div class="card-text mt-2 text-break mb-3">@Html.Raw(Markdown.ToHtml(inv?.Description ?? ""))</div>
 
+                @if (inv?.Tags != null && inv.Tags.Count > 0)
+                {
+                    <div class="d-flex flex-wrap gap-1 mb-3 justify-content-center">
+                        @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
+                        {
+                            <span class="badge rounded-pill bg-secondary">@tag.Name</span>
+                        }
+                    </div>
+                }
+
                 <div class="mt-auto w-100">
                     <a asp-page="../Items/Create" asp-route-guid="@inv?.Guid" class="btn btn-primary btn-sm w-100">Create Item</a>
                 </div>
@@ -119,6 +129,9 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="custom-id-tab" data-bs-toggle="tab" data-bs-target="#custom-id" type="button" role="tab">Custom ID</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tags-tab" data-bs-toggle="tab" data-bs-target="#tags" type="button" role="tab">Tags</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="discussion-tab" data-bs-toggle="tab" data-bs-target="#discussion" type="button" role="tab">Discussion</button>
@@ -151,6 +164,19 @@
 
                     <dt class="col-sm-3">Visibility</dt>
                     <dd class="col-sm-9">@visibility</dd>
+
+                    @if (inv?.Tags != null && inv.Tags.Count > 0)
+                    {
+                        <dt class="col-sm-3">Tags</dt>
+                        <dd class="col-sm-9">
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
+                                {
+                                    <span class="badge rounded-pill bg-secondary">@tag.Name</span>
+                                }
+                            </div>
+                        </dd>
+                    }
 
                     @if (!string.IsNullOrWhiteSpace(createdAtUtc))
                     {
@@ -301,19 +327,62 @@
                 }
             </div>
 
-            <div class="tab-pane fade" id="discussion" role="tabpanel" aria-labelledby="discussion-tab">
-                <div class="mb-2">
-                    <form id="postForm">
-                        @Html.AntiForgeryToken()
-                        <div class="form-floating">
-                            <textarea class="form-control" placeholder="Write a comment in Markdown..." id="postContent" style="height:120px"></textarea>
-                            <label for="postContent">New post</label>
+            <div class="tab-pane fade" id="tags" role="tabpanel" aria-labelledby="tags-tab">
+                <h5 class="mb-3">Tags</h5>
+                @if (inv?.Tags != null && inv.Tags.Count > 0)
+                {
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
+                        {
+                            <span class="badge rounded-pill bg-secondary">@tag.Name</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted mb-3">No tags for this inventory.</div>
+                }
+
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <form method="post" asp-page-handler="AddTag" class="d-flex gap-2 align-items-start position-relative">
+                        <input type="hidden" name="guid" value="@inv.Guid" />
+                        <div class="flex-grow-1">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="newTag" name="tag" placeholder="Add a tag" autocomplete="off" />
+                                <label for="newTag">Add tag</label>
+                            </div>
+                            <div id="tagSuggestions" class="list-group position-absolute w-100" style="z-index:1050; display:none; max-height:220px; overflow:auto;"></div>
                         </div>
-                        <div class="d-flex justify-content-end mt-2">
-                            <button type="submit" class="btn btn-primary btn-sm">Post</button>
-                        </div>
+                        <button class="btn btn-primary" type="submit">Add</button>
                     </form>
-                </div>
+                }
+                else
+                {
+                    <div class="text-muted small">Sign in to add tags.</div>
+                }
+            </div>
+
+            <div class="tab-pane fade" id="discussion" role="tabpanel" aria-labelledby="discussion-tab">
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <div class="mb-2">
+                        <form id="postForm">
+                            @Html.AntiForgeryToken()
+                            <div class="form-floating">
+                                <textarea class="form-control" placeholder="Write a comment in Markdown..." id="postContent" style="height:120px"></textarea>
+                                <label for="postContent">New post</label>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2">
+                                <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">Sign in to participate in the discussion.</div>
+                }
                 <hr />
                 <div id="posts" class="d-grid gap-3"></div>
             </div>
@@ -402,29 +471,77 @@
     setInterval(fetchNew, 3000);
   }
 
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const content = contentEl.value.trim();
-    if (!content) return;
-    const headers = { 'Content-Type': 'application/json' };
-    const token = afEl?.value;
-    if (token) {
-      headers['RequestVerificationToken'] = token;
-      headers['X-RequestVerificationToken'] = token; // compatibility
-    }
-    const res = await fetch(`${window.location.pathname}?handler=Discussion`, {
-      method: 'POST',
-      headers,
-      credentials: 'same-origin',
-      body: JSON.stringify({ content })
-    });
-    if (res.ok) {
-      contentEl.value = '';
-      await fetchNew();
-    }
-  });
-
+  // Always hook discussion tab show to load posts (works for logged and non-logged users)
   document.getElementById('discussion-tab')?.addEventListener('shown.bs.tab', initLoad, { once: true });
+  if (window.location.hash === '#discussion') {
+    // If deep-linked to the discussion tab, load immediately
+    initLoad();
+  }
+
+  // Post submit only when form is present (logged in)
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const content = contentEl.value.trim();
+      if (!content) return;
+      const headers = { 'Content-Type': 'application/json' };
+      const token = afEl?.value;
+      if (token) {
+        headers['RequestVerificationToken'] = token;
+        headers['X-RequestVerificationToken'] = token; // compatibility
+      }
+      const res = await fetch(`${window.location.pathname}?handler=Discussion`, {
+        method: 'POST',
+        headers,
+        credentials: 'same-origin',
+        body: JSON.stringify({ content })
+      });
+      if (res.ok) {
+        contentEl.value = '';
+        await fetchNew();
+      }
+    });
+  }
+
+  // Tag autocomplete for Add tag
+  const newTagInput = document.getElementById('newTag');
+  const tagList = document.getElementById('tagSuggestions');
+  function clearTagList(){ tagList.innerHTML=''; tagList.style.display='none'; }
+  function renderTagItem(name){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'list-group-item list-group-item-action';
+    btn.textContent = name;
+    btn.addEventListener('click', () => { newTagInput.value = name; clearTagList(); newTagInput.focus(); });
+    return btn;
+  }
+  function renderNoResults(){
+    const div = document.createElement('div');
+    div.className = 'list-group-item text-muted';
+    div.textContent = 'No tags found';
+    return div;
+  }
+  function searchTags(q){
+    const term = (q||'').trim();
+    if (!term){ clearTagList(); return; }
+    fetch(`/api/search/tags?query=${encodeURIComponent(term)}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(items => {
+        if (!Array.isArray(items)) { clearTagList(); return; }
+        tagList.innerHTML = '';
+        if (items.length === 0) {
+          tagList.appendChild(renderNoResults());
+        } else {
+          items.forEach(x => tagList.appendChild(renderTagItem(x.name)));
+        }
+        tagList.style.display = 'block';
+      })
+      .catch(() => clearTagList());
+  }
+  newTagInput?.addEventListener('input', () => searchTags(newTagInput.value));
+  document.addEventListener('click', (e) => {
+    if (!(tagList.contains(e.target) || e.target === newTagInput)) clearTagList();
+  });
 })();
 </script>
 }

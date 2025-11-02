@@ -58,6 +58,19 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -356,6 +369,30 @@ namespace InventoryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InventoryTags",
+                columns: table => new
+                {
+                    InventoryId = table.Column<int>(type: "integer", nullable: false),
+                    TagId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryTags", x => new { x.InventoryId, x.TagId });
+                    table.ForeignKey(
+                        name: "FK_InventoryTags_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InventoryTags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Items",
                 columns: table => new
                 {
@@ -457,6 +494,16 @@ namespace InventoryManagement.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InventoryTags_InventoryId",
+                table: "InventoryTags",
+                column: "InventoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryTags_TagId",
+                table: "InventoryTags",
+                column: "TagId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Items_InventoryId",
                 table: "Items",
                 column: "InventoryId");
@@ -465,6 +512,12 @@ namespace InventoryManagement.Migrations
                 name: "IX_Items_Owner_UserId",
                 table: "Items",
                 column: "Owner_UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_Name",
+                table: "Tags",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -527,10 +580,16 @@ namespace InventoryManagement.Migrations
                 name: "InventoryAllowedUsers");
 
             migrationBuilder.DropTable(
+                name: "InventoryTags");
+
+            migrationBuilder.DropTable(
                 name: "Items");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Inventories");

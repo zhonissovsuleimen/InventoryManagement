@@ -21,6 +21,7 @@ namespace InventoryManagement
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddRazorPages();
             builder.Services.AddScoped<UserSearch>();
+            builder.Services.AddScoped<TagSearch>();
 
             var app = builder.Build();
 
@@ -56,6 +57,12 @@ namespace InventoryManagement
             app.MapGet("/api/search/users", async (string query, UserSearch search) =>
             {
                 var results = await search.Search(query);
+                return Results.Ok(results);
+            });
+
+            app.MapGet("/api/search/tags", async (string query, TagSearch search) =>
+            {
+                var results = await search.Search(query, 5);
                 return Results.Ok(results);
             });
 

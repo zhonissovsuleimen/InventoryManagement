@@ -8,55 +8,44 @@
     string DisplayPublic(bool b) => b ? "Public" : "Private";
 	string DisplayDescription(string s) => s.Length >= descrptionMaxLength ? s.Substring(0, descrptionMaxLength) + "..." : s;
 
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Inventories";
 }
 
-<h1>Index</h1>
+<h1>Inventories</h1>
 
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
+@if (count == 0)
+{
+  <div class="alert alert-info">No inventories found.</div>
+}
+
 <table class="table table-striped table-hover table-bordered">
     <thead>
         <tr>
-            <th class="me-4 text-end align-middle">
-                #
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Inventory[0].Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Inventory[0].Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Inventory[0].IsPublic)
-            </th>
+            <th class="me-4 text-end align-middle">#</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Visibility</th>
         </tr>
     </thead>
     <tbody>
         @for (int i = 0; i < count; i++) {
         var item = Model.Inventory[i];
         <tr>
-            <td class="id">
-                @(i + 1)
-            </td>
+            <td class="id">@(i + 1)</td>
             <td>
               <a asp-page="./Details" asp-route-guid="@item.Guid">@item.Title</a>
             </td>
-            <td>
-                @DisplayDescription(Markdown.ToPlainText(item.Description))
-            </td>
-            <td>
-              @DisplayPublic(item.IsPublic)
-            </td>
+            <td>@DisplayDescription(Markdown.ToPlainText(item.Description))</td>
+            <td>@DisplayPublic(item.IsPublic)</td>
         </tr>
         }
     </tbody>
 </table>
 
+<p>
+    <a asp-page="Create" class="btn btn-success">Create New</a>
+</p>
+
 <style>
-  .id {
-      width: 1%;
-      white-space: nowrap;
-  }
+  .id { width: 1%; white-space: nowrap; }
 </style>
