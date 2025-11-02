@@ -37,6 +37,8 @@ namespace InventoryManagement.Pages.Inventory
                 .Include(i => i.AllowedUsers)
                 .Include(i => i.Items)
                     .ThenInclude(it => it.Owner)
+                .Include(i => i.CustomId)
+                    .ThenInclude(cid => cid.Elements)
                 .FirstOrDefaultAsync(i => i.Guid == guid);
 
             if (inventory != null)
