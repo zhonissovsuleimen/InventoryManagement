@@ -18,7 +18,7 @@ namespace InventoryManagement.Models.Inventory
         public Category Category { get; set; }
         public string? ImageUrl { get; set; }
         [Required]
-        [DisplayName("Visibility")]
+        [DisplayName("Access Level")]
         public bool IsPublic { get; set; } = false;
         [Required]
         public List<AppUser> AllowedUsers { get; set; } = [];
