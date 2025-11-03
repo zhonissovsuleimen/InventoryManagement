@@ -9,6 +9,8 @@ namespace InventoryManagement.Models
         public string FirstName { get; set; }
         public string? LastName { get; set; }
 
+        public bool IsAdmin { get; set; }
+
         public NpgsqlTsVector? SearchVector { get; set; }
 
         public List<Inventory.Inventory> OwnedInventories { get; set; } = [];

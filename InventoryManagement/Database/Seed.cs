@@ -26,6 +26,23 @@ namespace InventoryManagement.Database
 
             var userManager = services.GetRequiredService<UserManager<AppUser>>();
 
+            const string adminEmail = "admin@example.com";
+            const string adminPassword = "Password1!";
+            var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+            if (existingAdmin == null)
+            {
+                var adminUser = new AppUser
+                {
+                    FirstName = "Admin",
+                    LastName = "User",
+                    Email = adminEmail,
+                    UserName = adminEmail,
+                    EmailConfirmed = true,
+                    IsAdmin = true
+                };
+                await userManager.CreateAsync(adminUser, adminPassword);
+            }
+
             var faker = new Faker<RegisterModel.InputModel>()
                 .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                 .RuleFor(u => u.LastName, f => f.Name.LastName())
@@ -49,6 +66,7 @@ namespace InventoryManagement.Database
                     Email = input.Email,
                     UserName = input.Email,
                     EmailConfirmed = true,
+                    IsAdmin = false
                 };
 
                 await userManager.CreateAsync(user, input.Password);
