@@ -34,6 +34,11 @@ namespace InventoryManagement.Pages.Inventory
         [BindProperty(SupportsGet = true)]
         public int Step { get; set; } = 1;
 
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         public class CreateInputModel
         {
             [Required]
@@ -266,7 +271,7 @@ namespace InventoryManagement.Pages.Inventory
                 return Content(string.Empty, "text/html");
             }
 
-            var req = JsonSerializer.Deserialize<GenerateMarkdownRequest>(body);
+            var req = JsonSerializer.Deserialize<GenerateMarkdownRequest>(body, JsonOptions);
             var raw = req?.Text ?? string.Empty;
             var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
             var html = Markdown.ToHtml(raw, pipeline);
@@ -282,7 +287,7 @@ namespace InventoryManagement.Pages.Inventory
                 return Content(string.Empty, "text/plain");
             }
 
-            var req = JsonSerializer.Deserialize<GenerateCustomIdRequest>(body);
+            var req = JsonSerializer.Deserialize<GenerateCustomIdRequest>(body, JsonOptions);
             if (req == null || req.Elements == null || req.Elements.Count == 0)
             {
                 return Content(string.Empty, "text/plain");
