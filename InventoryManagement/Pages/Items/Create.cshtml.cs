@@ -45,6 +45,16 @@ namespace InventoryManagement.Pages.Items
         [BindProperty]
         public CreateInputModel Input { get; set; } = new CreateInputModel();
 
+        private static bool CanCreateItem(Models.Inventory.Inventory inv, AppUser? user)
+        {
+            if (user == null) return false; // must be authenticated
+            if (user.IsAdmin) return true;
+            if (inv.Owner?.Id == user.Id) return true;
+            if (inv.IsPublic) return true; // any authenticated user
+            // private: only allowed users
+            return inv.AllowedUsers?.Any(u => u.Id == user.Id) == true;
+        }
+
         public async Task<IActionResult> OnGetAsync(Guid? guid)
         {
             if (guid != null)
@@ -52,9 +62,26 @@ namespace InventoryManagement.Pages.Items
                 Inventory = await _context.Inventories
                     .Include(i => i.CustomId)
                         .ThenInclude(c => c.Elements)
+                    .Include(i => i.AllowedUsers)
+                    .Include(i => i.Owner)
                     .FirstOrDefaultAsync(i => i.Guid == guid.Value);
 
                 InventoryGuid = guid;
+            }
+
+            if (Inventory == null)
+            {
+                return NotFound();
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+            if (!CanCreateItem(Inventory, currentUser))
+            {
+                return Forbid();
             }
 
             return Page();
@@ -67,10 +94,26 @@ namespace InventoryManagement.Pages.Items
                 Inventory = await _context.Inventories
                     .Include(i => i.CustomId)
                         .ThenInclude(c => c.Elements)
+                    .Include(i => i.AllowedUsers)
+                    .Include(i => i.Owner)
                     .FirstOrDefaultAsync(i => i.Guid == InventoryGuid.Value);
             }
 
+            if (Inventory == null)
+            {
+                ModelState.AddModelError(string.Empty, "Inventory not found.");
+            }
+
             var owner = await _userManager.GetUserAsync(User);
+            if (owner == null)
+            {
+                return Unauthorized();
+            }
+
+            if (Inventory != null && !CanCreateItem(Inventory, owner))
+            {
+                return Forbid();
+            }
 
             if (Inventory != null)
             {
@@ -126,10 +169,6 @@ namespace InventoryManagement.Pages.Items
                         if (val == null) AddFieldError(PropName, $"The numeric field '{(CustomField.Title ?? PropName)}' is required and must be a number.");
                     }
                 }
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Inventory not found.");
             }
 
             if (!ModelState.IsValid)

@@ -72,6 +72,10 @@
             .ThenBy(e => e.Type)
             .ToList();
     }
+
+    bool isModerator = Model.CanModerate;
+    bool isEditor = Model.CanEdit;
+    bool forceItemsActive = Model.EditMode && isModerator && !isEditor;
 }
 
 <h1 class="mb-3">Details</h1>
@@ -112,10 +116,13 @@
                 <div class="mt-auto w-100 d-grid gap-2">
                     @if (!Model.EditMode)
                     {
-                        <a asp-page="../Items/Create" asp-route-guid="@inv?.Guid" class="btn btn-primary btn-sm w-100">Create Item</a>
+                        @if (User?.Identity?.IsAuthenticated == true && (isEditor || isModerator))
+                        {
+                            <a asp-page="../Items/Create" asp-route-guid="@inv?.Guid" class="btn btn-primary btn-sm w-100">Create Item</a>
+                        }
                         <a asp-page="./Index" class="btn btn-secondary btn-sm w-100">Back to list</a>
                     }
-                    @if (Model.CanEdit && !Model.EditMode)
+                    @if ((isEditor || isModerator) && !Model.EditMode)
                     {
                         <form method="get" class="d-inline">
                             <input type="hidden" name="guid" value="@inv.Guid" />
@@ -123,13 +130,16 @@
                             <button type="submit" class="btn btn-outline-primary btn-sm w-100">Edit</button>
                         </form>
                     }
-                    @if (Model.CanEdit && Model.EditMode)
+                    @if (Model.EditMode)
                     {
-                        <form method="post" asp-page-handler="Edit" id="editForm" class="d-inline" enctype="multipart/form-data">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="guid" value="@inv.Guid" />
-                            <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
-                        </form>
+                        @if (isEditor)
+                        {
+                            <form method="post" asp-page-handler="Edit" id="editForm" class="d-inline" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="guid" value="@inv.Guid" />
+                                <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
+                            </form>
+                        }
                         <form method="get" class="d-inline">
                             <input type="hidden" name="guid" value="@inv.Guid" />
                             <input type="hidden" name="EditMode" value="false" />
@@ -144,30 +154,30 @@
     <div class="col-md-8">
         <ul class="nav nav-tabs" id="detailTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Info</button>
+                <button class="nav-link @(forceItemsActive ? null : "active")" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" @(Model.EditMode && isModerator && !isEditor ? "disabled" : null)>Info</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="visibility-tab" data-bs-toggle="tab" data-bs-target="#visibility" type="button" role="tab">Access Level</button>
+                <button class="nav-link" id="visibility-tab" data-bs-toggle="tab" data-bs-target="#visibility" type="button" role="tab" @(Model.EditMode && isModerator && !isEditor ? "disabled" : null)>Access Level</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="custom-fields-tab" data-bs-toggle="tab" data-bs-target="#custom-fields" type="button" role="tab">Custom Fields</button>
+                <button class="nav-link" id="custom-fields-tab" data-bs-toggle="tab" data-bs-target="#custom-fields" type="button" role="tab" @(Model.EditMode && isModerator && !isEditor ? "disabled" : null)>Custom Fields</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">Items</button>
+                <button class="nav-link @(forceItemsActive ? "active" : null)" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">Items</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="custom-id-tab" data-bs-toggle="tab" data-bs-target="#custom-id" type="button" role="tab">Custom ID</button>
+                <button class="nav-link" id="custom-id-tab" data-bs-toggle="tab" data-bs-target="#custom-id" type="button" role="tab" @(Model.EditMode && isModerator && !isEditor ? "disabled" : null)>Custom ID</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tags-tab" data-bs-toggle="tab" data-bs-target="#tags" type="button" role="tab">Tags</button>
+                <button class="nav-link" id="tags-tab" data-bs-toggle="tab" data-bs-target="#tags" type="button" role="tab" @(Model.EditMode && isModerator && !isEditor ? "disabled" : null)>Tags</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="discussion-tab" data-bs-toggle="tab" data-bs-target="#discussion" type="button" role="tab">Discussion</button>
             </li>
         </ul>
         <div class="tab-content border border-top-0 p-3" id="detailTabsContent">
-            <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
-                @if (Model.EditMode && Model.CanEdit)
+            <div class="tab-pane fade @(forceItemsActive ? null : "show active")" id="info" role="tabpanel" aria-labelledby="info-tab">
+                @if (Model.EditMode && isEditor)
                 {
                     <h4 class="mb-2">Edit general info</h4>
                     <hr />
@@ -261,7 +271,7 @@
                     <dd class="col-sm-9">@visibility</dd>
                 </dl>
 
-                @if (Model.EditMode && Model.CanEdit)
+                @if (Model.EditMode && isEditor)
                 {
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input" asp-for="Edit.IsPublic" role="switch" id="editIsPublic" form="editForm" />
@@ -309,7 +319,7 @@
             </div>
 
             <div class="tab-pane fade" id="custom-fields" role="tabpanel" aria-labelledby="custom-fields-tab">
-                @if (Model.EditMode && Model.CanEdit)
+                @if (Model.EditMode && isEditor)
                 {
                     <h5 class="mb-3">Edit custom fields</h5>
                     <partial name="~/Pages/Inventory/Partials/_EditCustomFields.cshtml" model="Model" />
@@ -349,9 +359,9 @@
                 }
             </div>
 
-            <div class="tab-pane fade" id="items" role="tabpanel" aria-labelledby="items-tab">
+            <div class="tab-pane fade @(forceItemsActive ? "show active" : null)" id="items" role="tabpanel" aria-labelledby="items-tab">
                 <h5 class="mb-3">Items</h5>
-                @if (Model.EditMode && Model.CanEdit)
+                @if (Model.EditMode && isModerator)
                 {
                     <div class="alert alert-warning py-2 small" role="alert">
                         Deleting items is permanent and cannot be undone, even if you cancel editing.
@@ -363,7 +373,7 @@
                     {
                         Items = inv.Items,
                         ShowInventoryColumn = false,
-                        EnableSelection = Model.EditMode && Model.CanEdit,
+                        EnableSelection = Model.EditMode && isModerator,
                         DeleteUrl = Url.Page(null, "DeleteItems", new { guid = inv.Guid })
                     })
                 }
@@ -374,7 +384,7 @@
             </div>
 
             <div class="tab-pane fade" id="custom-id" role="tabpanel" aria-labelledby="custom-id-tab">
-                @if (Model.EditMode && Model.CanEdit)
+                @if (Model.EditMode && isEditor)
                 {
                     <h5 class="mb-3">Edit Custom ID</h5>
                     <partial name="~/Pages/Inventory/Partials/_EditCustomId.cshtml" model="Model" />
@@ -459,7 +469,7 @@
                         {
                             <span class="badge rounded-pill bg-secondary px-3 py-2 d-inline-flex align-items-center gap-2" data-tag="@tag.Name">
                                 @tag.Name
-                                @if (Model.EditMode && Model.CanEdit)
+                                @if (Model.EditMode && isEditor)
                                 {
                                     <button type="button" class="btn-close btn-close-white btn-sm" aria-label="Remove" data-remove-tag="@tag.Name"></button>
                                 }
@@ -503,7 +513,7 @@
                                 <label for="postContent">New post</label>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mt-2">
-                                @if (Model.EditMode && Model.CanEdit)
+                                @if (Model.EditMode && isModerator)
                                 {
                                     <div id="discussionBulkBar" class="gap-2 align-items-center">
                                         <button type="button" id="selectAllPosts" class="btn btn-sm btn-outline-secondary">Select all</button>
@@ -514,7 +524,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm">Post</button>
                             </div>
                         </form>
-                        @if (Model.EditMode && Model.CanEdit)
+                        @if (Model.EditMode && isModerator)
                         {
                             <div class="alert alert-warning py-2 small mt-2" role="alert">
                                 Deleting discussion posts is permanent and cannot be undone, even if you cancel editing.
@@ -550,13 +560,13 @@
   const contentEl = document.getElementById('postContent');
   const afEl = document.querySelector('#postForm input[name="__RequestVerificationToken"]');
   let lastId = 0;
-  const canManageDiscussion = @(Model.EditMode && Model.CanEdit ? "true" : "false");
+  const canManageDiscussion = @(Model.EditMode && Model.CanModerate ? "true" : "false");
 
   const tabsRoot = document.getElementById('detailTabs');
   function activateFromHash() {
     const hash = window.location.hash;
     if (!hash) return;
-    const trigger = tabsRoot?.querySelector(`[data-bs-target=\"${hash}\"]`);
+    const trigger = tabsRoot?.querySelector(`[data-bs-target="${hash}"]`);
     if (trigger && window.bootstrap && bootstrap.Tab) {
       new bootstrap.Tab(trigger).show();
     }

@@ -37,6 +37,7 @@ namespace InventoryManagement.Pages.Inventory
         public bool EditMode { get; set; }
 
         public bool CanEdit { get; set; }
+        public bool CanModerate { get; set; }
 
         public SelectList? Categories { get; set; }
 
@@ -122,6 +123,9 @@ namespace InventoryManagement.Pages.Inventory
                     ? null
                     : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
                 CanEdit = (currentUser?.IsAdmin == true) || (inventory.Owner?.Id == userId);
+                var isAuthenticated = !string.IsNullOrEmpty(userId);
+                var isAllowed = (inventory.AllowedUsers?.Any(u => u.Id == userId) == true);
+                CanModerate = CanEdit || (inventory.IsPublic ? isAuthenticated : isAllowed);
 
                 if (EditMode && CanEdit)
                 {
@@ -312,6 +316,7 @@ namespace InventoryManagement.Pages.Inventory
 
             var inv = await _context.Inventories
                 .Include(i => i.Owner)
+                .Include(i => i.AllowedUsers)
                 .FirstOrDefaultAsync(i => i.Guid == guid);
             if (inv == null) return NotFound();
 
@@ -319,8 +324,10 @@ namespace InventoryManagement.Pages.Inventory
             var currentUser = string.IsNullOrEmpty(userId)
                 ? null
                 : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-            var canEdit = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId);
-            if (!canEdit) return Forbid();
+            var isAuthenticated = !string.IsNullOrEmpty(userId);
+            var isAllowed = inv.AllowedUsers.Any(u => u.Id == userId);
+            var canModerate = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId) || (inv.IsPublic ? isAuthenticated : isAllowed);
+            if (!canModerate) return Forbid();
 
             var ids = input.Ids.Distinct().ToList();
             var posts = await _context.DiscussionPosts
@@ -405,6 +412,7 @@ namespace InventoryManagement.Pages.Inventory
 
             var inv = await _context.Inventories
                 .Include(i => i.Owner)
+                .Include(i => i.AllowedUsers)
                 .FirstOrDefaultAsync(i => i.Guid == guid);
             if (inv == null) return NotFound();
 
@@ -412,8 +420,10 @@ namespace InventoryManagement.Pages.Inventory
             var currentUser = string.IsNullOrEmpty(userId)
                 ? null
                 : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-            var canEdit = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId);
-            if (!canEdit) return Forbid();
+            var isAuthenticated = !string.IsNullOrEmpty(userId);
+            var isAllowed = inv.AllowedUsers.Any(u => u.Id == userId);
+            var canModerate = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId) || (inv.IsPublic ? isAuthenticated : isAllowed);
+            if (!canModerate) return Forbid();
 
             var distinct = input.Guids.Distinct().ToList();
             var items = await _context.Items
