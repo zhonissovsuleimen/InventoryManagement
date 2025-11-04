@@ -6,46 +6,159 @@
     int count = Model.Inventory.Count;
     int descrptionMaxLength = 50;
     string DisplayPublic(bool b) => b ? "Public" : "Private";
-	string DisplayDescription(string s) => s.Length >= descrptionMaxLength ? s.Substring(0, descrptionMaxLength) + "..." : s;
+    string DisplayDescription(string s) => s.Length >= descrptionMaxLength ? s.Substring(0, descrptionMaxLength) + "..." : s;
 
     ViewData["Title"] = "Inventories";
+    var isAdmin = Model.IsAdmin;
+    var clientId = "invIndex_" + Guid.NewGuid().ToString("N");
 }
 
-<h1>Inventories</h1>
+<h1 class="mb-3">Inventories</h1>
 
-@if (count == 0)
-{
-  <div class="alert alert-info">No inventories found.</div>
-}
-
-<table class="table table-striped table-hover table-bordered">
-    <thead>
-        <tr>
-            <th class="me-4 text-end align-middle">#</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Access Level</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0; i < count; i++) {
-        var item = Model.Inventory[i];
-        <tr>
-            <td class="id">@(i + 1)</td>
-            <td>
-              <a asp-page="./Details" asp-route-guid="@item.Guid">@item.Title</a>
-            </td>
-            <td>@DisplayDescription(Markdown.ToPlainText(item.Description))</td>
-            <td>@DisplayPublic(item.IsPublic)</td>
-        </tr>
+<div id="@clientId">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        @if (isAdmin)
+        {
+            <div class="d-flex align-items-center gap-2" data-toolbar>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-select-all>Select all</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-deselect-all>Deselect</button>
+                <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>Delete selected</button>
+            </div>
         }
-    </tbody>
-</table>
+        else
+        {
+            <div></div>
+        }
+        @if (User?.Identity?.IsAuthenticated == true)
+        {
+            <a asp-page="Create" class="btn btn-primary btn-sm">Create New</a>
+        }
+    </div>
 
-<p>
-    <a asp-page="Create" class="btn btn-success">Create New</a>
-</p>
+    @if (isAdmin || User?.Identity?.IsAuthenticated == true)
+    {
+        <form method="post" class="d-none">
+            @Html.AntiForgeryToken()
+        </form>
+    }
+
+    @if (count == 0)
+    {
+        <div class="alert alert-info">No inventories found.</div>
+    }
+
+    <table class="table table-striped table-hover table-bordered">
+        <thead>
+            <tr>
+                @if (isAdmin)
+                {
+                    <th style="width:1%;" class="text-center align-middle">
+                        <input type="checkbox" class="form-check-input" data-toggle-all />
+                    </th>
+                }
+                else
+                {
+                    <th class="me-4 text-end align-middle" style="width:1%;">#</th>
+                }
+                <th>Title</th>
+                <th>Description</th>
+                <th>Access Level</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < count; i++) {
+                var item = Model.Inventory[i];
+                <tr data-inv-guid="@item.Guid">
+                    @if (isAdmin)
+                    {
+                        <td class="align-middle text-center">
+                            <input type="checkbox" class="form-check-input" data-row-select />
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="id">@(i + 1)</td>
+                    }
+                    <td>
+                        <a asp-page="./Details" asp-route-guid="@item.Guid">@item.Title</a>
+                    </td>
+                    <td>@DisplayDescription(Markdown.ToPlainText(item.Description))</td>
+                    <td>@DisplayPublic(item.IsPublic)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 <style>
   .id { width: 1%; white-space: nowrap; }
 </style>
+
+@section Scripts {
+<script>
+(() => {
+  const root = document.getElementById('@clientId');
+  if (!root) return;
+  const isAdmin = @Model.IsAdmin.ToString().ToLower();
+  if (!isAdmin) return;
+
+  const headers = {};
+  const token = root.querySelector('input[name="__RequestVerificationToken"]')?.value;
+  if (token) {
+    headers['RequestVerificationToken'] = token;
+    headers['X-RequestVerificationToken'] = token;
+  }
+
+  const toggleAll = root.querySelector('[data-toggle-all]');
+  const selectAllBtn = root.querySelector('[data-select-all]');
+  const deselectAllBtn = root.querySelector('[data-deselect-all]');
+  const deleteBtn = root.querySelector('[data-delete-selected]');
+  const rowCbs = () => Array.from(root.querySelectorAll('input[type="checkbox"][data-row-select]'));
+
+  function updateDeleteState(){
+    const any = rowCbs().some(cb => cb.checked);
+    if (deleteBtn) deleteBtn.disabled = !any;
+    if (toggleAll) toggleAll.checked = any && rowCbs().every(cb => cb.checked);
+  }
+
+  toggleAll?.addEventListener('change', () => {
+    const checked = toggleAll.checked;
+    rowCbs().forEach(cb => { cb.checked = checked; });
+    updateDeleteState();
+  });
+  selectAllBtn?.addEventListener('click', () => {
+    rowCbs().forEach(cb => cb.checked = true);
+    updateDeleteState();
+  });
+  deselectAllBtn?.addEventListener('click', () => {
+    rowCbs().forEach(cb => cb.checked = false);
+    updateDeleteState();
+  });
+  root.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t && t.matches && t.matches('input[type="checkbox"][data-row-select]')) updateDeleteState();
+  });
+
+  deleteBtn?.addEventListener('click', async () => {
+    const guids = rowCbs().filter(cb => cb.checked).map(cb => cb.closest('tr')?.getAttribute('data-inv-guid')).filter(Boolean);
+    if (guids.length === 0) return;
+    try {
+      const res = await fetch('@Url.Page(null, "DeleteInventories")', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        credentials: 'same-origin',
+        body: JSON.stringify({ guids })
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const deleted = Array.isArray(data.deleted) ? data.deleted : [];
+      deleted.forEach(id => {
+        const tr = root.querySelector(`tr[data-inv-guid="${id}"]`);
+        if (tr) tr.remove();
+      });
+      updateDeleteState();
+    } catch {}
+  });
+})();
+</script>
+}
