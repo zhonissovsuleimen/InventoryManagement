@@ -1,0 +1,407 @@
+@model InventoryManagement.Pages.Inventory.DetailsModel
+@{
+    ViewData["Title"] = null;
+}
+<div class="form-text mb-3">Up to 3 of each type. Drag the card to reorder.</div>
+
+<div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+    <button type="button" class="btn btn-outline-primary" data-add-type="SingleLine">
+        Single Line <span class="badge bg-secondary ms-1" data-count="SingleLine">0/3</span>
+    </button>
+    <button type="button" class="btn btn-outline-primary" data-add-type="MultiLine">
+        Multi Line <span class="badge bg-secondary ms-1" data-count="MultiLine">0/3</span>
+    </button>
+    <button type="button" class="btn btn-outline-primary" data-add-type="NumericLine">
+        Numeric <span class="badge bg-secondary ms-1" data-count="NumericLine">0/3</span>
+    </button>
+    <button type="button" class="btn btn-outline-primary" data-add-type="BoolLine">
+        Boolean <span class="badge bg-secondary ms-1" data-count="BoolLine">0/3</span>
+    </button>
+</div>
+
+<div id="customFields" class="d-grid gap-2">
+    <div class="card shadow-sm" data-type="SingleLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Single Line</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.SingleLine1.Title">Title</label>
+                    <input asp-for="Edit.SingleLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.SingleLine1.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.SingleLine1.Description">Description</label>
+                    <input asp-for="Edit.SingleLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.SingleLine1.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.SingleLine1.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.SingleLine1.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+
+    <div class="card shadow-sm" data-type="SingleLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Single Line</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.SingleLine2.Title">Title</label>
+                    <input asp-for="Edit.SingleLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.SingleLine2.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.SingleLine2.Description">Description</label>
+                    <input asp-for="Edit.SingleLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.SingleLine2.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.SingleLine2.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.SingleLine2.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+
+    <div class="card shadow-sm" data-type="SingleLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Single Line</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.SingleLine3.Title">Title</label>
+                    <input asp-for="Edit.SingleLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.SingleLine3.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.SingleLine3.Description">Description</label>
+                    <input asp-for="Edit.SingleLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.SingleLine3.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.SingleLine3.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.SingleLine3.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+
+    <div class="card shadow-sm" data-type="MultiLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Multi Line</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.MultiLine1.Title">Title</label>
+                    <input asp-for="Edit.MultiLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.MultiLine1.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.MultiLine1.Description">Description</label>
+                    <input asp-for="Edit.MultiLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.MultiLine1.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.MultiLine1.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.MultiLine1.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="MultiLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Multi Line</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.MultiLine2.Title">Title</label>
+                    <input asp-for="Edit.MultiLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.MultiLine2.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.MultiLine2.Description">Description</label>
+                    <input asp-for="Edit.MultiLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.MultiLine2.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.MultiLine2.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.MultiLine2.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="MultiLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Multi Line</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.MultiLine3.Title">Title</label>
+                    <input asp-for="Edit.MultiLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.MultiLine3.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.MultiLine3.Description">Description</label>
+                    <input asp-for="Edit.MultiLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.MultiLine3.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.MultiLine3.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.MultiLine3.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+
+    <div class="card shadow-sm" data-type="NumericLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Numeric</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.NumericLine1.Title">Title</label>
+                    <input asp-for="Edit.NumericLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.NumericLine1.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.NumericLine1.Description">Description</label>
+                    <input asp-for="Edit.NumericLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.NumericLine1.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.NumericLine1.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.NumericLine1.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="NumericLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Numeric</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.NumericLine2.Title">Title</label>
+                    <input asp-for="Edit.NumericLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.NumericLine2.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.NumericLine2.Description">Description</label>
+                    <input asp-for="Edit.NumericLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.NumericLine2.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.NumericLine2.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.NumericLine2.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="NumericLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Numeric</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.NumericLine3.Title">Title</label>
+                    <input asp-for="Edit.NumericLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.NumericLine3.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.NumericLine3.Description">Description</label>
+                    <input asp-for="Edit.NumericLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.NumericLine3.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.NumericLine3.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.NumericLine3.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+
+    <div class="card shadow-sm" data-type="BoolLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Boolean</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.BoolLine1.Title">Title</label>
+                    <input asp-for="Edit.BoolLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.BoolLine1.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.BoolLine1.Description">Description</label>
+                    <input asp-for="Edit.BoolLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.BoolLine1.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.BoolLine1.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.BoolLine1.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="BoolLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Boolean</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.BoolLine2.Title">Title</label>
+                    <input asp-for="Edit.BoolLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.BoolLine2.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.BoolLine2.Description">Description</label>
+                    <input asp-for="Edit.BoolLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.BoolLine2.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.BoolLine2.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.BoolLine2.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="BoolLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Boolean</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.BoolLine3.Title">Title</label>
+                    <input asp-for="Edit.BoolLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.BoolLine3.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.BoolLine3.Description">Description</label>
+                    <input asp-for="Edit.BoolLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.BoolLine3.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.BoolLine3.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.BoolLine3.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    (function(){
+        const fieldsContainer = document.getElementById('customFields');
+        const addButtons = document.querySelectorAll('[data-add-type]');
+        const typeLimit = 3;
+
+        function countByType(type) {
+            return [...fieldsContainer.querySelectorAll(`.card[data-type="${type}"]`)].filter(c => c.getAttribute('data-used') === 'true').length;
+        }
+
+        function updateCounters() {
+            addButtons.forEach(btn => {
+                const type = btn.getAttribute('data-add-type');
+                const count = countByType(type);
+                const badge = btn.querySelector(`[data-count="${type}"]`);
+                if (badge) badge.textContent = `${count}/${typeLimit}`;
+                btn.disabled = count >= typeLimit;
+            });
+        }
+
+        function setCardUsed(card, used) {
+            const isUsedInput = card.querySelector('[data-field="isUsed"]');
+            if (isUsedInput) isUsedInput.value = used ? 'true' : 'false';
+            card.setAttribute('data-used', used ? 'true' : 'false');
+            card.style.display = used ? '' : 'none';
+        }
+
+        function assignSequentialPositions() {
+            let pos = 0;
+            const usedCards = [...fieldsContainer.querySelectorAll('.card')].filter(c => c.getAttribute('data-used') === 'true');
+            usedCards.forEach(c => {
+                const posEl = c.querySelector('[data-field="position"]');
+                if (posEl) posEl.value = pos.toString();
+                pos++;
+            });
+        }
+
+        function wireRemove(card) {
+            const removeBtn = card.querySelector('[data-remove]');
+            if (!removeBtn) return;
+            removeBtn.addEventListener('click', () => {
+                const titleEl = card.querySelector('[data-field="title"]');
+                const descEl = card.querySelector('[data-field="description"]');
+                const posEl = card.querySelector('[data-field="position"]');
+                if (titleEl) titleEl.value = '';
+                if (descEl) descEl.value = '';
+                if (posEl) posEl.value = '';
+                setCardUsed(card, false);
+                assignSequentialPositions();
+                updateCounters();
+            });
+        }
+
+        [...fieldsContainer.querySelectorAll('.card')].forEach(card => {
+            wireRemove(card);
+        });
+
+        function addFieldOfType(type) {
+            const candidates = [...fieldsContainer.querySelectorAll(`.card[data-type="${type}"]`)];
+            const card = candidates.find(c => c.getAttribute('data-used') === 'false');
+            if (!card) return;
+            setCardUsed(card, true);
+            assignSequentialPositions();
+            updateCounters();
+        }
+
+        addButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.getAttribute('data-add-type');
+                if (countByType(type) >= typeLimit) return;
+                addFieldOfType(type);
+            });
+        });
+
+        Sortable.create(fieldsContainer, {
+            animation: 100,
+            ghostClass: 'bg-light',
+            filter: '.card[data-used="false"], button, input, textarea, select, label',
+            preventOnFilter: false,
+            onEnd: () => {
+                assignSequentialPositions();
+            }
+        });
+
+        function syncUiFromModel() {
+            // Set used flags based on hidden values
+            [...fieldsContainer.querySelectorAll('.card')].forEach(card => {
+                const isUsedInput = card.querySelector('[data-field="isUsed"]');
+                const used = isUsedInput && (isUsedInput.value === 'true' || isUsedInput.value === 'True');
+                setCardUsed(card, used);
+            });
+
+            // Respect saved positions for initial render
+            const usedCards = [...fieldsContainer.querySelectorAll('.card')]
+                .filter(c => c.getAttribute('data-used') === 'true');
+            usedCards.sort((a, b) => {
+                const pa = parseInt((a.querySelector('[data-field="position"]').value || '32767'));
+                const pb = parseInt((b.querySelector('[data-field="position"]').value || '32767'));
+                if (isNaN(pa) && isNaN(pb)) return 0;
+                if (isNaN(pa)) return 1;
+                if (isNaN(pb)) return -1;
+                return pa - pb;
+            });
+            usedCards.forEach(c => fieldsContainer.appendChild(c));
+
+            // Normalize positions sequentially after ordering
+            assignSequentialPositions();
+            updateCounters();
+        }
+
+        syncUiFromModel();
+    })();
+</script>

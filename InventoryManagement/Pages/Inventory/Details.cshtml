@@ -101,16 +101,41 @@
 
                 @if (inv?.Tags != null && inv.Tags.Count > 0)
                 {
-                    <div class="d-flex flex-wrap gap-1 mb-3 justify-content-center">
+                    <div class="d-flex flex-wrap gap-2 mb-3 justify-content-center">
                         @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
                         {
-                            <span class="badge rounded-pill bg-secondary">@tag.Name</span>
+                            <span class="badge rounded-pill bg-secondary px-3 py-2">@tag.Name</span>
                         }
                     </div>
                 }
 
-                <div class="mt-auto w-100">
-                    <a asp-page="../Items/Create" asp-route-guid="@inv?.Guid" class="btn btn-primary btn-sm w-100">Create Item</a>
+                <div class="mt-auto w-100 d-grid gap-2">
+                    @if (!Model.EditMode)
+                    {
+                        <a asp-page="../Items/Create" asp-route-guid="@inv?.Guid" class="btn btn-primary btn-sm w-100">Create Item</a>
+                        <a asp-page="./Index" class="btn btn-secondary btn-sm w-100">Back to list</a>
+                    }
+                    @if (Model.CanEdit && !Model.EditMode)
+                    {
+                        <form method="get" class="d-inline">
+                            <input type="hidden" name="guid" value="@inv.Guid" />
+                            <input type="hidden" name="EditMode" value="true" />
+                            <button type="submit" class="btn btn-outline-primary btn-sm w-100">Edit</button>
+                        </form>
+                    }
+                    @if (Model.CanEdit && Model.EditMode)
+                    {
+                        <form method="post" asp-page-handler="Edit" id="editForm" class="d-inline" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="guid" value="@inv.Guid" />
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
+                        </form>
+                        <form method="get" class="d-inline">
+                            <input type="hidden" name="guid" value="@inv.Guid" />
+                            <input type="hidden" name="EditMode" value="false" />
+                            <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Cancel</button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
@@ -142,57 +167,91 @@
         </ul>
         <div class="tab-content border border-top-0 p-3" id="detailTabsContent">
             <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
-                <h4 class="mb-2">Inventory</h4>
-                <hr />
-                <dl class="row">
-                    @if (inv?.Guid != null)
-                    {
-                        <dt class="col-sm-3">Identifier</dt>
-                        <dd class="col-sm-9">
-                            <div class="text-monospace small text-break">@inv.Guid.ToString()</div>
-                        </dd>
-                    }
+                @if (Model.EditMode && Model.CanEdit)
+                {
+                    <h4 class="mb-2">Edit general info</h4>
+                    <hr />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Edit.Title"></label>
+                        <input class="form-control" asp-for="Edit.Title" id="editTitle" form="editForm" />
+                        <span asp-validation-for="Edit.Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" asp-for="Edit.Description"></label>
+                        <textarea class="form-control" asp-for="Edit.Description" id="editDescription" rows="6" form="editForm"></textarea>
+                        <span asp-validation-for="Edit.Description" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Edit.CategoryId"></label>
+                            <select asp-for="Edit.CategoryId" class="form-select" id="editCategory" asp-items="Model.Categories" form="editForm">
+                                <option value="">-- Select --</option>
+                            </select>
+                            <span asp-validation-for="Edit.CategoryId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" asp-for="Edit.Image"></label>
+                            <input class="form-control" asp-for="Edit.Image" id="editImage" accept="image/*" form="editForm" />
+                            <div class="form-text">Leave empty to keep the current image.</div>
+                            <span asp-validation-for="Edit.Image" class="text-danger"></span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <h4 class="mb-2">Inventory</h4>
+                    <hr />
+                    <dl class="row">
+                        @if (inv?.Guid != null)
+                        {
+                            <dt class="col-sm-3">Identifier</dt>
+                            <dd class="col-sm-9">
+                                <div class="text-monospace small text-break">@inv.Guid.ToString()</div>
+                            </dd>
+                        }
 
-                    @if (!string.IsNullOrWhiteSpace(inv?.Category?.Name))
-                    {
-                        <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Inventory.Category)</dt>
-                        <dd class="col-sm-9">@inv.Category.Name</dd>
-                    }
+                        @if (!string.IsNullOrWhiteSpace(inv?.Category?.Name))
+                        {
+                            <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Inventory.Category)</dt>
+                            <dd class="col-sm-9">@inv.Category.Name</dd>
+                        }
 
-                    @if (inv?.Owner != null)
-                    {
-                        <dt class="col-sm-3">Owner</dt>
-                        <dd class="col-sm-9">@ownerFullName (@inv.Owner.Email)</dd>
-                    }
+                        @if (inv?.Owner != null)
+                        {
+                            <dt class="col-sm-3">Owner</dt>
+                            <dd class="col-sm-9">@ownerFullName (@inv.Owner.Email)</dd>
+                        }
 
-                    <dt class="col-sm-3">Access Level</dt>
-                    <dd class="col-sm-9">@visibility</dd>
+                        <dt class="col-sm-3">Access Level</dt>
+                        <dd class="col-sm-9">@visibility</dd>
 
-                    @if (inv?.Tags != null && inv.Tags.Count > 0)
-                    {
-                        <dt class="col-sm-3">Tags</dt>
-                        <dd class="col-sm-9">
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
-                                {
-                                    <span class="badge rounded-pill bg-secondary">@tag.Name</span>
-                                }
-                            </div>
-                        </dd>
-                    }
+                        @if (inv?.Tags != null && inv.Tags.Count > 0)
+                        {
+                            <dt class="col-sm-3">Tags</dt>
+                            <dd class="col-sm-9">
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
+                                    {
+                                        <span class="badge rounded-pill bg-secondary px-3 py-2">@tag.Name</span>
+                                    }
+                                </div>
+                            </dd>
+                        }
 
-                    @if (!string.IsNullOrWhiteSpace(createdAtUtc))
-                    {
-                        <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Inventory.CreatedAt)</dt>
-                        <dd class="col-sm-9" data-utc="@createdAtUtc">@DateTime.Parse(createdAtUtc).ToString("MMMM d, yyyy")</dd>
-                    }
+                        @if (!string.IsNullOrWhiteSpace(createdAtUtc))
+                        {
+                            <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Inventory.CreatedAt)</dt>
+                            <dd class="col-sm-9" data-utc="@createdAtUtc">@DateTime.Parse(createdAtUtc).ToString("MMMM d, yyyy")</dd>
+                        }
 
-                    @if (!string.IsNullOrWhiteSpace(updatedAtUtc))
-                    {
-                        <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Inventory.UpdatedAt)</dt>
-                        <dd class="col-sm-9" data-utc="@updatedAtUtc">@DateTime.Parse(updatedAtUtc).ToString("MMMM d, yyyy")</dd>
-                    }
-                </dl>
+                        @if (!string.IsNullOrWhiteSpace(updatedAtUtc))
+                        {
+                            <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Inventory.UpdatedAt)</dt>
+                            <dd class="col-sm-9" data-utc="@updatedAtUtc">@DateTime.Parse(updatedAtUtc).ToString("MMMM d, yyyy")</dd>
+                        }
+                    </dl>
+                }
             </div>
 
             <div class="tab-pane fade" id="visibility" role="tabpanel" aria-labelledby="visibility-tab">
@@ -202,12 +261,30 @@
                     <dd class="col-sm-9">@visibility</dd>
                 </dl>
 
-                @if (inv?.IsPublic != true)
+                @if (Model.EditMode && Model.CanEdit)
+                {
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" asp-for="Edit.IsPublic" role="switch" id="editIsPublic" form="editForm" />
+                        <label class="form-check-label" for="editIsPublic">Public</label>
+                    </div>
+                    <div id="allowedUsersSection" class="mt-2" style="display:none;">
+                        <div class="form-text">Type a name to find users and add them. Visible only when inventory is not public.</div>
+                        <div class="position-relative">
+                            <input type="text" id="userSearch" class="form-control" placeholder="Search users..." autocomplete="off" />
+                            <div id="userSuggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
+                        </div>
+                        <div id="selectedUsers" class="d-flex flex-wrap gap-2 mt-2"></div>
+                        <div id="userIdsContainer" class="d-none">
+                            <input type="hidden" name="Edit.UserIds" data-template="user-id" form="editForm" />
+                        </div>
+                    </div>
+                }
+                else if (inv?.IsPublic != true)
                 {
                     <h6 class="mt-3">Allowed users</h6>
                     @if (inv?.AllowedUsers != null && inv.AllowedUsers.Count > 0)
                     {
-                        <ul class="list-group">
+                        <ul class="list-group mt-2">
                             @foreach (var u in inv.AllowedUsers.OrderBy(u => u.FirstName).ThenBy(u => u.LastName).ThenBy(u => u.UserName))
                             {
                                 var fullName = ($"{u.FirstName} {u.LastName}").Trim();
@@ -232,46 +309,62 @@
             </div>
 
             <div class="tab-pane fade" id="custom-fields" role="tabpanel" aria-labelledby="custom-fields-tab">
-                @if (customFieldList.Count > 0)
+                @if (Model.EditMode && Model.CanEdit)
                 {
-                    <h5 class="mb-3">Custom fields</h5>
-                    <div class="d-grid gap-3">
-                        @for (int i = 0; i < customFieldList.Count; i++)
-                        {
-                            var cf = customFieldList[i];
-                            var index = i + 1;
-                            var title = string.IsNullOrWhiteSpace(cf.Title) ? "(no title)" : cf.Title;
-                            var desc = string.IsNullOrWhiteSpace(cf.Description) ? "(no description)" : cf.Description;
-
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="badge bg-secondary">@index</span>
-                                            <h6 class="mb-0">@title</h6>
-                                        </div>
-                                        <small class="text-muted">@cf.Type</small>
-                                    </div>
-                                    <div class="card-text">@desc</div>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                    <h5 class="mb-3">Edit custom fields</h5>
+                    <partial name="~/Pages/Inventory/Partials/_EditCustomFields.cshtml" model="Model" />
                 }
                 else
                 {
-                    <div class="text-muted">No custom fields configured.</div>
+                    @if (customFieldList.Count > 0)
+                    {
+                        <h5 class="mb-3">Custom fields</h5>
+                        <div class="d-grid gap-3">
+                            @for (int i = 0; i < customFieldList.Count; i++)
+                            {
+                                var cf = customFieldList[i];
+                                var index = i + 1;
+                                var title = string.IsNullOrWhiteSpace(cf.Title) ? "(no title)" : cf.Title;
+                                var desc = string.IsNullOrWhiteSpace(cf.Description) ? "(no description)" : cf.Description;
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-secondary">@index</span>
+                                                <h6 class="mb-0">@title</h6>
+                                            </div>
+                                            <small class="text-muted">@cf.Type</small>
+                                        </div>
+                                        <div class="card-text">@desc</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No custom fields configured.</div>
+                    }
                 }
             </div>
 
             <div class="tab-pane fade" id="items" role="tabpanel" aria-labelledby="items-tab">
                 <h5 class="mb-3">Items</h5>
+                @if (Model.EditMode && Model.CanEdit)
+                {
+                    <div class="alert alert-warning py-2 small" role="alert">
+                        Deleting items is permanent and cannot be undone, even if you cancel editing.
+                    </div>
+                }
                 @if (inv?.Items != null && inv.Items.Count > 0)
                 {
                     @await Html.PartialAsync("~/Pages/Shared/_ItemsTable.cshtml", new InventoryManagement.Models.ViewModels.ItemsTableModel
                     {
                         Items = inv.Items,
-                        ShowInventoryColumn = false
+                        ShowInventoryColumn = false,
+                        EnableSelection = Model.EditMode && Model.CanEdit,
+                        DeleteUrl = Url.Page(null, "DeleteItems", new { guid = inv.Guid })
                     })
                 }
                 else
@@ -281,71 +374,79 @@
             </div>
 
             <div class="tab-pane fade" id="custom-id" role="tabpanel" aria-labelledby="custom-id-tab">
-                <h5 class="mb-3">Custom ID structure</h5>
-                @if (customIdElements.Count > 0)
+                @if (Model.EditMode && Model.CanEdit)
                 {
-                    <div class="d-grid gap-3">
-                        @{ var idx = 1; }
-                        @foreach (var ce in customIdElements)
-                        {
-                            var element = ce.Element;
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="badge bg-secondary">@idx</span>
-                                            <h6 class="mb-0">@ce.DisplayType</h6>
-                                        </div>
-                                    </div>
-                                    <dl class="row mb-0">
-                                        @if (ce.SeparatorBefore != null)
-                                        {
-                                            <dt class="col-sm-3">Separator before</dt>
-                                            <dd class="col-sm-9">@ce.SeparatorBefore.ToString()</dd>
-                                        }
-                                        @if (ce.SeparatorAfter != null)
-                                        {
-                                            <dt class="col-sm-3">Separator after</dt>
-                                            <dd class="col-sm-9">@ce.SeparatorAfter.ToString()</dd>
-                                        }
-
-                                        @* Type specific hints *@
-                                        @if (element is InventoryManagement.Models.Inventory.CustomId.Element.AbstractNumericElement num)
-                                        {
-                                            <dt class="col-sm-3">Radix</dt>
-                                            <dd class="col-sm-9">@num.Radix</dd>
-                                            @if (num.PaddingChar.HasValue)
-                                            {
-                                                <dt class="col-sm-3">Padding</dt>
-                                                <dd class="col-sm-9">@num.PaddingChar.ToString()</dd>
-                                            }
-                                        }
-                                        else if (element is InventoryManagement.Models.Inventory.CustomId.Element.DateTimeElement dt)
-                                        {
-                                            @if (!string.IsNullOrEmpty(dt.DateTimeFormat))
-                                            {
-                                                <dt class="col-sm-3">Format</dt>
-                                                <dd class="col-sm-9">@dt.DateTimeFormat</dd>
-                                            }
-                                        }
-                                        else if (element is InventoryManagement.Models.Inventory.CustomId.Element.FixedTextElement ft)
-                                        {
-                                            @if (!string.IsNullOrEmpty(ft.FixedText))
-                                            {
-                                                <dt class="col-sm-3">Text</dt>
-                                                <dd class="col-sm-9">@ft.FixedText</dd>
-                                            }
-                                        }
-                                    </dl>
-                                </div>
-                            </div>
-                            idx++;
-                        }
-                    </div>
+                    <h5 class="mb-3">Edit Custom ID</h5>
+                    <partial name="~/Pages/Inventory/Partials/_EditCustomId.cshtml" model="Model" />
                 }
                 else
                 {
-                    <div class="text-muted">No Custom ID configured for this inventory.</div>
+                    <h5 class="mb-3">Custom ID structure</h5>
+                    @if (customIdElements.Count > 0)
+                    {
+                        <div class="d-grid gap-3">
+                            @{ var idx = 1; }
+                            @foreach (var ce in customIdElements)
+                            {
+                                var element = ce.Element;
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge bg-secondary">@idx</span>
+                                                <h6 class="mb-0">@ce.DisplayType</h6>
+                                            </div>
+                                        </div>
+                                        <dl class="row mb-0">
+                                            @if (ce.SeparatorBefore != null)
+                                            {
+                                                <dt class="col-sm-3">Separator before</dt>
+                                                <dd class="col-sm-9">@ce.SeparatorBefore.ToString()</dd>
+                                            }
+                                            @if (ce.SeparatorAfter != null)
+                                            {
+                                                <dt class="col-sm-3">Separator after</dt>
+                                                <dd class="col-sm-9">@ce.SeparatorAfter.ToString()</dd>
+                                            }
+
+                                            @* Type specific hints *@
+                                            @if (element is InventoryManagement.Models.Inventory.CustomId.Element.AbstractNumericElement num)
+                                            {
+                                                <dt class="col-sm-3">Radix</dt>
+                                                <dd class="col-sm-9">@num.Radix</dd>
+                                                @if (num.PaddingChar.HasValue)
+                                                {
+                                                    <dt class="col-sm-3">Padding</dt>
+                                                    <dd class="col-sm-9">@num.PaddingChar.ToString()</dd>
+                                                }
+                                            }
+                                            else if (element is InventoryManagement.Models.Inventory.CustomId.Element.DateTimeElement dt)
+                                            {
+                                                @if (!string.IsNullOrEmpty(dt.DateTimeFormat))
+                                                {
+                                                    <dt class="col-sm-3">Format</dt>
+                                                    <dd class="col-sm-9">@dt.DateTimeFormat</dd>
+                                                }
+                                            }
+                                            else if (element is InventoryManagement.Models.Inventory.CustomId.Element.FixedTextElement ft)
+                                            {
+                                                @if (!string.IsNullOrEmpty(ft.FixedText))
+                                                {
+                                                    <dt class="col-sm-3">Text</dt>
+                                                    <dd class="col-sm-9">@ft.FixedText</dd>
+                                                }
+                                            }
+                                        </dl>
+                                    </div>
+                                </div>
+                                idx++;
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No Custom ID configured for this inventory.</div>
+                    }
                 }
             </div>
 
@@ -356,7 +457,13 @@
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
                         {
-                            <span class="badge rounded-pill bg-secondary">@tag.Name</span>
+                            <span class="badge rounded-pill bg-secondary px-3 py-2 d-inline-flex align-items-center gap-2" data-tag="@tag.Name">
+                                @tag.Name
+                                @if (Model.EditMode && Model.CanEdit)
+                                {
+                                    <button type="button" class="btn-close btn-close-white btn-sm" aria-label="Remove" data-remove-tag="@tag.Name"></button>
+                                }
+                            </span>
                         }
                     </div>
                 }
@@ -395,10 +502,24 @@
                                 <textarea class="form-control" placeholder="Write a comment in Markdown..." id="postContent" style="height:120px"></textarea>
                                 <label for="postContent">New post</label>
                             </div>
-                            <div class="d-flex justify-content-end mt-2">
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                @if (Model.EditMode && Model.CanEdit)
+                                {
+                                    <div id="discussionBulkBar" class="gap-2 align-items-center">
+                                        <button type="button" id="selectAllPosts" class="btn btn-sm btn-outline-secondary">Select all</button>
+                                        <button type="button" id="deselectAllPosts" class="btn btn-sm btn-outline-secondary">Deselect</button>
+                                        <button type="button" id="deleteSelectedPosts" class="btn btn-sm btn-danger">Delete selected</button>
+                                    </div>
+                                }
                                 <button type="submit" class="btn btn-primary btn-sm">Post</button>
                             </div>
                         </form>
+                        @if (Model.EditMode && Model.CanEdit)
+                        {
+                            <div class="alert alert-warning py-2 small mt-2" role="alert">
+                                Deleting discussion posts is permanent and cannot be undone, even if you cancel editing.
+                            </div>
+                        }
                     </div>
                 }
                 else
@@ -409,13 +530,17 @@
                 <div id="posts" class="d-grid gap-3"></div>
             </div>
         </div>
-        <div class="mt-3">
-            <a asp-page="./Index" class="btn btn-secondary btn-sm">Back to list</a>
-        </div>
+        @if (!Model.EditMode)
+        {
+            <div class="mt-3">
+                <a asp-page="./Index" class="btn btn-secondary btn-sm">Back to list</a>
+            </div>
+        }
     </div>
 </div>
 
 @section Scripts {
+<partial name="~/Pages/Shared/_ValidationScriptsPartial.cshtml" />
 <script>
 (() => {
   const invGuid = '@inv?.Guid';
@@ -425,12 +550,13 @@
   const contentEl = document.getElementById('postContent');
   const afEl = document.querySelector('#postForm input[name="__RequestVerificationToken"]');
   let lastId = 0;
+  const canManageDiscussion = @(Model.EditMode && Model.CanEdit ? "true" : "false");
 
   const tabsRoot = document.getElementById('detailTabs');
   function activateFromHash() {
     const hash = window.location.hash;
     if (!hash) return;
-    const trigger = tabsRoot?.querySelector(`[data-bs-target="${hash}"]`);
+    const trigger = tabsRoot?.querySelector(`[data-bs-target=\"${hash}\"]`);
     if (trigger && window.bootstrap && bootstrap.Tab) {
       new bootstrap.Tab(trigger).show();
     }
@@ -448,26 +574,87 @@
   }
   window.addEventListener('hashchange', activateFromHash);
 
+  const bulkBar = document.getElementById('discussionBulkBar');
+  const btnSelectAll = document.getElementById('selectAllPosts');
+  const btnDeselectAll = document.getElementById('deselectAllPosts');
+  const btnDeleteSelected = document.getElementById('deleteSelectedPosts');
+  const selected = new Set();
+
+  function updateBulkBar(){
+    if (!canManageDiscussion) { bulkBar?.classList.add('d-none'); return; }
+    const any = postsEl.querySelector('.post-select');
+    if (!any) { bulkBar?.classList.add('d-none'); return; }
+    bulkBar?.classList.remove('d-none');
+    if (btnDeleteSelected) btnDeleteSelected.disabled = selected.size === 0;
+  }
+
   function userDisplay(u){
     const name = ([(u.firstName||''),(u.lastName||'')].join(' ').trim()) || (u.userName||'(user)');
     return name;
   }
 
+  function postCheckbox(id){
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.className = 'form-check-input me-2 post-select';
+    input.addEventListener('change', () => {
+      if (input.checked) selected.add(id); else selected.delete(id);
+      updateBulkBar();
+    });
+    return input;
+  }
+
   function renderPost(p) {
     const wrapper = document.createElement('div');
     wrapper.className = 'card';
+    wrapper.dataset.postId = String(p.id);
     wrapper.innerHTML = `
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
-            <a href="/Users/Details?id=${encodeURIComponent(p.user.id)}">${userDisplay(p.user)}</a>
-            <div class="text-muted small">${new Date(p.createdAtUtc + 'Z').toLocaleString()}</div>
-          </div>
-        </div>
-        <div class="markdown">${p.html}</div>
-      </div>`;
+      <div class=\"card-body\">\n        <div class=\"d-flex justify-content-between align-items-start mb-2\">\n          <div>\n            <a href=\"/Users/Details?id=${encodeURIComponent(p.user.id)}\">${userDisplay(p.user)}</a>\n            <div class=\"text-muted small\">${new Date(p.createdAtUtc + 'Z').toLocaleString()}</div>\n          </div>\n        </div>\n        <div class=\"markdown\">${p.html}</div>\n      </div>`;
+    const head = wrapper.querySelector('.card-body > .d-flex');
+    if (canManageDiscussion) {
+      const cb = postCheckbox(p.id);
+      const holder = document.createElement('div');
+      holder.className = 'form-check';
+      holder.appendChild(cb);
+      head.prepend(holder);
+    }
     postsEl.appendChild(wrapper);
   }
+
+  btnSelectAll?.addEventListener('click', () => {
+    postsEl.querySelectorAll('.post-select').forEach(cb => { cb.checked = true; selected.add(parseInt(cb.closest('.card').dataset.postId)); });
+    updateBulkBar();
+  });
+  btnDeselectAll?.addEventListener('click', () => {
+    postsEl.querySelectorAll('.post-select').forEach(cb => { cb.checked = false; });
+    selected.clear();
+    updateBulkBar();
+  });
+  btnDeleteSelected?.addEventListener('click', async () => {
+    if (selected.size === 0) return;
+    try {
+      const token = afEl?.value || '';
+      const res = await fetch(`${window.location.pathname}?handler=DeleteDiscussion&guid=${encodeURIComponent(invGuid)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': token,
+          'X-RequestVerificationToken': token
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ ids: Array.from(selected) })
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const ids = Array.isArray(data.deletedIds) ? data.deletedIds : [];
+      ids.forEach(id => {
+        const card = postsEl.querySelector(`.card[data-post-id="${id}"]`);
+        if (card) card.remove();
+        selected.delete(id);
+      });
+      updateBulkBar();
+    } catch {}
+  });
 
   async function fetchNew() {
     try {
@@ -481,6 +668,7 @@
           renderPost(p);
           lastId = Math.max(lastId, p.id);
         }
+        updateBulkBar();
       }
     } catch {}
   }
@@ -488,6 +676,7 @@
   async function initLoad(){
     lastId = 0;
     postsEl.innerHTML = '';
+    selected.clear();
     await fetchNew();
     setInterval(fetchNew, 3000);
   }
@@ -521,44 +710,185 @@
     });
   }
 
-  const newTagInput = document.getElementById('newTag');
-  const tagList = document.getElementById('tagSuggestions');
-  function clearTagList(){ tagList.innerHTML=''; tagList.style.display='none'; }
-  function renderTagItem(name){
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'list-group-item list-group-item-action';
-    btn.textContent = name;
-    btn.addEventListener('click', () => { newTagInput.value = name; clearTagList(); newTagInput.focus(); });
-    return btn;
-  }
-  function renderNoResults(){
-    const div = document.createElement('div');
-    div.className = 'list-group-item text-muted';
-    div.textContent = 'No tags found';
-    return div;
-  }
-  function searchTags(q){
-    const term = (q||'').trim();
-    if (!term){ clearTagList(); return; }
-    fetch(`/api/search/tags?query=${encodeURIComponent(term)}`)
-      .then(r => r.ok ? r.json() : [])
-      .then(items => {
-        if (!Array.isArray(items)) { clearTagList(); return; }
-        tagList.innerHTML = '';
-        if (items.length === 0) {
-          tagList.appendChild(renderNoResults());
-        } else {
-          items.forEach(x => tagList.appendChild(renderTagItem(x.name)));
+  // Tag removal in edit mode
+  (function(){
+    if (!@Model.EditMode.ToString().ToLower() || !@Model.CanEdit.ToString().ToLower()) return;
+    const tagContainer = document.getElementById('detailTabsContent');
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    tagContainer.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-remove-tag]');
+      if (!btn) return;
+      const name = btn.getAttribute('data-remove-tag');
+      if (!name) return;
+      try {
+        const res = await fetch(`${window.location.pathname}?handler=RemoveTag&guid=${encodeURIComponent(invGuid)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token, 'X-RequestVerificationToken': token },
+          credentials: 'same-origin',
+          body: JSON.stringify({ tag: name })
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.removed) {
+          document.querySelectorAll(`[data-tag="${CSS.escape(name)}"]`).forEach(el => el.remove());
         }
-        tagList.style.display = 'block';
-      })
-      .catch(() => clearTagList());
-  }
-  newTagInput?.addEventListener('input', () => searchTags(newTagInput.value));
-  document.addEventListener('click', (e) => {
-    if (!(tagList.contains(e.target) || e.target === newTagInput)) clearTagList();
-  });
+      } catch {}
+    });
+  })();
+
+  // Allowed users search (edit mode) similar to Create
+  (function(){
+    const isPublicEl = document.getElementById('editIsPublic');
+    const section = document.getElementById('allowedUsersSection');
+    const searchInput = document.getElementById('userSearch');
+    const suggestions = document.getElementById('userSuggestions');
+    const selectedUsers = document.getElementById('selectedUsers');
+    const userIdsContainer = document.getElementById('userIdsContainer');
+    const template = userIdsContainer ? userIdsContainer.querySelector('input[data-template="user-id"]') : null;
+
+    if (!searchInput || !section) return; // only in edit mode
+
+    const selectedMap = new Map();
+
+    function toggleSection(){
+      if (!isPublicEl) return;
+      section.style.display = isPublicEl.checked ? 'none' : '';
+    }
+    isPublicEl?.addEventListener('change', toggleSection);
+    toggleSection();
+
+    function clearSuggestions(){
+      suggestions.innerHTML = '';
+      suggestions.style.display = 'none';
+    }
+
+    function addUser(id, name){
+      if (!id || selectedMap.has(id)) return;
+      selectedMap.set(id, name);
+      const chip = document.createElement('span');
+      chip.className = 'badge rounded-pill text-bg-secondary d-inline-flex align-items-center gap-1 px-2 py-2';
+      chip.dataset.userId = id;
+      chip.textContent = name || id;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-close btn-close-white btn-sm ms-1';
+      btn.ariaLabel = 'Remove';
+      btn.addEventListener('click', () => removeUser(id));
+      chip.appendChild(btn);
+      selectedUsers.appendChild(chip);
+
+      if (template && userIdsContainer){
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = template.getAttribute('name');
+        hidden.value = id;
+        hidden.dataset.userId = id;
+        hidden.setAttribute('form', 'editForm');
+        userIdsContainer.appendChild(hidden);
+      }
+    }
+
+    function removeUser(id){
+      if (!selectedMap.has(id)) return;
+      selectedMap.delete(id);
+      const chip = selectedUsers.querySelector(`[data-user-id="${id}"]`);
+      if (chip) chip.remove();
+      const hidden = userIdsContainer.querySelector(`input[type="hidden"][data-user-id="${id}"]`);
+      if (hidden) hidden.remove();
+    }
+
+    function renderSuggestion(item){
+      const id = item.guid;
+      const first = item.firstName || '';
+      const last = item.lastName || '';
+      const name = (first + ' ' + last).trim() || item.userName || id;
+      const a = document.createElement('button');
+      a.type = 'button';
+      a.className = 'list-group-item list-group-item-action';
+      a.textContent = name;
+      a.addEventListener('click', () => {
+        addUser(id, name);
+        clearSuggestions();
+        searchInput.value = '';
+        searchInput.focus();
+      });
+      return a;
+    }
+
+    let debounceTimer = null;
+    let abortCtrl = null;
+    function search(q){
+      if (abortCtrl) abortCtrl.abort();
+      if (!q){ clearSuggestions(); return; }
+      abortCtrl = new AbortController();
+      fetch(`/api/search/users?query=${encodeURIComponent(q)}`, { signal: abortCtrl.signal })
+        .then(r => r.ok ? r.json() : [])
+        .then(items => {
+          if (!Array.isArray(items)) { clearSuggestions(); return; }
+          suggestions.innerHTML = '';
+          items.filter(item => !(selectedMap.has(item.guid)))
+               .forEach(item => suggestions.appendChild(renderSuggestion(item)));
+          suggestions.style.display = suggestions.childElementCount > 0 ? 'block' : 'none';
+        })
+        .catch(() => { clearSuggestions(); });
+    }
+
+    searchInput.addEventListener('input', () => {
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => search(searchInput.value), 200);
+    });
+    document.addEventListener('click', (e) => {
+      if (!suggestions.contains(e.target) && e.target !== searchInput){
+        clearSuggestions();
+      }
+    });
+
+    // preload from server model
+    try {
+      const preset = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit.UserIds ?? new List<string>()));
+      const arr = Array.isArray(preset) ? preset : [];
+      arr.forEach(id => addUser(id, id));
+    } catch {}
+  })();
+
+  // Tag suggestions
+  (function(){
+    const newTagInput = document.getElementById('newTag');
+    const tagList = document.getElementById('tagSuggestions');
+    function clearTagList(){ tagList.innerHTML=''; tagList.style.display='none'; }
+    function renderTagItem(name){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'list-group-item list-group-item-action';
+      btn.textContent = name;
+      btn.addEventListener('click', () => { newTagInput.value = name; clearTagList(); newTagInput.focus(); });
+      return btn;
+    }
+    function renderNoResults(){
+      const div = document.createElement('div');
+      div.className = 'list-group-item text-muted';
+      div.textContent = 'No tags found';
+      return div;
+    }
+    function searchTags(q){
+      const term = (q||'').trim();
+      if (!term){ clearTagList(); return; }
+      fetch(`/api/search/tags?query=${encodeURIComponent(term)}`)
+        .then(r => r.ok ? r.json() : [])
+        .then(items => {
+          if (!Array.isArray(items)) { clearTagList(); return; }
+          tagList.innerHTML = '';
+          if (items.length === 0) tagList.appendChild(renderNoResults());
+          else items.forEach(x => tagList.appendChild(renderTagItem(x.name)));
+          tagList.style.display = 'block';
+        })
+        .catch(() => clearTagList());
+    }
+    newTagInput?.addEventListener('input', () => searchTags(newTagInput.value));
+    document.addEventListener('click', (e) => {
+      if (!(tagList.contains(e.target) || e.target === newTagInput)) clearTagList();
+    });
+  })();
 })();
 </script>
 }

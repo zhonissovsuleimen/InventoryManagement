@@ -1,0 +1,250 @@
+@model InventoryManagement.Pages.Inventory.DetailsModel
+@{
+    ViewData["Title"] = null;
+}
+<div class="form-text mb-2">Define a Custom Id pattern for items in this inventory. Reorder elements freely.</div>
+<div class="card mb-3">
+    <div class="card-body py-2 d-flex align-items-center gap-2">
+        <strong class="me-2">Preview:</strong>
+        <code id="customIdPreview" class="text-muted">(empty)</code>
+    </div>
+</div>
+
+<div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
+    <span class="me-2">Add element:</span>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="FixedText">Text</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit6">Random 6 digits</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit9">Random 9 digits</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit20">Random 20-bit</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit32">Random 32-bit</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="DateTime">Date/Time</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Guid">Guid</button>
+</div>
+
+<div id="customIdElements" class="d-grid gap-2"></div>
+
+<template id="templateCustomIdRow">
+    <div class="card shadow-sm" data-row>
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary" data-type-label>Element</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-end">
+                <input type="hidden" data-prop="Type" form="editForm" />
+                <input type="hidden" data-prop="Position" form="editForm" />
+                <div class="col-auto">
+                    <label class="form-label small mb-0">Separator before</label>
+                    <input class="form-control form-control-sm" data-prop="SeparatorBefore" maxlength="1" placeholder="-" form="editForm" />
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-0">Separator after</label>
+                    <input class="form-control form-control-sm" data-prop="SeparatorAfter" maxlength="1" placeholder="-" form="editForm" />
+                </div>
+                <div class="col d-flex flex-wrap align-items-end gap-2" data-specific></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="templateSpecificFixedText">
+    <div class="d-flex flex-column">
+        <label class="form-label small mb-0">Text</label>
+        <input class="form-control form-control-sm" data-prop="FixedText" placeholder="Fixed text" form="editForm" />
+    </div>
+</template>
+
+<template id="templateSpecificDateTime">
+    <div class="d-flex flex-column">
+        <label class="form-label small mb-0">Format</label>
+        <input class="form-control form-control-sm" data-prop="DateTimeFormat" placeholder="yyyyMMdd-HHmm" form="editForm" />
+    </div>
+</template>
+
+<template id="templateSpecificGuid">
+    <div class="d-flex flex-column" style="min-width: 120px;">
+        <label class="form-label small mb-0">Guid</label>
+        <input class="form-control form-control-sm" value="auto" disabled />
+    </div>
+</template>
+
+<template id="templateSpecificNumeric">
+    <div class="d-flex flex-wrap align-items-end gap-2">
+        <div class="d-flex flex-column" style="width: 80px;">
+            <label class="form-label small mb-0">Padding</label>
+            <input class="form-control form-control-sm" data-prop="PaddingChar" maxlength="1" placeholder="0" form="editForm" />
+        </div>
+        <div class="d-flex flex-column" style="width: 110px;">
+            <label class="form-label small mb-0">Radix</label>
+            <select class="form-select form-select-sm" data-prop="Radix" form="editForm">
+                <option value="2">Binary</option>
+                <option value="8">Octal</option>
+                <option value="10" selected>Decimal</option>
+                <option value="16">Hex</option>
+            </select>
+        </div>
+    </div>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+(() => {
+    const container = document.getElementById('customIdElements');
+    const previewEl = document.getElementById('customIdPreview');
+    const addBtns = document.querySelectorAll('[data-add-customid]');
+
+    const intMax = (2147483647 + 1);
+    const seed = parseInt(intMax * Math.random());
+
+    let initialized = false;
+
+    function collectElements(){
+        const items = [];
+        container.querySelectorAll('[data-row]').forEach((row, idx) => {
+            const obj = {};
+            const type = row.querySelector('[data-prop="Type"]').value;
+            obj.Type = type;
+            obj.Position = idx;
+            const sb = (row.querySelector('[data-prop="SeparatorBefore"]').value || '').slice(0,1);
+            const sa = (row.querySelector('[data-prop="SeparatorAfter"]').value || '').slice(0,1);
+            if (sb) obj.SeparatorBefore = sb;
+            if (sa) obj.SeparatorAfter = sa;
+            if (type === 'FixedText') {
+                obj.FixedText = row.querySelector('[data-prop="FixedText"]').value || '';
+            } else if (type === 'DateTime') {
+                obj.DateTimeFormat = row.querySelector('[data-prop="DateTimeFormat"]').value || 'yyyy';
+            } else if (type === 'Digit6' || type === 'Digit9' || type === 'Bit20' || type === 'Bit32') {
+                const radix = row.querySelector('[data-prop="Radix"]').value || '10';
+                const pad = (row.querySelector('[data-prop="PaddingChar"]').value || '').slice(0,1);
+                obj.Radix = radix;
+                if (pad) obj.PaddingChar = pad;
+            }
+            items.push(obj);
+        });
+        return items;
+    }
+
+    function setNames(){
+        const rows = container.querySelectorAll('[data-row]');
+        rows.forEach((row, idx) => {
+            row.querySelectorAll('[data-prop]').forEach(input => {
+                const prop = input.getAttribute('data-prop');
+                input.name = `Edit.CustomIdElements[${idx}].${prop}`;
+            });
+        });
+    }
+
+    async function generatePreview(){
+        const elements = collectElements();
+        if (elements.length === 0){
+            previewEl.textContent = '(empty)';
+            return;
+        }
+        try {
+            const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenEl ? tokenEl.value : '';
+            const resp = await fetch(window.location.pathname + '?handler=GenerateCustomId', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ seed: seed, elements: elements })
+            });
+            if (!resp.ok) throw new Error('Failed');
+            const text = await resp.text();
+            previewEl.textContent = text || '(empty)';
+        } catch {
+            previewEl.textContent = '(error)';
+        }
+    }
+
+    function createSpecific(type){
+        if (type === 'FixedText') return document.getElementById('templateSpecificFixedText').content.cloneNode(true);
+        if (type === 'DateTime') return document.getElementById('templateSpecificDateTime').content.cloneNode(true);
+        if (type === 'Guid') return document.getElementById('templateSpecificGuid').content.cloneNode(true);
+        return document.getElementById('templateSpecificNumeric').content.cloneNode(true);
+    }
+
+    function addRow(type){
+        const tpl = document.getElementById('templateCustomIdRow');
+        const node = tpl.content.cloneNode(true);
+        const card = node.querySelector('[data-row]');
+        card.querySelector('[data-type-label]').textContent =
+            type === 'FixedText' ? 'Text' :
+            type === 'Digit6' ? 'Random 6 digits' :
+            type === 'Digit9' ? 'Random 9 digits' :
+            type === 'Bit20' ? 'Random 20-bit' :
+            type === 'Bit32' ? 'Random 32-bit' :
+            type === 'DateTime' ? 'Date/Time' :
+            type === 'Guid' ? 'Guid' : 'Element';
+        const typeInput = card.querySelector('[data-prop="Type"]');
+        typeInput.value = type;
+        const specificHost = card.querySelector('[data-specific]');
+        specificHost.appendChild(createSpecific(type));
+
+        card.querySelector('[data-remove]').addEventListener('click', () => {
+            card.remove();
+            setNames();
+            generatePreview();
+        });
+        card.addEventListener('input', generatePreview);
+        container.appendChild(card);
+        setNames();
+    }
+
+    addBtns.forEach(btn => {
+        btn.addEventListener('click', () => { addRow(btn.getAttribute('data-add-customid')); generatePreview(); });
+    });
+
+    Sortable.create(container, {
+        animation: 100,
+        ghostClass: 'bg-light',
+        handle: '',
+        filter: 'button, input, textarea, select, label',
+        preventOnFilter: false,
+        onEnd: () => { setNames(); generatePreview(); }
+    });
+
+    function preloadFromModel(){
+        if (initialized) return;
+        try {
+            const list = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit.CustomIdElements ?? new List<InventoryManagement.Pages.Inventory.DetailsModel.CustomIdElementInput>()));
+            if (Array.isArray(list)){
+                list.sort((a,b) => ((a.Position ?? 32767) - (b.Position ?? 32767)));
+                for (const e of list){
+                    addRow(e.Type);
+                    const row = container.lastElementChild;
+                    if (!row) continue;
+                    const set = (sel, val) => { const el = row.querySelector(sel); if (el && val != null) el.value = String(val); };
+                    set('[data-prop="SeparatorBefore"]', e.SeparatorBefore);
+                    set('[data-prop="SeparatorAfter"]', e.SeparatorAfter);
+                    if (e.Type === 'FixedText') set('[data-prop="FixedText"]', e.FixedText);
+                    else if (e.Type === 'DateTime') set('[data-prop="DateTimeFormat"]', e.DateTimeFormat);
+                    else if (e.Type === 'Digit6' || e.Type === 'Digit9' || e.Type === 'Bit20' || e.Type === 'Bit32') {
+                        set('[data-prop="PaddingChar"]', e.PaddingChar);
+                        set('[data-prop="Radix"]', e.Radix);
+                    }
+                }
+            }
+        } catch {}
+        initialized = true;
+    }
+
+    function init(){
+        preloadFromModel();
+        setNames();
+        generatePreview();
+    }
+
+    // Run after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+    } else {
+        init();
+    }
+
+    // Also refresh when switching to the Custom ID tab
+    document.getElementById('custom-id-tab')?.addEventListener('shown.bs.tab', () => {
+        setNames();
+        generatePreview();
+    });
+})();
+</script>
