@@ -56,11 +56,16 @@
                             <p>
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
-                                    // Only show Google provider button; hide others if any
                                     if (string.Equals(provider.Name, "Google", StringComparison.OrdinalIgnoreCase))
                                     {
                                         <button type="submit" class="btn btn-danger" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
                                             Continue with Google
+                                        </button>
+                                    }
+                                    else if (string.Equals(provider.Name, "GitHub", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <button type="submit" class="btn btn-dark ms-2" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                            Continue with GitHub
                                         </button>
                                     }
                                 }

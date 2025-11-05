@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
+using AspNet.Security.OAuth.GitHub;
 
 namespace InventoryManagement
 {
@@ -32,6 +33,7 @@ namespace InventoryManagement
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<GoogleSignInService>();
+            builder.Services.AddScoped<GitHubSignInService>();
 
             builder.Services
                 .AddAuthentication()
@@ -48,6 +50,29 @@ namespace InventoryManagement
                         OnCreatingTicket = async context =>
                         {
                             var handler = context.HttpContext.RequestServices.GetRequiredService<GoogleSignInService>();
+                            await handler.HandleCreatingTicket(context);
+                        }
+                    };
+                })
+                .AddGitHub(GitHubAuthenticationDefaults.AuthenticationScheme, options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"] ?? string.Empty;
+                    options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"] ?? string.Empty;
+                    options.CallbackPath = "/signin-github";
+                    options.SaveTokens = true;
+
+                    // Request user email scope to access primary email via API when not in ID token
+                    options.Scope.Add("user:email");
+
+                    // Map name/email if present
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+
+                    options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+                    {
+                        OnCreatingTicket = async context =>
+                        {
+                            var handler = context.HttpContext.RequestServices.GetRequiredService<GitHubSignInService>();
                             await handler.HandleCreatingTicket(context);
                         }
                     };

@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using InventoryManagement.Areas.Identity.Pages.Account;
 using InventoryManagement.Data;
 using InventoryManagement.Models;
 using InventoryManagement.Models.Inventory;
@@ -13,6 +12,14 @@ namespace InventoryManagement.Database
 {
     public class Seed
     {
+        private sealed class SeedUser
+        {
+            public required string FirstName { get; init; }
+            public required string LastName { get; init; }
+            public required string Email { get; init; }
+            public required string Password { get; init; }
+        }
+
         public static async Task SeedAll(IServiceProvider services)
         {
             await SeedUsersAsync(services);
@@ -43,7 +50,7 @@ namespace InventoryManagement.Database
                 await userManager.CreateAsync(adminUser, adminPassword);
             }
 
-            var faker = new Faker<RegisterModel.InputModel>()
+            var faker = new Faker<SeedUser>()
                 .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                 .RuleFor(u => u.LastName, f => f.Name.LastName())
                 .RuleFor(u => u.Email, (f, u) => f.Internet.Email(firstName: u.FirstName, lastName: u.LastName).ToLowerInvariant())
