@@ -603,14 +603,16 @@
                 const id = item.guid;
                 const first = item.firstName || '';
                 const last = item.lastName || '';
+                const email = item.email || '';
                 const name = (first + ' ' + last).trim();
+                const display = (name || item.userName || id) + (email ? ` (${email})` : '');
 
                 const a = document.createElement('button');
                 a.type = 'button';
                 a.className = 'list-group-item list-group-item-action';
-                a.textContent = name;
+                a.textContent = display;
                 a.addEventListener('click', () => {
-                    addUser(id, name);
+                    addUser(id, display);
                     clearSuggestions();
                     searchInput.value = '';
                     searchInput.focus();

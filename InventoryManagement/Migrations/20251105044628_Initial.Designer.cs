@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105031715_Initial")]
+    [Migration("20251105044628_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -82,7 +82,7 @@ namespace InventoryManagement.Migrations
                     b.Property<NpgsqlTsVector>("SearchVector")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tsvector")
-                        .HasComputedColumnSql("to_tsvector('simple', coalesce(\"FirstName\", '') || ' ' || coalesce(\"LastName\", ''))", true);
+                        .HasComputedColumnSql("to_tsvector('simple', coalesce(\"FirstName\", '') || ' ' || coalesce(\"LastName\", '') || ' ' || coalesce(\"Email\", ''))", true);
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -98,6 +98,11 @@ namespace InventoryManagement.Migrations
                         .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Email"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Email"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex("FirstName");
 

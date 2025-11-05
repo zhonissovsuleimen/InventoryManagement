@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagement.Services
 {
-    public record UserSearchResult(string Guid, string FirstName, string? LastName);
+    public record UserSearchResult(string Guid, string FirstName, string? LastName, string? Email);
 
     public class UserSearch
     {
@@ -20,14 +20,16 @@ namespace InventoryManagement.Services
             var users = await _db.Users.Where(u =>
                 u.SearchVector!.Matches(EF.Functions.PlainToTsQuery("simple", query)) ||
                 EF.Functions.TrigramsSimilarity(u.FirstName, query) > threshold ||
-                EF.Functions.TrigramsSimilarity(u.LastName ?? "", query) > threshold)
+                EF.Functions.TrigramsSimilarity(u.LastName ?? "", query) > threshold ||
+                EF.Functions.TrigramsSimilarity(u.Email ?? "", query) > threshold)
             .Select(u => new
             {
                 u,
                 Rank =
                     u.SearchVector!.Rank(EF.Functions.PlainToTsQuery("simple", query)) +
                     EF.Functions.TrigramsSimilarity(u.FirstName, query) +
-                    EF.Functions.TrigramsSimilarity(u.LastName ?? "", query)
+                    EF.Functions.TrigramsSimilarity(u.LastName ?? "", query) +
+                    EF.Functions.TrigramsSimilarity(u.Email ?? "", query)
             })
             .OrderByDescending(x => x.Rank)
             .Take(5)
@@ -39,7 +41,8 @@ namespace InventoryManagement.Services
                 new UserSearchResult(
                     Guid: u.Id,
                     FirstName: u.FirstName,
-                    LastName: u.LastName
+                    LastName: u.LastName,
+                    Email: u.Email
                 )
             ).ToList();
 

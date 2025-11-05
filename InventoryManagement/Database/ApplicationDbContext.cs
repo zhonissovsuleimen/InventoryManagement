@@ -55,6 +55,12 @@ namespace InventoryManagement.Data
                 .HasMethod("GIN")
                 .HasOperators("gin_trgm_ops");
 
+            // Trigram index to enable fuzzy search by Email as well
+            builder.Entity<AppUser>()
+                .HasIndex(u => u.Email)
+                .HasMethod("GIN")
+                .HasOperators("gin_trgm_ops");
+
             builder.Entity<AppUser>()
                 .Property(u => u.SequentialId)
                 .ValueGeneratedOnAdd();
@@ -62,7 +68,7 @@ namespace InventoryManagement.Data
             builder.Entity<AppUser>()
                 .Property(u => u.SearchVector)
                 .HasComputedColumnSql(
-                    "to_tsvector('simple', coalesce(\"FirstName\", '') || ' ' || coalesce(\"LastName\", ''))",
+                    "to_tsvector('simple', coalesce(\"FirstName\", '') || ' ' || coalesce(\"LastName\", '') || ' ' || coalesce(\"Email\", ''))",
                     stored: true);
 
             builder.Entity<AppUser>().ToTable("Users");
