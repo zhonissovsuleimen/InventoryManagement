@@ -157,6 +157,9 @@ namespace InventoryManagement.Data
                       .HasForeignKey("Owner_UserId")
                       .HasConstraintName("FK_Item_Owner")
                       .OnDelete(DeleteBehavior.SetNull);
+
+                // Enforce per-inventory uniqueness of CustomId
+                entity.HasIndex(new[] { "InventoryId", nameof(Item.CustomId) }).IsUnique();
             });
         }
 

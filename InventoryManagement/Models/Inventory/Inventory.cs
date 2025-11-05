@@ -61,14 +61,11 @@ namespace InventoryManagement.Models.Inventory
             var rng = seed == null ? new Random() : new Random((int)seed);
             var sb = new StringBuilder();
 
-            var positioned = CustomId.Elements.Where(e => e != null && e.Position != null)
-                .OrderBy(e => e.Position)
+            var elems = CustomId.Elements
+                .Where(e => e != null)
+                .OrderBy(e => e.Position ?? short.MaxValue)
                 .ThenBy(e => e.Id)
                 .ToList();
-
-            var unpositioned = CustomId.Elements.Where(e => e != null && e.Position == null).ToList();
-
-            var elems = positioned.Concat(unpositioned);
 
             foreach (var element in elems)
             {

@@ -209,6 +209,7 @@ namespace InventoryManagement.Pages.Inventory
                     Elements = []
                 };
 
+                short pos = 0;
                 foreach (var e in Input.CustomIdElements)
                 {
                     AbstractElement? element = e.Type switch
@@ -225,6 +226,7 @@ namespace InventoryManagement.Pages.Inventory
                     if (element == null) continue;
                     element.SeparatorBefore = ParseChar(e.SeparatorBefore);
                     element.SeparatorAfter = ParseChar(e.SeparatorAfter);
+                    element.Position = pos++;
                     customId.Elements.Add(element);
                 }
             }
