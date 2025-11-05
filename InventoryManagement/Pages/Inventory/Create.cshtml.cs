@@ -85,6 +85,7 @@ namespace InventoryManagement.Pages.Inventory
             public string? DateTimeFormat { get; set; }
             public string? PaddingChar { get; set; }
             public string? Radix { get; set; }
+            public short? Position { get; set; }
         }
 
         public SelectList Categories { get; set; }
@@ -230,6 +231,7 @@ namespace InventoryManagement.Pages.Inventory
                         "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
                         "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
                         "Guid" => new GuidElement(),
+                        "Sequential" => new SequentialElement(),
                         _ => null
                     };
                     if (element == null) continue;
@@ -324,6 +326,7 @@ namespace InventoryManagement.Pages.Inventory
                     "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
                     "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
                     "Guid" => new GuidElement(),
+                    "Sequential" => new SequentialElement(),
                     _ => null
                 };
                 if (element == null) continue;
