@@ -90,8 +90,8 @@
                 }
                 else
                 {
-                    <div class="border rounded d-flex align-items-center justify-content-center mb-3" style="height:220px; background:#f8f9fa;">
-                        <span class="text-muted">No image</span>
+                    <div class="border rounded bg-body-secondary d-flex align-items-center justify-content-center mb-3" style="height:220px;">
+                        <span class="text-body-secondary">No image</span>
                     </div>
                 }
 
@@ -940,7 +940,7 @@
         .then(items => {
           if (!Array.isArray(items)) { clearSuggestions(); return; }
           suggestions.innerHTML = '';
-          items.filter(item => !(selectedMap.has(item.guid)))
+          items.filter item => !(selectedMap.has(item.guid)))
                .forEach(item => suggestions.appendChild(renderSuggestion(item)));
           suggestions.style.display = suggestions.childElementCount > 0 ? 'block' : 'none';
         })
@@ -960,7 +960,7 @@
     try {
       const preset = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit.UserIds ?? new List<string>()));
       const arr = Array.isArray(preset) ? preset : [];
-      arr.forEach(id => addUser(id, id));
+      arr.forEach id => addUser(id, id));
     } catch {}
   })();
 
@@ -1078,10 +1078,10 @@
           SeparatorAfter: get('[data-prop="SeparatorAfter"]').slice(0,1) || null
         };
         if (type === 'FixedText') e.FixedText = get('[data-prop="FixedText"]');
-        else if (type === 'DateTime') e.DateTimeFormat = get('[data-prop="DateTimeFormat"]') || 'yyyy';
+        else if (type === 'DateTime') e.DateTimeFormat = get('[data-prop="DateTimeFormat"]').toString() || 'yyyy';
         else if (type) {
           e.PaddingChar = (get('[data-prop="PaddingChar"]').slice(0,1) || null);
-          e.Radix = get('[data-prop="Radix"]') || '10';
+          e.Radix = get('[data-prop="Radix"]').toString() || '10';
         }
         list.push(e);
       });
