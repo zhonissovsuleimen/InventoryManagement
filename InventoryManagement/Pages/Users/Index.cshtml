@@ -1,0 +1,156 @@
+@page
+@model InventoryManagement.Pages.Users.IndexModel
+@{
+    ViewData["Title"] = "Users";
+    var isAdmin = Model.IsAdmin;
+    var users = Model.Users ?? new List<InventoryManagement.Models.AppUser>();
+}
+
+<h2>Users</h2>
+
+@if (isAdmin)
+{
+    <div class="d-flex justify-content-between align-items-center mb-2" id="usersToolbar">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-select-all>Select all</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-deselect-all>Deselect</button>
+            <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>Delete</button>
+            <button type="button" class="btn btn-sm btn-primary" data-make-admin disabled>Admin</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-remove-admin disabled>De-Admin</button>
+        </div>
+    </div>
+    <form method="post" class="d-none">
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+@if (users.Count == 0)
+{
+    <div class="text-muted">No users found.</div>
+}
+else
+{
+    <div id="usersRoot">
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+                <tr>
+                    @if (isAdmin)
+                    {
+                        <th style="width:32px;"><input type="checkbox" class="form-check-input" data-toggle-all /></th>
+                    }
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var u in users)
+            {
+                var fullName = $"{u.FirstName} {u.LastName}".Trim();
+                <tr data-user-id="@u.Id">
+                    @if (isAdmin)
+                    {
+                        <td><input type="checkbox" class="form-check-input" data-row-select /></td>
+                    }
+                    <td>
+                        <a asp-page="/Users/Details" asp-route-id="@u.Id" class="text-decoration-none">@fullName</a>
+                    </td>
+                    <td>@u.Email</td>
+                    <td>@(u.IsAdmin ? "Yes" : "No")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+<script>
+(() => {
+  const root = document.getElementById('usersRoot');
+  const toolbar = document.getElementById('usersToolbar');
+  if (!root) return;
+
+  const headers = { 'Content-Type': 'application/json' };
+  const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+  if (token) {
+    headers['RequestVerificationToken'] = token;
+    headers['X-RequestVerificationToken'] = token;
+  }
+
+  const toggleAll = root.querySelector('[data-toggle-all]');
+  const selectAllBtn = toolbar?.querySelector('[data-select-all]');
+  const deselectAllBtn = toolbar?.querySelector('[data-deselect-all]');
+  const deleteBtn = toolbar?.querySelector('[data-delete-selected]');
+  const makeAdminBtn = toolbar?.querySelector('[data-make-admin]');
+  const removeAdminBtn = toolbar?.querySelector('[data-remove-admin]');
+  const rowCbs = () => Array.from(root.querySelectorAll('input[type="checkbox"][data-row-select]'));
+
+  function updateBulkState(){
+    const any = rowCbs().some(cb => cb.checked);
+    if (deleteBtn) deleteBtn.disabled = !any;
+    if (makeAdminBtn) makeAdminBtn.disabled = !any;
+    if (removeAdminBtn) removeAdminBtn.disabled = !any;
+    if (toggleAll && toggleAll instanceof HTMLInputElement) toggleAll.checked = any && rowCbs().every(cb => cb.checked);
+  }
+
+  toggleAll?.addEventListener('change', () => {
+    const checked = toggleAll.checked;
+    rowCbs().forEach(cb => { cb.checked = checked; });
+    updateBulkState();
+  });
+  selectAllBtn?.addEventListener('click', () => { rowCbs().forEach(cb => cb.checked = true); updateBulkState(); });
+  deselectAllBtn?.addEventListener('click', () => { rowCbs().forEach(cb => cb.checked = false); updateBulkState(); });
+  root.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t && t.matches && t.matches('input[type="checkbox"][data-row-select]')) updateBulkState();
+  });
+
+  async function call(endpoint){
+    const ids = rowCbs().filter(cb => cb.checked).map(cb => cb.closest('tr')?.getAttribute('data-user-id')).filter(Boolean);
+    if (ids.length === 0) return null;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      credentials: 'same-origin',
+      body: JSON.stringify({ ids })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  }
+
+  deleteBtn?.addEventListener('click', async () => {
+    const data = await call('@Url.Page(null, "DeleteUsers")');
+    if (!data) return;
+    const deleted = Array.isArray(data.deleted) ? data.deleted : [];
+    deleted.forEach(id => {
+      const tr = root.querySelector(`tr[data-user-id="${id}"]`);
+      if (tr) tr.remove();
+    });
+    updateBulkState();
+  });
+
+  makeAdminBtn?.addEventListener('click', async () => {
+    const data = await call('@Url.Page(null, "MakeAdmin")');
+    if (!data) return;
+    const updated = Array.isArray(data.updated) ? data.updated : [];
+    updated.forEach(id => {
+      const tr = root.querySelector(`tr[data-user-id="${id}"]`);
+      const cell = tr?.querySelector('td:nth-child(4)');
+      if (cell) cell.textContent = 'Yes';
+    });
+  });
+
+  removeAdminBtn?.addEventListener('click', async () => {
+    const data = await call('@Url.Page(null, "RemoveAdmin")');
+    if (!data) return;
+    const updated = Array.isArray(data.updated) ? data.updated : [];
+    updated.forEach(id => {
+      const tr = root.querySelector(`tr[data-user-id="${id}"]`);
+      const cell = tr?.querySelector('td:nth-child(4)');
+      if (cell) cell.textContent = 'No';
+    });
+  });
+})();
+</script>
+}
