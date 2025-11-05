@@ -87,8 +87,23 @@ namespace InventoryManagement.Data
             builder.Entity<Inventory>()
                 .Property(i => i.SearchVector)
                 .HasComputedColumnSql(
-                    "to_tsvector('simple', coalesce(\"Title\", ''))",
+                    "to_tsvector('simple', coalesce(\"Title\", '') || ' ' || coalesce(\"Description\", ''))",
                     stored: true);
+
+            // Indexes for full-text and trigram fuzzy search
+            builder.Entity<Inventory>()
+                .HasIndex(i => i.SearchVector)
+                .HasMethod("GIN");
+
+            builder.Entity<Inventory>()
+                .HasIndex(i => i.Title)
+                .HasMethod("GIN")
+                .HasOperators("gin_trgm_ops");
+
+            builder.Entity<Inventory>()
+                .HasIndex(i => i.Description)
+                .HasMethod("GIN")
+                .HasOperators("gin_trgm_ops");
 
 
             builder.Entity<Inventory>()

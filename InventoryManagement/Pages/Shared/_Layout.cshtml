@@ -31,8 +31,8 @@
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between align-items-center w-100">
+                    <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Inventory/Index">@Localizer["Inventories"]</a>
                         </li>
@@ -40,6 +40,17 @@
                             <a class="nav-link" asp-area="" asp-page="/Users/Index">@Localizer["Users"]</a>
                         </li>
                     </ul>
+
+                    <!-- Center search -->
+                    <div class="flex-grow-1 d-flex justify-content-center px-3">
+                        <div class="position-relative" style="min-width:280px; max-width:520px; width:100%">
+                            <form id="global-search-form" class="w-100" autocomplete="off">
+                                <input id="global-search" class="form-control" type="search" placeholder="@Localizer["Search inventories and users"]" aria-label="Search" />
+                            </form>
+                            <div id="global-search-results" class="dropdown-menu w-100 shadow" style="max-height:60vh; overflow:auto;"></div>
+                        </div>
+                    </div>
+
                     <div class="d-flex align-items-center gap-2">
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -103,6 +114,133 @@
                     setTheme(e.matches ? 'dark' : 'light');
                 });
             }
+        })();
+    </script>
+
+    <script>
+        // Global fuzzy search (inventories + users)
+        (function () {
+            const input = document.getElementById('global-search');
+            const results = document.getElementById('global-search-results');
+            const form = document.getElementById('global-search-form');
+            if (!input || !results || !form) return;
+
+            let abortCtrlUsers = null;
+            let abortCtrlInv = null;
+
+            const debounce = (fn, ms) => {
+                let t = null;
+                return (...args) => {
+                    if (t) clearTimeout(t);
+                    t = setTimeout(() => fn(...args), ms);
+                };
+            };
+
+            function hide() {
+                results.classList.remove('show');
+                results.innerHTML = '';
+            }
+
+            function render(inv, users) {
+                results.innerHTML = '';
+                let any = false;
+
+                if (inv && inv.length) {
+                    any = true;
+                    const header = document.createElement('h6');
+                    header.className = 'dropdown-header text-uppercase text-muted';
+                    header.textContent = 'Inventories';
+                    results.appendChild(header);
+                    for (const i of inv) {
+                        const a = document.createElement('a');
+                        a.className = 'dropdown-item';
+                        a.href = '/Inventory/Details?guid=' + encodeURIComponent(i.guid);
+                        a.innerHTML = `<div class="fw-semibold text-truncate">${escapeHtml(i.title)}</div>` +
+                                      `<div class="small text-muted text-truncate">${escapeHtml((i.description||'').toString())}</div>`;
+                        results.appendChild(a);
+                    }
+                    const divider = document.createElement('div');
+                    divider.className = 'dropdown-divider';
+                    results.appendChild(divider);
+                }
+
+                if (users && users.length) {
+                    any = true;
+                    const header = document.createElement('h6');
+                    header.className = 'dropdown-header text-uppercase text-muted';
+                    header.textContent = 'Users';
+                    results.appendChild(header);
+                    for (const u of users) {
+                        const a = document.createElement('a');
+                        a.className = 'dropdown-item';
+                        a.href = '/Users/Details?id=' + encodeURIComponent(u.guid);
+                        const name = [u.firstName, u.lastName].filter(Boolean).join(' ');
+                        a.innerHTML = `<div class="fw-semibold text-truncate">${escapeHtml(name || u.email || '')}</div>` +
+                                      (u.email ? `<div class="small text-muted text-truncate">${escapeHtml(u.email)}</div>` : '');
+                        results.appendChild(a);
+                    }
+                }
+
+                if (any) {
+                    results.classList.add('show');
+                } else {
+                    hide();
+                }
+            }
+
+            function escapeHtml(s) {
+                return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+            }
+
+            async function query(term) {
+                if (abortCtrlInv) abortCtrlInv.abort();
+                if (abortCtrlUsers) abortCtrlUsers.abort();
+                abortCtrlInv = new AbortController();
+                abortCtrlUsers = new AbortController();
+
+                const invUrl = `/api/search/inventories?query=${encodeURIComponent(term)}`;
+                const usrUrl = `/api/search/users?query=${encodeURIComponent(term)}`;
+
+                try {
+                    const [invRes, usrRes] = await Promise.all([
+                        fetch(invUrl, { signal: abortCtrlInv.signal }),
+                        fetch(usrUrl, { signal: abortCtrlUsers.signal })
+                    ]);
+                    if (!invRes.ok || !usrRes.ok) { hide(); return; }
+                    const inv = await invRes.json();
+                    const users = await usrRes.json();
+                    render(inv, users);
+                } catch (e) {
+                    // aborted or failed
+                }
+            }
+
+            const onChange = debounce(() => {
+                const term = (input.value || '').trim();
+                if (term.length === 0) { hide(); return; }
+                query(term);
+            }, 200);
+
+            input.addEventListener('input', onChange);
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const first = results.querySelector('.dropdown-item');
+                if (first) window.location.href = first.getAttribute('href');
+            });
+
+            input.addEventListener('focus', () => {
+                if (results.children.length) results.classList.add('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!results.contains(e.target) && e.target !== input) {
+                    hide();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') hide();
+            });
         })();
     </script>
     <script src="~/js/site.js" asp-append-version="true"></script>

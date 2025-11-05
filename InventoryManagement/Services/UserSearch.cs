@@ -1,5 +1,4 @@
 ﻿using InventoryManagement.Data;
-using InventoryManagement.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagement.Services
@@ -11,11 +10,11 @@ namespace InventoryManagement.Services
         private readonly ApplicationDbContext _db;
         public UserSearch(ApplicationDbContext db) => _db = db;
 
-        public async Task<List<UserSearchResult>> Search(string query)
+        public async Task<List<UserSearchResult>> Search(string query, int limit = 3)
         {
             if (string.IsNullOrWhiteSpace(query)) return [];
 
-            const double threshold = 0.15;
+            const double threshold = 0.05;
 
             var users = await _db.Users.Where(u =>
                 u.SearchVector!.Matches(EF.Functions.PlainToTsQuery("simple", query)) ||
@@ -32,7 +31,7 @@ namespace InventoryManagement.Services
                     EF.Functions.TrigramsSimilarity(u.Email ?? "", query)
             })
             .OrderByDescending(x => x.Rank)
-            .Take(5)
+            .Take(limit)
             .Select(x => x.u)
             .ToListAsync();
 

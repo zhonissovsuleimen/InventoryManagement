@@ -244,7 +244,7 @@ namespace InventoryManagement.Migrations
                     Owner_UserId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true, computedColumnSql: "to_tsvector('simple', coalesce(\"Title\", ''))", stored: true),
+                    SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true, computedColumnSql: "to_tsvector('simple', coalesce(\"Title\", '') || ' ' || coalesce(\"Description\", ''))", stored: true),
                     CustomIdId = table.Column<int>(type: "integer", nullable: false),
                     SingleLine1_Title = table.Column<string>(type: "text", nullable: true),
                     SingleLine1_Description = table.Column<string>(type: "text", nullable: true),
@@ -528,9 +528,29 @@ namespace InventoryManagement.Migrations
                 column: "CustomIdId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Inventories_Description",
+                table: "Inventories",
+                column: "Description")
+                .Annotation("Npgsql:IndexMethod", "GIN")
+                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Inventories_Owner_UserId",
                 table: "Inventories",
                 column: "Owner_UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_SearchVector",
+                table: "Inventories",
+                column: "SearchVector")
+                .Annotation("Npgsql:IndexMethod", "GIN");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_Title",
+                table: "Inventories",
+                column: "Title")
+                .Annotation("Npgsql:IndexMethod", "GIN")
+                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_InventoryAllowedUsers_UserId",

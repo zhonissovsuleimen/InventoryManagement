@@ -100,6 +100,7 @@ namespace InventoryManagement
             builder.Services.AddScoped<UserSearch>();
             builder.Services.AddScoped<TagSearch>();
             builder.Services.AddScoped<ItemLikeService>();
+            builder.Services.AddScoped<InventorySearch>();
 
             var app = builder.Build();
 
@@ -174,7 +175,13 @@ namespace InventoryManagement
 
             app.MapGet("/api/search/users", async (string query, UserSearch search) =>
             {
-                var results = await search.Search(query);
+                var results = await search.Search(query, 3);
+                return Results.Ok(results);
+            });
+
+            app.MapGet("/api/search/inventories", async (string query, InventorySearch search) =>
+            {
+                var results = await search.SearchAsync(query, 3);
                 return Results.Ok(results);
             });
 
