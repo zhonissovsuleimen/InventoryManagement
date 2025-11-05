@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace InventoryManagement
 {
@@ -22,8 +24,34 @@ namespace InventoryManagement
                 options.UseNpgsql(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<AppUser>()
+            builder.Services
+                .AddDefaultIdentity<AppUser>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = false;
+                })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            builder.Services.AddScoped<GoogleSignInService>();
+
+            builder.Services
+                .AddAuthentication()
+                .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+                    options.CallbackPath = "/signin-google";
+                    options.SaveTokens = true;
+                    options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+                    options.Events = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+                    {
+                        OnCreatingTicket = async context =>
+                        {
+                            var handler = context.HttpContext.RequestServices.GetRequiredService<GoogleSignInService>();
+                            await handler.HandleCreatingTicket(context);
+                        }
+                    };
+                });
 
             // Localization
             builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -75,7 +103,6 @@ namespace InventoryManagement
                 }
             }
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
@@ -83,11 +110,9 @@ namespace InventoryManagement
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            // Request localization should be early in the pipeline
             var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
             app.UseRequestLocalization(locOptions);
 
@@ -98,7 +123,12 @@ namespace InventoryManagement
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Endpoint to switch UI culture via cookie
+            // Block/redirect Register everywhere
+            app.MapGet("/Identity/Account/Register", () => Results.Redirect("/Identity/Account/Login"));
+            app.MapPost("/Identity/Account/Register", () => Results.Redirect("/Identity/Account/Login"));
+            app.MapGet("/Account/Register", () => Results.Redirect("/Identity/Account/Login"));
+            app.MapPost("/Account/Register", () => Results.Redirect("/Identity/Account/Login"));
+
             app.MapGet("/set-language", (string culture, string? returnUrl, HttpContext http) =>
             {
                 var ci = new CultureInfo(culture);
