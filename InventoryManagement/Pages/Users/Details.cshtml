@@ -41,6 +41,9 @@ else
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="allowed-tab" data-bs-toggle="tab" data-bs-target="#allowed" type="button" role="tab">Allowed inventories</button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="likes-tab" data-bs-toggle="tab" data-bs-target="#likes" type="button" role="tab">Likes</button>
+        </li>
     </ul>
     <div class="tab-content border border-top-0 p-3" id="userTabsContent" data-root-id="@clientId">
         <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
@@ -213,6 +216,21 @@ else
                         }
                     </tbody>
                 </table>
+            }
+        </div>
+        <div class="tab-pane fade" id="likes" role="tabpanel" aria-labelledby="likes-tab">
+            @if (Model.LikedItems.Count == 0)
+            {
+                <div class="text-muted">No liked items.</div>
+            }
+            else
+            {
+                @await Html.PartialAsync("~/Pages/Shared/_ItemsTable.cshtml", new InventoryManagement.Models.ViewModels.ItemsTableModel {
+                    Items = Model.LikedItems,
+                    ShowInventoryColumn = true,
+                    EnableSelection = false,
+                    DeleteUrl = null
+                })
             }
         </div>
     </div>

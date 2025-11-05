@@ -27,6 +27,7 @@ namespace InventoryManagement.Pages.Users
         public AppUser? UserModel { get; set; }
         public List<Models.Inventory.Inventory> CreatedInventories { get; set; } = [];
         public List<Models.Inventory.Inventory> AllowedInventories { get; set; } = [];
+        public List<Item> LikedItems { get; set; } = [];
         public bool IsSelf { get; set; }
         public bool EditMode { get; set; }
 
@@ -77,6 +78,15 @@ namespace InventoryManagement.Pages.Users
                 .Include(i => i.AllowedUsers)
                 .AsNoTracking()
                 .Where(i => i.AllowedUsers.Any(u => u.Id == Id))
+                .OrderBy(i => i.Id)
+                .ToListAsync();
+
+            LikedItems = await _context.Items
+                .Include(i => i.Inventory)
+                .Include(i => i.Owner)
+                .Include(i => i.Likes).ThenInclude(l => l.User)
+                .AsNoTracking()
+                .Where(i => i.Likes.Any(l => l.User != null && l.User.Id == Id))
                 .OrderBy(i => i.Id)
                 .ToListAsync();
 
@@ -195,6 +205,14 @@ namespace InventoryManagement.Pages.Users
                 .Include(i => i.AllowedUsers)
                 .AsNoTracking()
                 .Where(i => i.AllowedUsers.Any(u => u.Id == Id))
+                .OrderBy(i => i.Id)
+                .ToListAsync();
+            LikedItems = await _context.Items
+                .Include(i => i.Inventory)
+                .Include(i => i.Owner)
+                .Include(i => i.Likes).ThenInclude(l => l.User)
+                .AsNoTracking()
+                .Where(i => i.Likes.Any(l => l.User != null && l.User.Id == Id))
                 .OrderBy(i => i.Id)
                 .ToListAsync();
             IsSelf = true;
