@@ -48,6 +48,7 @@
         "Digit9" => "9 Character Digit",
         "Guid" => "GUID",
         "DateTime" => "Date/Time",
+        "Sequential" => "Sequential",
         _ => t
     };
 
@@ -426,7 +427,7 @@
                                                 <dd class="col-sm-9">@ce.SeparatorAfter.ToString()</dd>
                                             }
 
-                                            @if (element is InventoryManagement.Models.Inventory.CustomId.Element.AbstractNumericElement num)
+                                            @if (element is InventoryManagement.Models.Inventory.CustomId.Element.AbstractNumericElement num && element is not InventoryManagement.Models.Inventory.CustomId.Element.SequentialElement)
                                             {
                                                 <dt class="col-sm-3">Radix</dt>
                                                 <dd class="col-sm-9">@num.Radix</dd>
@@ -630,7 +631,7 @@
     wrapper.className = 'card';
     wrapper.dataset.postId = String(p.id);
     wrapper.innerHTML = `
-      <div class="card-body">\n        <div class="d-flex justify-content-between align-items-start mb-2">\n          <div>\n            <a href="/Users/Details?id=${encodeURIComponent(p.user.id)}">${userDisplay(p.user)}</a>\n            <div class="text-muted small">${new Date(p.createdAtUtc + 'Z').toLocaleString()}</div>\n          </div>\n        </div>\n        <div class="markdown">${p.html}</div>\n      </div>`;
+      <div class="card-body">\n        <div class="d-flex justify-content-between align-items-start mb-2">\n          <div>\n            <a href="/Users/Details?id=${encodeURIComponent(p.user.id)}">${userDisplay(p.user)}</a>\n            <div class="text-muted small">${new Date(p.createdAtUtc + 'Z').toLocaleString()}</div>\n          </div>\n        </div>\n        <div class="markdown">${p.html}</div>\n      </div>` ;
     const head = wrapper.querySelector('.card-body > .d-flex');
     if (canManageDiscussion) {
       const cb = postCheckbox(p.id);
@@ -741,7 +742,7 @@
       if (ag.text && Object.keys(ag.text).length){
         parts.push('<h6 class="mt-4">Text fields (top values)</h6>');
         for (const [label, s] of Object.entries(ag.text)){
-          parts.push('<div class="card"><div class="card-body">'
+          parts.push('<div class="card"><div class="card-body">' 
 
             + `<div class="d-flex justify-content-between align-items-start"><span class="fw-semibold">${escapeHtml(label)}</span><span class="badge text-bg-light">${s.count} total</span></div>`);
           if (Array.isArray(s.top) && s.top.length){
@@ -915,7 +916,7 @@
       const last = item.LastName || '';
       const email = item.email || '';
       const full = (first + ' ' + last).trim();
-      const display = (full || item.userName || id) + (email ? ` (${email})` : '');
+      const display = (full || item.userName || id) + (email ? ` (${email})` : '' );
       const a = document.createElement('button');
       a.type = 'button';
       a.className = 'list-group-item list-group-item-action';

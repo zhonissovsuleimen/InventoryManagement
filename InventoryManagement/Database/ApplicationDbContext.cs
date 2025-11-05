@@ -202,8 +202,8 @@ namespace InventoryManagement.Data
                 .HasValue<Digit6Element>("Digit6")
                 .HasValue<Digit9Element>("Digit9")
                 .HasValue<GuidElement>("Guid")
-                .HasValue<DateTimeElement>("DateTime");
-            //.HasValue<SequentialElement>("Sequential")
+                .HasValue<DateTimeElement>("DateTime")
+                .HasValue<SequentialElement>("Sequential");
         }
 
         private void ConfigureTags(ModelBuilder builder)

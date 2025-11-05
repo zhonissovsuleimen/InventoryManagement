@@ -1,11 +1,11 @@
 ﻿namespace InventoryManagement.Models.Inventory.CustomId.Element
 {
-    //todo
-    //public class SequentialElement : AbstractNumericElement
-    //{
-    //    public override string Generate()
-    //    {
-    //        return "0";
-    //    }
-    //}
+    public class SequentialElement : AbstractNumericElement
+    {
+        public override string Generate(Random rng)
+        {
+            // Preview placeholder: start from 1
+            return "1";
+        }
+    }
 }

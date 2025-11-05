@@ -2,11 +2,14 @@
 using InventoryManagement.Database;
 using InventoryManagement.Models;
 using InventoryManagement.Models.Inventory;
+using InventoryManagement.Models.Inventory.CustomId.Element;
 using InventoryManagement.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace InventoryManagement.Pages.Items
 {
@@ -204,7 +207,63 @@ namespace InventoryManagement.Pages.Items
 
             if (Inventory?.CustomId != null)
             {
-                item.CustomId = Inventory.GenerateCustomId();
+                var elements = (Inventory.CustomId.Elements ?? new List<InventoryManagement.Models.Inventory.CustomId.Element.AbstractElement>())
+                    .Where(e => e != null)
+                    .OrderBy(e => e.Position ?? short.MaxValue)
+                    .ThenBy(e => e.Id)
+                    .ToList();
+
+                var seqElem = elements.OfType<SequentialElement>().FirstOrDefault();
+                if (seqElem == null)
+                {
+                    item.CustomId = Inventory.GenerateCustomId();
+                }
+                else
+                {
+                    // Build a simple pattern: capture numeric group for sequential element
+                    var pattern = BuildDecimalPattern(elements, seqElem);
+                    var regex = new Regex(pattern, RegexOptions.Compiled);
+                    var invId = Inventory.Id;
+                    var existingIds = await _context.Items
+                        .AsNoTracking()
+                        .Where(it => EF.Property<int>(it, "InventoryId") == invId)
+                        .Select(it => it.CustomId)
+                        .ToListAsync();
+
+                    long maxVal = 0;
+                    foreach (var cid in existingIds)
+                    {
+                        if (string.IsNullOrEmpty(cid)) continue;
+                        var m = regex.Match(cid);
+                        if (!m.Success || m.Groups.Count < 2) continue;
+                        var part = m.Groups[1].Value;
+                        if (long.TryParse(part, out var val) && val > maxVal)
+                        {
+                            maxVal = val;
+                        }
+                    }
+
+                    long next = Math.Max(0, maxVal) + 1; // start at 1
+                    string seqText = next.ToString();
+
+                    // Build the final CustomId with the computed sequence
+                    var rng = new Random();
+                    var sb = new StringBuilder();
+                    foreach (var e in elements)
+                    {
+                        if (e.SeparatorBefore.HasValue) sb.Append(e.SeparatorBefore.Value);
+                        if (e is SequentialElement)
+                        {
+                            sb.Append(seqText);
+                        }
+                        else
+                        {
+                            sb.Append(e.Generate(rng));
+                        }
+                        if (e.SeparatorAfter.HasValue) sb.Append(e.SeparatorAfter.Value);
+                    }
+                    item.CustomId = sb.ToString();
+                }
             }
 
             _context.Items.Add(item);
@@ -212,6 +271,29 @@ namespace InventoryManagement.Pages.Items
 
             // Redirect to the details page with the created item's GUID
             return RedirectToPage("./Details", new { guid = item.Guid });
+        }
+
+        private static string Escape(char? ch) => ch.HasValue ? Regex.Escape(ch.Value.ToString()) : string.Empty;
+
+        private static string BuildDecimalPattern(List<InventoryManagement.Models.Inventory.CustomId.Element.AbstractElement> elements, SequentialElement seq)
+        {
+            var sb = new StringBuilder();
+            sb.Append('^');
+            foreach (var e in elements)
+            {
+                if (e.SeparatorBefore.HasValue) sb.Append(Escape(e.SeparatorBefore));
+                if (ReferenceEquals(e, seq))
+                {
+                    sb.Append('(').Append("[0-9]+").Append(')');
+                }
+                else
+                {
+                    sb.Append(".*?");
+                }
+                if (e.SeparatorAfter.HasValue) sb.Append(Escape(e.SeparatorAfter));
+            }
+            sb.Append('$');
+            return sb.ToString();
         }
     }
 }

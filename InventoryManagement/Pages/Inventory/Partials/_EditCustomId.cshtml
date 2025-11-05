@@ -19,6 +19,7 @@
     <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit32">Random 32-bit</button>
     <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="DateTime">Date/Time</button>
     <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Guid">Guid</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Sequential">Sequential</button>
 </div>
 
 <div id="customIdElements" class="d-grid gap-2"></div>
@@ -119,6 +120,7 @@
                 obj.Radix = radix;
                 if (pad) obj.PaddingChar = pad;
             }
+            // Sequential has no specific inputs
             items.push(obj);
         });
         return items;
@@ -160,6 +162,7 @@
         if (type === 'FixedText') return document.getElementById('templateSpecificFixedText').content.cloneNode(true);
         if (type === 'DateTime') return document.getElementById('templateSpecificDateTime').content.cloneNode(true);
         if (type === 'Guid') return document.getElementById('templateSpecificGuid').content.cloneNode(true);
+        if (type === 'Sequential') return document.createDocumentFragment(); // no extra inputs
         return document.getElementById('templateSpecificNumeric').content.cloneNode(true);
     }
 
@@ -174,7 +177,8 @@
             type === 'Bit20' ? 'Random 20-bit' :
             type === 'Bit32' ? 'Random 32-bit' :
             type === 'DateTime' ? 'Date/Time' :
-            type === 'Guid' ? 'Guid' : 'Element';
+            type === 'Guid' ? 'Guid' :
+            type === 'Sequential' ? 'Sequential' : 'Element';
         const typeInput = card.querySelector('[data-prop="Type"]');
         typeInput.value = type;
         const specificHost = card.querySelector('[data-specific]');
@@ -222,6 +226,7 @@
                         set('[data-prop="PaddingChar"]', e.PaddingChar);
                         set('[data-prop="Radix"]', e.Radix);
                     }
+                    // Sequential: no extra fields
                 }
             }
         } catch {}

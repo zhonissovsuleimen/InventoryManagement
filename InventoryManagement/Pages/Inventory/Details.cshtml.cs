@@ -128,7 +128,7 @@ namespace InventoryManagement.Pages.Inventory
             public short? Position { get; set; }
         }
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
+        private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
@@ -158,7 +158,7 @@ namespace InventoryManagement.Pages.Inventory
             {
                 Inventory = inventory;
 
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
                 var currentUser = string.IsNullOrEmpty(userId)
                     ? null
                     : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
@@ -345,7 +345,7 @@ namespace InventoryManagement.Pages.Inventory
                         SeparatorAfter = e.SeparatorAfter?.ToString(),
                         Position = e.Position
                     };
-                    if (e is AbstractNumericElement num)
+                    if (e is AbstractNumericElement num && e is not SequentialElement)
                     {
                         item.PaddingChar = num.PaddingChar?.ToString();
                         item.Radix = ((int)num.Radix).ToString();
@@ -503,31 +503,6 @@ namespace InventoryManagement.Pages.Inventory
             await _context.SaveChangesAsync();
 
             return new JsonResult(new { deletedIds = posts.Select(p => p.Id).ToList() });
-        }
-
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> OnPostAddTagAsync(Guid guid, string tag)
-        {
-            if (string.IsNullOrWhiteSpace(tag)) return RedirectToPage(new { guid });
-            var inv = await _context.Inventories.Include(i => i.Tags).FirstOrDefaultAsync(i => i.Guid == guid);
-            if (inv == null) return NotFound();
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-            var name = tag.Trim().ToLowerInvariant();
-            if (name.Length > 64) name = name.Substring(0, 64);
-            if (!inv.Tags.Any(t => t.Name == name))
-            {
-                var tagEntity = await _context.Tags.FirstOrDefaultAsync(t => t.Name == name) ?? new Tag { Name = name };
-                if (tagEntity.Id == 0)
-                {
-                    _context.Tags.Add(tagEntity);
-                    await _context.SaveChangesAsync();
-                }
-                inv.Tags.Add(tagEntity);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToPage(new { guid });
         }
 
         public sealed class TagNameInput { public string? Tag { get; set; } }
@@ -751,6 +726,7 @@ namespace InventoryManagement.Pages.Inventory
                         "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
                         "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
                         "Guid" => new GuidElement(),
+                        "Sequential" => new SequentialElement(),
                         _ => null
                     };
                     if (element == null) continue;
@@ -875,7 +851,7 @@ namespace InventoryManagement.Pages.Inventory
                             SeparatorAfter = e.SeparatorAfter?.ToString(),
                             Position = e.Position
                         };
-                        if (e is AbstractNumericElement num)
+                        if (e is AbstractNumericElement num && e is not SequentialElement)
                         {
                             item.PaddingChar = num.PaddingChar?.ToString();
                             item.Radix = ((int)num.Radix).ToString();
@@ -989,6 +965,7 @@ namespace InventoryManagement.Pages.Inventory
                         "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
                         "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
                         "Guid" => new GuidElement(),
+                        "Sequential" => new SequentialElement(),
                         _ => null
                     };
                     if (element == null) continue;
@@ -1070,7 +1047,7 @@ namespace InventoryManagement.Pages.Inventory
                 return Content(string.Empty, "text/plain");
             }
 
-            var req = JsonSerializer.Deserialize<GenerateCustomIdRequest>(body, JsonOptions);
+            var req = System.Text.Json.JsonSerializer.Deserialize<GenerateCustomIdRequest>(body, JsonOptions);
             if (req == null || req.Elements == null || req.Elements.Count == 0)
             {
                 return Content(string.Empty, "text/plain");
@@ -1093,6 +1070,7 @@ namespace InventoryManagement.Pages.Inventory
                     "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
                     "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
                     "Guid" => new GuidElement(),
+                    "Sequential" => new SequentialElement(),
                     _ => null
                 };
                 if (element == null) continue;

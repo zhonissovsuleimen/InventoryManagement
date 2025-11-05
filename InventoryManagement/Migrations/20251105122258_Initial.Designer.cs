@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105101808_Initial")]
+    [Migration("20251105122258_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -382,9 +382,10 @@ namespace InventoryManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InventoryId");
-
                     b.HasIndex("Owner_UserId");
+
+                    b.HasIndex("InventoryId", "CustomId")
+                        .IsUnique();
 
                     b.ToTable("Items");
                 });
@@ -649,6 +650,21 @@ namespace InventoryManagement.Migrations
                     b.HasBaseType("InventoryManagement.Models.Inventory.CustomId.Element.AbstractElement");
 
                     b.HasDiscriminator().HasValue("Guid");
+                });
+
+            modelBuilder.Entity("InventoryManagement.Models.Inventory.CustomId.Element.SequentialElement", b =>
+                {
+                    b.HasBaseType("InventoryManagement.Models.Inventory.CustomId.Element.AbstractElement");
+
+                    b.Property<char?>("PaddingChar")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("character(1)");
+
+                    b.Property<int>("Radix")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.HasDiscriminator().HasValue("Sequential");
                 });
 
             modelBuilder.Entity("InventoryAllowedUsers", b =>

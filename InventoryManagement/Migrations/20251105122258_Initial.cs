@@ -538,9 +538,10 @@ namespace InventoryManagement.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Items_InventoryId",
+                name: "IX_Items_InventoryId_CustomId",
                 table: "Items",
-                column: "InventoryId");
+                columns: new[] { "InventoryId", "CustomId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Items_Owner_UserId",
