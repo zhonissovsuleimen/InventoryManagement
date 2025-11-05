@@ -50,22 +50,35 @@ namespace InventoryManagement
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            // Apply migrations and seed on startup (works in Azure/Production and Development)
+            using (var scope = app.Services.CreateScope())
             {
-                app.UseMigrationsEndPoint();
-
-                using (var scope = app.Services.CreateScope())
+                var services = scope.ServiceProvider;
+                try
                 {
-                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+                    var db = services.GetRequiredService<ApplicationDbContext>();
+                    await db.Database.MigrateAsync();
+
+                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
                     var shouldSeed = !await userManager.Users.AnyAsync();
                     if (shouldSeed)
                     {
                         Console.WriteLine("Seeding data");
-                        await Seed.SeedAll(scope.ServiceProvider);
+                        await Seed.SeedAll(services);
                         Console.WriteLine("Seeding data done");
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database migration/seed failed: {ex}");
+                    throw;
+                }
+            }
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseMigrationsEndPoint();
             }
             else
             {
