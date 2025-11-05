@@ -293,7 +293,19 @@ namespace InventoryManagement.Migrations
                     BoolLine3_Title = table.Column<string>(type: "text", nullable: true),
                     BoolLine3_Description = table.Column<string>(type: "text", nullable: true),
                     BoolLine3_Position = table.Column<short>(type: "smallint", nullable: true),
-                    BoolLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true)
+                    BoolLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    LinkLine1_Title = table.Column<string>(type: "text", nullable: true),
+                    LinkLine1_Description = table.Column<string>(type: "text", nullable: true),
+                    LinkLine1_Position = table.Column<short>(type: "smallint", nullable: true),
+                    LinkLine1_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    LinkLine2_Title = table.Column<string>(type: "text", nullable: true),
+                    LinkLine2_Description = table.Column<string>(type: "text", nullable: true),
+                    LinkLine2_Position = table.Column<short>(type: "smallint", nullable: true),
+                    LinkLine2_IsUsed = table.Column<bool>(type: "boolean", nullable: true),
+                    LinkLine3_Title = table.Column<string>(type: "text", nullable: true),
+                    LinkLine3_Description = table.Column<string>(type: "text", nullable: true),
+                    LinkLine3_Position = table.Column<short>(type: "smallint", nullable: true),
+                    LinkLine3_IsUsed = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -416,6 +428,9 @@ namespace InventoryManagement.Migrations
                     BoolLine1 = table.Column<bool>(type: "boolean", nullable: true),
                     BoolLine2 = table.Column<bool>(type: "boolean", nullable: true),
                     BoolLine3 = table.Column<bool>(type: "boolean", nullable: true),
+                    LinkLine1 = table.Column<string>(type: "text", nullable: true),
+                    LinkLine2 = table.Column<string>(type: "text", nullable: true),
+                    LinkLine3 = table.Column<string>(type: "text", nullable: true),
                     Version = table.Column<int>(type: "integer", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

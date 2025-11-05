@@ -43,6 +43,9 @@ namespace InventoryManagement.Pages.Items
             public bool? BoolLine1 { get; set; }
             public bool? BoolLine2 { get; set; }
             public bool? BoolLine3 { get; set; }
+            public string? LinkLine1 { get; set; }
+            public string? LinkLine2 { get; set; }
+            public string? LinkLine3 { get; set; }
         }
 
         [BindProperty]
@@ -62,7 +65,10 @@ namespace InventoryManagement.Pages.Items
                 && Nullable.Equals(item.NumericLine3, original.NumericLine3)
                 && Nullable.Equals(item.BoolLine1, original.BoolLine1)
                 && Nullable.Equals(item.BoolLine2, original.BoolLine2)
-                && Nullable.Equals(item.BoolLine3, original.BoolLine3);
+                && Nullable.Equals(item.BoolLine3, original.BoolLine3)
+                && string.Equals(item.LinkLine1 ?? string.Empty, original.LinkLine1 ?? string.Empty, StringComparison.Ordinal)
+                && string.Equals(item.LinkLine2 ?? string.Empty, original.LinkLine2 ?? string.Empty, StringComparison.Ordinal)
+                && string.Equals(item.LinkLine3 ?? string.Empty, original.LinkLine3 ?? string.Empty, StringComparison.Ordinal);
         }
 
         private static void ApplyCustomFields(Item item, EditInputModel change)
@@ -79,6 +85,9 @@ namespace InventoryManagement.Pages.Items
             item.BoolLine1 = change.BoolLine1;
             item.BoolLine2 = change.BoolLine2;
             item.BoolLine3 = change.BoolLine3;
+            item.LinkLine1 = change.LinkLine1;
+            item.LinkLine2 = change.LinkLine2;
+            item.LinkLine3 = change.LinkLine3;
         }
 
         public async Task<IActionResult> OnGetAsync(Guid? guid)
@@ -113,7 +122,10 @@ namespace InventoryManagement.Pages.Items
                 NumericLine3 = item.NumericLine3,
                 BoolLine1 = item.BoolLine1,
                 BoolLine2 = item.BoolLine2,
-                BoolLine3 = item.BoolLine3
+                BoolLine3 = item.BoolLine3,
+                LinkLine1 = item.LinkLine1,
+                LinkLine2 = item.LinkLine2,
+                LinkLine3 = item.LinkLine3
             };
 
             return Page();
@@ -154,7 +166,10 @@ namespace InventoryManagement.Pages.Items
                     NumericLine3 = item.NumericLine3,
                     BoolLine1 = item.BoolLine1,
                     BoolLine2 = item.BoolLine2,
-                    BoolLine3 = item.BoolLine3
+                    BoolLine3 = item.BoolLine3,
+                    LinkLine1 = item.LinkLine1,
+                    LinkLine2 = item.LinkLine2,
+                    LinkLine3 = item.LinkLine3
                 };
                 return Page();
             }
@@ -180,6 +195,9 @@ namespace InventoryManagement.Pages.Items
                     ("BoolLine1", "bool", Inventory.BoolLine1),
                     ("BoolLine2", "bool", Inventory.BoolLine2),
                     ("BoolLine3", "bool", Inventory.BoolLine3),
+                    ("LinkLine1", "link", Inventory.LinkLine1),
+                    ("LinkLine2", "link", Inventory.LinkLine2),
+                    ("LinkLine3", "link", Inventory.LinkLine3),
                 };
 
                 foreach (var (PropName, Kind, Def) in fields)
@@ -199,13 +217,23 @@ namespace InventoryManagement.Pages.Items
                         "BoolLine1" => Input.BoolLine1,
                         "BoolLine2" => Input.BoolLine2,
                         "BoolLine3" => Input.BoolLine3,
+                        "LinkLine1" => Input.LinkLine1,
+                        "LinkLine2" => Input.LinkLine2,
+                        "LinkLine3" => Input.LinkLine3,
                         _ => null
                     };
 
-                    if (Kind == "single" || Kind == "multi")
+                    if (Kind == "single" || Kind == "multi" || Kind == "link")
                     {
                         var s = val as string;
                         if (string.IsNullOrWhiteSpace(s)) AddFieldError(PropName, $"The field '{(Def.Title ?? PropName)}' is required.");
+                        else if (Kind == "link")
+                        {
+                            if (!Uri.TryCreate(s, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                            {
+                                AddFieldError(PropName, $"The field '{(Def.Title ?? PropName)}' must be a valid URL (http/https).");
+                            }
+                        }
                     }
                     else if (Kind == "numeric")
                     {

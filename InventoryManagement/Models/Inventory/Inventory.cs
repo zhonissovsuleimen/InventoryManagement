@@ -48,6 +48,9 @@ namespace InventoryManagement.Models.Inventory
         public CustomField? BoolLine1 { get; set; }
         public CustomField? BoolLine2 { get; set; }
         public CustomField? BoolLine3 { get; set; }
+        public CustomField? LinkLine1 { get; set; }
+        public CustomField? LinkLine2 { get; set; }
+        public CustomField? LinkLine3 { get; set; }
 
         public List<Tag> Tags { get; set; } = [];
 

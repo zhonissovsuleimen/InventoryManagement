@@ -74,6 +74,11 @@
                 Add("BoolLine2", "bool", inv?.BoolLine2, Model.Item.BoolLine2);
                 Add("BoolLine3", "bool", inv?.BoolLine3, Model.Item.BoolLine3);
 
+                // Link fields
+                Add("LinkLine1", "link", inv?.LinkLine1, Model.Item.LinkLine1);
+                Add("LinkLine2", "link", inv?.LinkLine2, Model.Item.LinkLine2);
+                Add("LinkLine3", "link", inv?.LinkLine3, Model.Item.LinkLine3);
+
                 fields = fields.OrderBy(f => f.Position ?? short.MaxValue).ToList();
 
             }
@@ -107,6 +112,14 @@
                     {
                         var b = (f.Value as bool?) ?? false;
                         @((b) ? "Yes" : "No")
+                    }
+                    else if (f.Kind == "link")
+                    {
+                        var s = (f.Value as string) ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(s))
+                        {
+                            <a href="@s" target="_blank" rel="noopener noreferrer">@s</a>
+                        }
                     }
                 </dd>
             }

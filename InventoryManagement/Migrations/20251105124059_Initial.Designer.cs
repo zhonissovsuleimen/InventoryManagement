@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105122258_Initial")]
+    [Migration("20251105124059_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -343,6 +343,15 @@ namespace InventoryManagement.Migrations
 
                     b.Property<int>("InventoryId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("LinkLine1")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LinkLine2")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LinkLine3")
+                        .HasColumnType("text");
 
                     b.Property<string>("MultiLine1")
                         .HasColumnType("text");
@@ -810,6 +819,81 @@ namespace InventoryManagement.Migrations
                                 .HasForeignKey("InventoryId");
                         });
 
+                    b.OwnsOne("InventoryManagement.Models.Inventory.CustomField", "LinkLine1", b1 =>
+                        {
+                            b1.Property<int>("InventoryId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsUsed")
+                                .HasColumnType("boolean");
+
+                            b1.Property<short?>("Position")
+                                .HasColumnType("smallint");
+
+                            b1.Property<string>("Title")
+                                .HasColumnType("text");
+
+                            b1.HasKey("InventoryId");
+
+                            b1.ToTable("Inventories");
+
+                            b1.WithOwner()
+                                .HasForeignKey("InventoryId");
+                        });
+
+                    b.OwnsOne("InventoryManagement.Models.Inventory.CustomField", "LinkLine2", b1 =>
+                        {
+                            b1.Property<int>("InventoryId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsUsed")
+                                .HasColumnType("boolean");
+
+                            b1.Property<short?>("Position")
+                                .HasColumnType("smallint");
+
+                            b1.Property<string>("Title")
+                                .HasColumnType("text");
+
+                            b1.HasKey("InventoryId");
+
+                            b1.ToTable("Inventories");
+
+                            b1.WithOwner()
+                                .HasForeignKey("InventoryId");
+                        });
+
+                    b.OwnsOne("InventoryManagement.Models.Inventory.CustomField", "LinkLine3", b1 =>
+                        {
+                            b1.Property<int>("InventoryId")
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Description")
+                                .HasColumnType("text");
+
+                            b1.Property<bool>("IsUsed")
+                                .HasColumnType("boolean");
+
+                            b1.Property<short?>("Position")
+                                .HasColumnType("smallint");
+
+                            b1.Property<string>("Title")
+                                .HasColumnType("text");
+
+                            b1.HasKey("InventoryId");
+
+                            b1.ToTable("Inventories");
+
+                            b1.WithOwner()
+                                .HasForeignKey("InventoryId");
+                        });
+
                     b.OwnsOne("InventoryManagement.Models.Inventory.CustomField", "MultiLine1", b1 =>
                         {
                             b1.Property<int>("InventoryId")
@@ -1044,6 +1128,12 @@ namespace InventoryManagement.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("CustomId");
+
+                    b.Navigation("LinkLine1");
+
+                    b.Navigation("LinkLine2");
+
+                    b.Navigation("LinkLine3");
 
                     b.Navigation("MultiLine1");
 

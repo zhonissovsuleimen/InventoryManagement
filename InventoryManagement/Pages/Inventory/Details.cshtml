@@ -35,6 +35,9 @@
         Add("Boolean", inv.BoolLine1);
         Add("Boolean", inv.BoolLine2);
         Add("Boolean", inv.BoolLine3);
+        Add("Link", inv.LinkLine1);
+        Add("Link", inv.LinkLine2);
+        Add("Link", inv.LinkLine3);
 
         customFieldList = customFieldList.OrderBy(cf => cf.Position ?? short.MaxValue).ToList();
     }
@@ -941,7 +944,7 @@
         .then(items => {
           if (!Array.isArray(items)) { clearSuggestions(); return; }
           suggestions.innerHTML = '';
-          items.filter item => !(selectedMap.has(item.guid)))
+          items.filter(item => !(selectedMap.has(item.guid)))
                .forEach(item => suggestions.appendChild(renderSuggestion(item)));
           suggestions.style.display = suggestions.childElementCount > 0 ? 'block' : 'none';
         })
@@ -961,7 +964,7 @@
     try {
       const preset = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit.UserIds ?? new List<string>()));
       const arr = Array.isArray(preset) ? preset : [];
-      arr.forEach id => addUser(id, id));
+      arr.forEach(id => addUser(id, id));
     } catch {}
   })();
 
@@ -1063,7 +1066,8 @@
         SingleLine1: read('SingleLine1'), SingleLine2: read('SingleLine2'), SingleLine3: read('SingleLine3'),
         MultiLine1: read('MultiLine1'), MultiLine2: read('MultiLine2'), MultiLine3: read('MultiLine3'),
         NumericLine1: read('NumericLine1'), NumericLine2: read('NumericLine2'), NumericLine3: read('NumericLine3'),
-        BoolLine1: read('BoolLine1'), BoolLine2: read('BoolLine2'), BoolLine3: read('BoolLine3')
+        BoolLine1: read('BoolLine1'), BoolLine2: read('BoolLine2'), BoolLine3: read('BoolLine3'),
+        LinkLine1: read('LinkLine1'), LinkLine2: read('LinkLine2'), LinkLine3: read('LinkLine3')
       };
     }
     function collectCustomId(){
@@ -1108,6 +1112,9 @@
         BoolLine1: collectCustomFields().BoolLine1,
         BoolLine2: collectCustomFields().BoolLine2,
         BoolLine3: collectCustomFields().BoolLine3,
+        LinkLine1: collectCustomFields().LinkLine1,
+        LinkLine2: collectCustomFields().LinkLine2,
+        LinkLine3: collectCustomFields().LinkLine3,
         CustomIdElements: collectCustomId()
       };
     }

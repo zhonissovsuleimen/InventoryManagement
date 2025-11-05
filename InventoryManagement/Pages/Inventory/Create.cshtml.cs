@@ -69,6 +69,9 @@ namespace InventoryManagement.Pages.Inventory
             public CustomField? BoolLine1 { get; set; }
             public CustomField? BoolLine2 { get; set; }
             public CustomField? BoolLine3 { get; set; }
+            public CustomField? LinkLine1 { get; set; }
+            public CustomField? LinkLine2 { get; set; }
+            public CustomField? LinkLine3 { get; set; }
         }
 
         public class CustomIdElementInput
@@ -135,7 +138,10 @@ namespace InventoryManagement.Pages.Inventory
                            || HasValid(Input.NumericLine3)
                            || HasValid(Input.BoolLine1)
                            || HasValid(Input.BoolLine2)
-                           || HasValid(Input.BoolLine3);
+                           || HasValid(Input.BoolLine3)
+                           || HasValid(Input.LinkLine1)
+                           || HasValid(Input.LinkLine2)
+                           || HasValid(Input.LinkLine3);
 
             var fields = new (string Name, CustomField? Field)[]
             {
@@ -151,6 +157,9 @@ namespace InventoryManagement.Pages.Inventory
                 ("BoolLine1", Input.BoolLine1),
                 ("BoolLine2", Input.BoolLine2),
                 ("BoolLine3", Input.BoolLine3),
+                ("LinkLine1", Input.LinkLine1),
+                ("LinkLine2", Input.LinkLine2),
+                ("LinkLine3", Input.LinkLine3),
             };
 
             bool anyValid = false;
@@ -255,7 +264,10 @@ namespace InventoryManagement.Pages.Inventory
                 NumericLine3 = Input.NumericLine3,
                 BoolLine1 = Input.BoolLine1,
                 BoolLine2 = Input.BoolLine2,
-                BoolLine3 = Input.BoolLine3
+                BoolLine3 = Input.BoolLine3,
+                LinkLine1 = Input.LinkLine1,
+                LinkLine2 = Input.LinkLine2,
+                LinkLine3 = Input.LinkLine3
             };
 
             _context.Inventories.Add(inventory);

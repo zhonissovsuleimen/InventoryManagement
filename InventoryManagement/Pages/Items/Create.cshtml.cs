@@ -38,6 +38,9 @@ namespace InventoryManagement.Pages.Items
             public bool? BoolLine1 { get; set; }
             public bool? BoolLine2 { get; set; }
             public bool? BoolLine3 { get; set; }
+            public string? LinkLine1 { get; set; }
+            public string? LinkLine2 { get; set; }
+            public string? LinkLine3 { get; set; }
         }
 
         public Models.Inventory.Inventory? Inventory { get; set; }
@@ -139,6 +142,9 @@ namespace InventoryManagement.Pages.Items
                     ("BoolLine1", "bool", Inventory.BoolLine1),
                     ("BoolLine2", "bool", Inventory.BoolLine2),
                     ("BoolLine3", "bool", Inventory.BoolLine3),
+                    ("LinkLine1", "link", Inventory.LinkLine1),
+                    ("LinkLine2", "link", Inventory.LinkLine2),
+                    ("LinkLine3", "link", Inventory.LinkLine3),
                 };
 
                 foreach (var (PropName, Kind, CustomField) in fields)
@@ -159,13 +165,23 @@ namespace InventoryManagement.Pages.Items
                         "BoolLine1" => Input.BoolLine1,
                         "BoolLine2" => Input.BoolLine2,
                         "BoolLine3" => Input.BoolLine3,
+                        "LinkLine1" => Input.LinkLine1,
+                        "LinkLine2" => Input.LinkLine2,
+                        "LinkLine3" => Input.LinkLine3,
                         _ => null
                     };
 
-                    if (Kind == "single" || Kind == "multi")
+                    if (Kind == "single" || Kind == "multi" || Kind == "link")
                     {
                         var s = val as string;
                         if (string.IsNullOrWhiteSpace(s)) AddFieldError(PropName, $"The field '{(CustomField.Title ?? PropName)}' is required.");
+                        else if (Kind == "link")
+                        {
+                            if (!Uri.TryCreate(s, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                            {
+                                AddFieldError(PropName, $"The field '{(CustomField.Title ?? PropName)}' must be a valid URL (http/https).");
+                            }
+                        }
                     }
                     else if (Kind == "numeric")
                     {
@@ -202,7 +218,10 @@ namespace InventoryManagement.Pages.Items
                 NumericLine3 = Input.NumericLine3,
                 BoolLine1 = Input.BoolLine1,
                 BoolLine2 = Input.BoolLine2,
-                BoolLine3 = Input.BoolLine3
+                BoolLine3 = Input.BoolLine3,
+                LinkLine1 = Input.LinkLine1,
+                LinkLine2 = Input.LinkLine2,
+                LinkLine3 = Input.LinkLine3
             };
 
             if (Inventory?.CustomId != null)

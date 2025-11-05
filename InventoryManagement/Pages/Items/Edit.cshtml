@@ -54,6 +54,11 @@
                 Add("BoolLine2", "bool", inv?.BoolLine2, Model.Input.BoolLine2);
                 Add("BoolLine3", "bool", inv?.BoolLine3, Model.Input.BoolLine3);
 
+                // Link fields
+                Add("LinkLine1", "link", inv?.LinkLine1, Model.Input.LinkLine1);
+                Add("LinkLine2", "link", inv?.LinkLine2, Model.Input.LinkLine2);
+                Add("LinkLine3", "link", inv?.LinkLine3, Model.Input.LinkLine3);
+
                 fields = fields.OrderBy(f => f.Position ?? short.MaxValue).ToList();
             }
 
@@ -92,6 +97,10 @@
                             <input type="hidden" name="Input.@f.PropName" value="false" />
                         </div>
                     }
+                    else if (f.FieldKind == "link")
+                    {
+                        <input type="url" name="Input.@f.PropName" class="form-control" value="@((f.Value as string) ?? string.Empty)" placeholder="https://example.com/file" data-edit-field />
+                    }
 
                     @if (f.PropName == "SingleLine1") { <span asp-validation-for="Input.SingleLine1" class="text-danger"></span> }
                     else if (f.PropName == "SingleLine2") { <span asp-validation-for="Input.SingleLine2" class="text-danger"></span> }
@@ -105,6 +114,9 @@
                     else if (f.PropName == "BoolLine1") { <span asp-validation-for="Input.BoolLine1" class="text-danger"></span> }
                     else if (f.PropName == "BoolLine2") { <span asp-validation-for="Input.BoolLine2" class="text-danger"></span> }
                     else if (f.PropName == "BoolLine3") { <span asp-validation-for="Input.BoolLine3" class="text-danger"></span> }
+                    else if (f.PropName == "LinkLine1") { <span asp-validation-for="Input.LinkLine1" class="text-danger"></span> }
+                    else if (f.PropName == "LinkLine2") { <span asp-validation-for="Input.LinkLine2" class="text-danger"></span> }
+                    else if (f.PropName == "LinkLine3") { <span asp-validation-for="Input.LinkLine3" class="text-danger"></span> }
                 </div>
             }
 
@@ -181,7 +193,10 @@
                     NumericLine3: num('NumericLine3'),
                     BoolLine1: bool('BoolLine1'),
                     BoolLine2: bool('BoolLine2'),
-                    BoolLine3: bool('BoolLine3')
+                    BoolLine3: bool('BoolLine3'),
+                    LinkLine1: val('LinkLine1') || '',
+                    LinkLine2: val('LinkLine2') || '',
+                    LinkLine3: val('LinkLine3') || ''
                 };
             }
 

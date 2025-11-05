@@ -17,6 +17,9 @@
     <button type="button" class="btn btn-outline-primary" data-add-type="BoolLine">
         Boolean <span class="badge bg-secondary ms-1" data-count="BoolLine">0/3</span>
     </button>
+    <button type="button" class="btn btn-outline-primary" data-add-type="LinkLine">
+        Link <span class="badge bg-secondary ms-1" data-count="LinkLine">0/3</span>
+    </button>
 </div>
 
 <div id="customFields" class="d-grid gap-2">
@@ -287,6 +290,74 @@
             </div>
             <input asp-for="Edit.BoolLine3.Position" type="hidden" data-field="position" form="editForm" />
             <input asp-for="Edit.BoolLine3.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+
+    <!-- Link custom fields -->
+    <div class="card shadow-sm" data-type="LinkLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Link</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.LinkLine1.Title">Title</label>
+                    <input asp-for="Edit.LinkLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.LinkLine1.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.LinkLine1.Description">Description</label>
+                    <input asp-for="Edit.LinkLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.LinkLine1.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.LinkLine1.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.LinkLine1.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="LinkLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Link</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.LinkLine2.Title">Title</label>
+                    <input asp-for="Edit.LinkLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.LinkLine2.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.LinkLine2.Description">Description</label>
+                    <input asp-for="Edit.LinkLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.LinkLine2.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.LinkLine2.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.LinkLine2.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
+        </div>
+    </div>
+    <div class="card shadow-sm" data-type="LinkLine" data-used="false">
+        <div class="card-body p-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge text-bg-secondary">Link</span>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+            </div>
+            <div class="row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1" asp-for="Edit.LinkLine3.Title">Title</label>
+                    <input asp-for="Edit.LinkLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" form="editForm" />
+                    <span asp-validation-for="Edit.LinkLine3.Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label small mb-1" asp-for="Edit.LinkLine3.Description">Description</label>
+                    <input asp-for="Edit.LinkLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" form="editForm" />
+                    <span asp-validation-for="Edit.LinkLine3.Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <input asp-for="Edit.LinkLine3.Position" type="hidden" data-field="position" form="editForm" />
+            <input asp-for="Edit.LinkLine3.IsUsed" type="hidden" data-field="isUsed" form="editForm" />
         </div>
     </div>
 </div>

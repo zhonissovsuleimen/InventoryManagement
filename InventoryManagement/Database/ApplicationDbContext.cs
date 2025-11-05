@@ -107,6 +107,9 @@ namespace InventoryManagement.Data
             builder.Entity<Inventory>().OwnsOne(i => i.BoolLine1);
             builder.Entity<Inventory>().OwnsOne(i => i.BoolLine2);
             builder.Entity<Inventory>().OwnsOne(i => i.BoolLine3);
+            builder.Entity<Inventory>().OwnsOne(i => i.LinkLine1);
+            builder.Entity<Inventory>().OwnsOne(i => i.LinkLine2);
+            builder.Entity<Inventory>().OwnsOne(i => i.LinkLine3);
         }
 
         private void ConfigureUserInventory(ModelBuilder builder)

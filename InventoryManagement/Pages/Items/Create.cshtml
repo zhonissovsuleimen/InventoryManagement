@@ -39,6 +39,11 @@ ViewData["Title"] = "Create";
                 Add("BoolLine2", "bool", inv?.BoolLine2);
                 Add("BoolLine3", "bool", inv?.BoolLine3);
 
+                // New link fields
+                Add("LinkLine1", "link", inv?.LinkLine1);
+                Add("LinkLine2", "link", inv?.LinkLine2);
+                Add("LinkLine3", "link", inv?.LinkLine3);
+
                 fields = fields.OrderBy(f => f.Position ?? short.MaxValue).ToList();
             }
 
@@ -85,6 +90,10 @@ ViewData["Title"] = "Create";
                             <input type="hidden" name="Input.@f.PropName" value="false" />
                         </div>
                     }
+                    else if (f.FieldKind == "link")
+                    {
+                        <input type="url" name="Input.@f.PropName" class="form-control" value="@(Model.Input == null ? "" : (Model.Input.GetType().GetProperty(f.PropName)?.GetValue(Model.Input) as string) ?? "")" placeholder="https://example.com/file" />
+                    }
 
                     @if (f.PropName == "SingleLine1") { <span asp-validation-for="Input.SingleLine1" class="text-danger"></span> }
                     else if (f.PropName == "SingleLine2") { <span asp-validation-for="Input.SingleLine2" class="text-danger"></span> }
@@ -98,6 +107,9 @@ ViewData["Title"] = "Create";
                     else if (f.PropName == "BoolLine1") { <span asp-validation-for="Input.BoolLine1" class="text-danger"></span> }
                     else if (f.PropName == "BoolLine2") { <span asp-validation-for="Input.BoolLine2" class="text-danger"></span> }
                     else if (f.PropName == "BoolLine3") { <span asp-validation-for="Input.BoolLine3" class="text-danger"></span> }
+                    else if (f.PropName == "LinkLine1") { <span asp-validation-for="Input.LinkLine1" class="text-danger"></span> }
+                    else if (f.PropName == "LinkLine2") { <span asp-validation-for="Input.LinkLine2" class="text-danger"></span> }
+                    else if (f.PropName == "LinkLine3") { <span asp-validation-for="Input.LinkLine3" class="text-danger"></span> }
 
                 </div>
             }

@@ -114,6 +114,9 @@ namespace InventoryManagement.Pages.Inventory
             public CustomField? BoolLine1 { get; set; }
             public CustomField? BoolLine2 { get; set; }
             public CustomField? BoolLine3 { get; set; }
+            public CustomField? LinkLine1 { get; set; }
+            public CustomField? LinkLine2 { get; set; }
+            public CustomField? LinkLine3 { get; set; }
         }
 
         public class CustomIdElementInput
@@ -328,6 +331,9 @@ namespace InventoryManagement.Pages.Inventory
             Edit.BoolLine1 = CloneCustomField(inv.BoolLine1);
             Edit.BoolLine2 = CloneCustomField(inv.BoolLine2);
             Edit.BoolLine3 = CloneCustomField(inv.BoolLine3);
+            Edit.LinkLine1 = CloneCustomField(inv.LinkLine1);
+            Edit.LinkLine2 = CloneCustomField(inv.LinkLine2);
+            Edit.LinkLine3 = CloneCustomField(inv.LinkLine3);
 
             Edit.CustomIdElements = new List<CustomIdElementInput>();
             if (inv.CustomId?.Elements != null)
@@ -697,6 +703,9 @@ namespace InventoryManagement.Pages.Inventory
             inv.BoolLine1 = Edit.BoolLine1;
             inv.BoolLine2 = Edit.BoolLine2;
             inv.BoolLine3 = Edit.BoolLine3;
+            inv.LinkLine1 = Edit.LinkLine1;
+            inv.LinkLine2 = Edit.LinkLine2;
+            inv.LinkLine3 = Edit.LinkLine3;
 
             if (Edit.CustomIdElements != null && Edit.CustomIdElements.Count > 0)
             {
@@ -835,7 +844,10 @@ namespace InventoryManagement.Pages.Inventory
                     && CustomFieldEquals(inv.NumericLine3, original.NumericLine3)
                     && CustomFieldEquals(inv.BoolLine1, original.BoolLine1)
                     && CustomFieldEquals(inv.BoolLine2, original.BoolLine2)
-                    && CustomFieldEquals(inv.BoolLine3, original.BoolLine3);
+                    && CustomFieldEquals(inv.BoolLine3, original.BoolLine3)
+                    && CustomFieldEquals(inv.LinkLine1, original.LinkLine1)
+                    && CustomFieldEquals(inv.LinkLine2, original.LinkLine2)
+                    && CustomFieldEquals(inv.LinkLine3, original.LinkLine3);
             }
             bool CustomIdEquals(List<CustomIdElementInput>? original)
             {
@@ -936,6 +948,9 @@ namespace InventoryManagement.Pages.Inventory
                 inv.BoolLine1 = change.BoolLine1;
                 inv.BoolLine2 = change.BoolLine2;
                 inv.BoolLine3 = change.BoolLine3;
+                inv.LinkLine1 = change.LinkLine1;
+                inv.LinkLine2 = change.LinkLine2;
+                inv.LinkLine3 = change.LinkLine3;
             }
             void ApplyCustomId(EditInputModel? change)
             {
