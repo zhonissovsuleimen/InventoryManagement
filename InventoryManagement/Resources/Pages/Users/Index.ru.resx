@@ -27,7 +27,13 @@
   <data name="AdminButton" xml:space="preserve">
     <value>Дать Админ Права</value>
   </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Дать Админ Права</value>
+  </data>
   <data name="AdminColumn" xml:space="preserve">
+    <value>Админ</value>
+  </data>
+  <data name="Is Admin" xml:space="preserve">
     <value>Админ</value>
   </data>
   <data name="De-Admin" xml:space="preserve">
@@ -49,6 +55,14 @@
     <value>Нет</value>
   </data>
 </root>
+
+
+
+
+
+
+
+
 
 
 
