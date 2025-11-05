@@ -1,14 +1,15 @@
 @page
 @model InventoryManagement.Pages.Items.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = Localizer["Items"].Value;
 }
 
-<h1>Index</h1>
+<h1>@Localizer["Items"]</h1>
 
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create">@Localizer["Create New"]</a>
 </p>
 
 @await Html.PartialAsync("~/Pages/Shared/_ItemsTable.cshtml", new InventoryManagement.Models.ViewModels.ItemsTableModel

@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Users" xml:space="preserve">
+    <value>Пользователи</value>
+  </data>
+  <data name="Select all" xml:space="preserve">
+    <value>Выбрать все</value>
+  </data>
+  <data name="Deselect" xml:space="preserve">
+    <value>Снять выбор</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="AdminButton" xml:space="preserve">
+    <value>Дать Админ Права</value>
+  </data>
+  <data name="AdminColumn" xml:space="preserve">
+    <value>Админ</value>
+  </data>
+  <data name="De-Admin" xml:space="preserve">
+    <value>Снять Админ права</value>
+  </data>
+  <data name="No users found." xml:space="preserve">
+    <value>Пользователи не найдены.</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Эл. почта</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+</root>
+
+
+
+
+
+
+
+
+

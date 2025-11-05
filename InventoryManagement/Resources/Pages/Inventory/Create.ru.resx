@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Create Inventory" xml:space="preserve">
+    <value>Создать Инвентарь</value>
+  </data>
+  <data name="Inventory" xml:space="preserve">
+    <value>Инвентарь</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+  <data name="Raw" xml:space="preserve">
+    <value>Текст</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Markdown</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Категория</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Картинка</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Следующий шаг</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Предыдущий шаг</value>
+  </data>
+
+  <data name="Define a Custom Id pattern for items in this inventory. Reorder elements freely." xml:space="preserve">
+    <value>Определите шаблон пользовательского идентификатора для предметов в этом инвентаре. Свободно меняйте порядок элементов.</value>
+  </data>
+  <data name="Preview:" xml:space="preserve">
+    <value>Пример:</value>
+  </data>
+  <data name="(empty)" xml:space="preserve">
+    <value>(пусто)</value>
+  </data>
+  <data name="Add element:" xml:space="preserve">
+    <value>Добавить элемент:</value>
+  </data>
+  <data name="Text" xml:space="preserve">
+    <value>Текст</value>
+  </data>
+  <data name="Random 6 digits" xml:space="preserve">
+    <value>Случайные 6 чисел</value>
+  </data>
+  <data name="Random 9 digits" xml:space="preserve">
+    <value>Случайные 9 чисел</value>
+  </data>
+  <data name="Random 20-bit" xml:space="preserve">
+    <value>Случайное 20-битное число</value>
+  </data>
+  <data name="Random 32-bit" xml:space="preserve">
+    <value>Случайное 32-битное число</value>
+  </data>
+  <data name="Date/Time" xml:space="preserve">
+    <value>Дата/Время</value>
+  </data>
+  <data name="Guid" xml:space="preserve">
+    <value>Guid</value>
+  </data>
+  <data name="Element" xml:space="preserve">
+    <value>Элемент</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="Separator before" xml:space="preserve">
+    <value>Разделитель до</value>
+  </data>
+  <data name="Separator after" xml:space="preserve">
+    <value>Разделитель после</value>
+  </data>
+  <data name="Fixed text" xml:space="preserve">
+    <value>Фиксированный текст</value>
+  </data>
+  <data name="Format" xml:space="preserve">
+    <value>Формат</value>
+  </data>
+  <data name="Padding" xml:space="preserve">
+    <value>Символ смещение</value>
+  </data>
+  <data name="Radix" xml:space="preserve">
+    <value>Числовой разряд</value>
+  </data>
+  <data name="Binary" xml:space="preserve">
+    <value>Двоичный</value>
+  </data>
+  <data name="Octal" xml:space="preserve">
+    <value>Восьмеричный</value>
+  </data>
+  <data name="Decimal" xml:space="preserve">
+    <value>Десятиричный</value>
+  </data>
+  <data name="Hex" xml:space="preserve">
+    <value>Шеснацетиричный</value>
+  </data>
+
+  <data name="Up to 3 of each type. Drag the card to reorder." xml:space="preserve">
+    <value>До 3 штук каждого типа. Перетащите карту, чтобы изменить порядок.</value>
+  </data>
+  <data name="Single Line" xml:space="preserve">
+    <value>Одна строка текста</value>
+  </data>
+  <data name="Multi Line" xml:space="preserve">
+    <value>Много строк текста</value>
+  </data>
+  <data name="Numeric" xml:space="preserve">
+    <value>Число</value>
+  </data>
+  <data name="Boolean" xml:space="preserve">
+    <value>Булев (перевод лол)</value>
+  </data>
+
+  <data name="Create" xml:space="preserve">
+    <value>Создать</value>
+  </data>
+
+  <data name="Allowed Users" xml:space="preserve">
+    <value>Разрешенные пользователи</value>
+  </data>
+  <data name="Type a name to find users and add them. Visible only when inventory is not public." xml:space="preserve">
+    <value>Введите имя, чтобы найти пользователей и добавить их. Отображается только если инвентарь не является общедоступным.</value>
+  </data>
+  <data name="Search users..." xml:space="preserve">
+    <value>Искать пользователей...</value>
+  </data>
+  <data name="Remove (aria)" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+
+  <data name="Details" xml:space="preserve">
+    <value>Детали</value>
+  </data>
+  <data name="Custom Id" xml:space="preserve">
+    <value>Пользовательский ID</value>
+  </data>
+  <data name="Custom Fields" xml:space="preserve">
+    <value>Пользовательские поля</value>
+  </data>
+  <data name="Access Level" xml:space="preserve">
+    <value>Уровень доступа</value>
+  </data>
+
+</root>
+
+
+
+
+

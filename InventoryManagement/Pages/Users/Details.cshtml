@@ -1,15 +1,16 @@
 @page "{id?}"
 @model InventoryManagement.Pages.Users.DetailsModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "User Details";
+    ViewData["Title"] = Localizer["User Details"].Value;
     var u = Model.UserModel;
     string FullName() {
         var fn = (u?.FirstName ?? "").Trim();
         var ln = (u?.LastName ?? "").Trim();
         var both = (fn + " " + ln).Trim();
-        return string.IsNullOrWhiteSpace(both) ? (u?.UserName ?? "(user)") : both;
+        return string.IsNullOrWhiteSpace(both) ? (u?.UserName ?? Localizer["(user)"].Value) : both;
     }
-    string DisplayPublic(bool b) => b ? "Public" : "Private";
+    string DisplayPublic(bool b) => b ? Localizer["Public"].Value : Localizer["Private"].Value;
     var clientId = "userDetails_" + Guid.NewGuid().ToString("N");
 }
 
@@ -20,29 +21,29 @@
         <form method="get" class="m-0">
             <input type="hidden" name="id" value="@Model.Id" />
             <input type="hidden" name="edit" value="true" />
-            <button type="submit" class="btn btn-outline-primary btn-sm">Edit</button>
+            <button type="submit" class="btn btn-outline-primary btn-sm">@Localizer["Edit"]</button>
         </form>
     }
 </h1>
 
 @if (u == null)
 {
-    <div class="alert alert-warning">User not found.</div>
+    <div class="alert alert-warning">@Localizer["User not found." ]</div>
 }
 else
 {
     <ul class="nav nav-tabs" id="userTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">General</button>
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">@Localizer["General"]</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="created-tab" data-bs-toggle="tab" data-bs-target="#created" type="button" role="tab">Created inventories</button>
+            <button class="nav-link" id="created-tab" data-bs-toggle="tab" data-bs-target="#created" type="button" role="tab">@Localizer["Created inventories"]</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="allowed-tab" data-bs-toggle="tab" data-bs-target="#allowed" type="button" role="tab">Allowed inventories</button>
+            <button class="nav-link" id="allowed-tab" data-bs-toggle="tab" data-bs-target="#allowed" type="button" role="tab">@Localizer["Allowed inventories"]</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="likes-tab" data-bs-toggle="tab" data-bs-target="#likes" type="button" role="tab">Likes</button>
+            <button class="nav-link" id="likes-tab" data-bs-toggle="tab" data-bs-target="#likes" type="button" role="tab">@Localizer["Likes"]</button>
         </li>
     </ul>
     <div class="tab-content border border-top-0 p-3" id="userTabsContent" data-root-id="@clientId">
@@ -55,60 +56,60 @@ else
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="Input.FirstName" class="form-label"></label>
+                            <label asp-for="Input.FirstName" class="form-label">@Localizer["First name"]</label>
                             <input asp-for="Input.FirstName" class="form-control" />
                             <span asp-validation-for="Input.FirstName" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Input.LastName" class="form-label"></label>
+                            <label asp-for="Input.LastName" class="form-label">@Localizer["Last name"]</label>
                             <input asp-for="Input.LastName" class="form-control" />
                             <span asp-validation-for="Input.LastName" class="text-danger"></span>
                         </div>
                     </div>
 
                     <div class="border rounded p-3">
-                        <h6 class="mb-3">Change password</h6>
+                        <h6 class="mb-3">@Localizer["Change password"]</h6>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label asp-for="Input.CurrentPassword" class="form-label"></label>
+                                <label asp-for="Input.CurrentPassword" class="form-label">@Localizer["Current password"]</label>
                                 <input asp-for="Input.CurrentPassword" class="form-control" />
                                 <span asp-validation-for="Input.CurrentPassword" class="text-danger"></span>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="Input.NewPassword" class="form-label"></label>
+                                <label asp-for="Input.NewPassword" class="form-label">@Localizer["New password"]</label>
                                 <input asp-for="Input.NewPassword" class="form-control" />
                                 <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                                <label asp-for="Input.ConfirmPassword" class="form-label">@Localizer["Confirm password"]</label>
                                 <input asp-for="Input.ConfirmPassword" class="form-control" />
                                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                             </div>
                         </div>
-                        <div class="form-text">Leave password fields empty to keep the current password.</div>
+                        <div class="form-text">@Localizer["Leave password fields empty to keep the current password."]</div>
                     </div>
 
                     <div>
-                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                        <a asp-page="/Users/Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-sm">@Localizer["Save"]</button>
+                        <a asp-page="/Users/Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm">@Localizer["Cancel"]</a>
                     </div>
                 </form>
             }
             else
             {
                 <dl class="row">
-                    <dt class="col-sm-3">First name</dt>
+                    <dt class="col-sm-3">@Localizer["First name"]</dt>
                     <dd class="col-sm-9">@u.FirstName</dd>
-                    <dt class="col-sm-3">Last name</dt>
+                    <dt class="col-sm-3">@Localizer["Last name"]</dt>
                     <dd class="col-sm-9">@u.LastName</dd>
-                    <dt class="col-sm-3">Email</dt>
+                    <dt class="col-sm-3">@Localizer["Email"]</dt>
                     <dd class="col-sm-9">@u.Email</dd>
-                    <dt class="col-sm-3">Admin</dt>
-                    <dd class="col-sm-9">@(u.IsAdmin ? "Yes" : "No")</dd>
+                    <dt class="col-sm-3">@Localizer["Admin"]</dt>
+                    <dd class="col-sm-9">@(u.IsAdmin ? Localizer["Yes"].Value : Localizer["No"].Value)</dd>
                     @if (Model.IsSelf)
                     {
-                        <dt class="col-sm-3">Password</dt>
-                        <dd class="col-sm-9"><span class="text-muted">Hidden</span></dd>
+                        <dt class="col-sm-3">@Localizer["Password"]</dt>
+                        <dd class="col-sm-9"><span class="text-muted">@Localizer["Hidden"]</span></dd>
                     }
                 </dl>
             }
@@ -118,9 +119,9 @@ else
             {
                 <div class="d-flex justify-content-between align-items-center mb-2" id="@clientId-created-toolbar">
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-select-all>Select all</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" data-deselect-all>Deselect</button>
-                        <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>Delete selected</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-select-all>@Localizer["Select all"]</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-deselect-all>@Localizer["Deselect"]</button>
+                        <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>@Localizer["Delete selected"]</button>
                     </div>
                 </div>
                 <form method="post" class="d-none">
@@ -129,7 +130,7 @@ else
             }
             @if (Model.CreatedInventories.Count == 0)
             {
-                <div class="text-muted">No inventories created.</div>
+                <div class="text-muted">@Localizer["No inventories created."]</div>
             }
             else
             {
@@ -146,8 +147,8 @@ else
                             {
                                 <th style="width:1%;" class="text-end align-middle">#</th>
                             }
-                            <th>Title</th>
-                            <th>Description</th>
+                            <th>@Localizer["Title"]</th>
+                            <th>@Localizer["Description"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -176,7 +177,7 @@ else
         <div class="tab-pane fade" id="allowed" role="tabpanel" aria-labelledby="allowed-tab">
             @if (Model.AllowedInventories.Count == 0)
             {
-                <div class="text-muted">No inventories allowed.</div>
+                <div class="text-muted">@Localizer["No inventories allowed."]</div>
             }
             else
             {
@@ -184,10 +185,10 @@ else
                     <thead>
                         <tr>
                             <th style="width:1%;" class="text-end align-middle">#</th>
-                            <th>Title</th>
-                            <th>Description</th>
-                            <th>Creator</th>
-                            <th>Access Level</th>
+                            <th>@Localizer["Title"]</th>
+                            <th>@Localizer["Description"]</th>
+                            <th>@Localizer["Creator"]</th>
+                            <th>@Localizer["Access Level"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -196,7 +197,7 @@ else
                             var inv = Model.AllowedInventories[i];
                             var owner = inv?.Owner;
                             var ownerName = (owner?.FirstName + " " + owner?.LastName).Trim();
-                            if (string.IsNullOrWhiteSpace(ownerName)) ownerName = owner?.UserName ?? "(user)";
+                            if (string.IsNullOrWhiteSpace(ownerName)) ownerName = owner?.UserName ?? Localizer["(user)"].Value;
                             <tr>
                                 <td class="text-end">@(i + 1)</td>
                                 <td><a asp-page="/Inventory/Details" asp-route-guid="@inv.Title">@inv.Title</a></td>
@@ -208,7 +209,7 @@ else
                                     }
                                     else
                                     {
-                                        <span class="text-muted">(unknown)</span>
+                                        <span class="text-muted">@Localizer["(unknown)"]</span>
                                     }
                                 </td>
                                 <td>@DisplayPublic(inv.IsPublic)</td>
@@ -221,7 +222,7 @@ else
         <div class="tab-pane fade" id="likes" role="tabpanel" aria-labelledby="likes-tab">
             @if (Model.LikedItems.Count == 0)
             {
-                <div class="text-muted">No liked items.</div>
+                <div class="text-muted">@Localizer["No liked items."]</div>
             }
             else
             {

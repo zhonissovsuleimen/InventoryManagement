@@ -1,22 +1,23 @@
 @page
 @model InventoryManagement.Pages.Users.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "Users";
+    ViewData["Title"] = Localizer["Users"].Value;
     var isAdmin = Model.IsAdmin;
     var users = Model.Users ?? new List<InventoryManagement.Models.AppUser>();
 }
 
-<h2>Users</h2>
+<h2>@Localizer["Users"]</h2>
 
 @if (isAdmin)
 {
     <div class="d-flex justify-content-between align-items-center mb-2" id="usersToolbar">
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-outline-primary" data-select-all>Select all</button>
-            <button type="button" class="btn btn-sm btn-outline-primary" data-deselect-all>Deselect</button>
-            <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>Delete</button>
-            <button type="button" class="btn btn-sm btn-primary" data-make-admin disabled>Admin</button>
-            <button type="button" class="btn btn-sm btn-outline-primary" data-remove-admin disabled>De-Admin</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-select-all>@Localizer["Select all"]</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-deselect-all>@Localizer["Deselect"]</button>
+            <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>@Localizer["Delete"]</button>
+            <button type="button" class="btn btn-sm btn-primary" data-make-admin disabled>@Localizer["AdminButton"]</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-remove-admin disabled>@Localizer["De-Admin"]</button>
         </div>
     </div>
     <form method="post" class="d-none">
@@ -26,7 +27,7 @@
 
 @if (users.Count == 0)
 {
-    <div class="text-muted">No users found.</div>
+    <div class="text-muted">@Localizer["No users found."]</div>
 }
 else
 {
@@ -38,9 +39,9 @@ else
                     {
                         <th style="width:32px;"><input type="checkbox" class="form-check-input" data-toggle-all /></th>
                     }
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Admin</th>
+                    <th>@Localizer["Name"]</th>
+                    <th>@Localizer["Email"]</th>
+                    <th>@Localizer["AdminColumn"]</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,7 +57,7 @@ else
                         <a asp-page="/Users/Details" asp-route-id="@u.Id" class="text-decoration-none">@fullName</a>
                     </td>
                     <td>@u.Email</td>
-                    <td>@(u.IsAdmin ? "Yes" : "No")</td>
+                    <td>@(u.IsAdmin ? Localizer["Yes"].Value : Localizer["No"].Value)</td>
                 </tr>
             }
             </tbody>
@@ -137,7 +138,7 @@ else
     updated.forEach(id => {
       const tr = root.querySelector(`tr[data-user-id="${id}"]`);
       const cell = tr?.querySelector('td:nth-child(4)');
-      if (cell) cell.textContent = 'Yes';
+      if (cell) cell.textContent = '@Localizer["Yes"]';
     });
   });
 
@@ -148,7 +149,7 @@ else
     updated.forEach(id => {
       const tr = root.querySelector(`tr[data-user-id="${id}"]`);
       const cell = tr?.querySelector('td:nth-child(4)');
-      if (cell) cell.textContent = 'No';
+      if (cell) cell.textContent = '@Localizer["No"]';
     });
   });
 })();

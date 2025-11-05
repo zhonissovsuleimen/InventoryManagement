@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-InventoryManagement-04fcd314-3451-499f-a6a9-451f3c38faa0</UserSecretsId>
+    <NeutralLanguage>en</NeutralLanguage>
+    <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
+    <!-- Hint for editors/tools; actual re-encoding performed by the MSBuild target below -->
+    <FileEncoding>utf-8</FileEncoding>
+    <GenerateResourceUsePreserializedResources>false</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
   <ItemGroup>

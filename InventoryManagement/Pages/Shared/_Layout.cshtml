@@ -1,5 +1,7 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Globalization
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 
 <head>
     <meta charset="utf-8" />
@@ -32,14 +34,25 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Inventory/Index">Inventories</a>
+                            <a class="nav-link" asp-area="" asp-page="/Inventory/Index">@Localizer["Inventories"]</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Users/Index">Users</a>
+                            <a class="nav-link" asp-area="" asp-page="/Users/Index">@Localizer["Users"]</a>
                         </li>
                     </ul>
                     <div class="d-flex align-items-center gap-2">
-                        <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" type="button" aria-label="Toggle theme">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @Localizer["Language"]
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Content($"/set-language?culture=en&returnUrl={Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)}")">English</a></li>
+                                <li><a class="dropdown-item" href="@Url.Content($"/set-language?culture=ru&returnUrl={Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)}")">Русский</a></li>
+                            </ul>
+                        </div>
+                        <button id="theme-toggle" class="btn btn-outline-secondary btn-sm" type="button" aria-label="Toggle theme"
+                                data-title-light="@Localizer["Switch to light theme"]"
+                                data-title-dark="@Localizer["Switch to dark theme"]">
                             <span id="theme-toggle-icon" aria-hidden="true"></span>
                         </button>
                         <partial name="_LoginPartial" />
@@ -67,7 +80,9 @@
                 const icon = document.getElementById('theme-toggle-icon');
                 if (icon) icon.innerHTML = theme === 'dark' ? darkIcon : lightIcon; // dark theme => dark icon
                 const btn = document.getElementById('theme-toggle');
-                if (btn) btn.setAttribute('title', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+                const titleLight = btn?.dataset.titleLight || 'Switch to light theme';
+                const titleDark = btn?.dataset.titleDark || 'Switch to dark theme';
+                if (btn) btn.setAttribute('title', theme === 'dark' ? titleLight : titleDark);
             };
 
             const current = document.documentElement.getAttribute('data-bs-theme') || 'light';

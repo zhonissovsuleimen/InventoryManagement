@@ -1,28 +1,29 @@
 ﻿@page
 @using Markdig
 @model InventoryManagement.Pages.Inventory.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
     int count = Model.Inventory.Count;
     int descrptionMaxLength = 50;
-    string DisplayPublic(bool b) => b ? "Public" : "Private";
+    string DisplayPublic(bool b) => b ? Localizer["Public"].Value : Localizer["Private"].Value;
     string DisplayDescription(string s) => s.Length >= descrptionMaxLength ? s.Substring(0, descrptionMaxLength) + "..." : s;
 
-    ViewData["Title"] = "Inventories";
+    ViewData["Title"] = Localizer["Inventories"].Value;
     var isAdmin = Model.IsAdmin;
     var clientId = "invIndex_" + Guid.NewGuid().ToString("N");
 }
 
-<h1 class="mb-3">Inventories</h1>
+<h1 class="mb-3">@Localizer["Inventories"]</h1>
 
 <div id="@clientId">
     <div class="d-flex justify-content-between align-items-center mb-2">
         @if (isAdmin)
         {
             <div class="d-flex align-items-center gap-2" data-toolbar>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-select-all>Select all</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-deselect-all>Deselect</button>
-                <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>Delete selected</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-select-all>@Localizer["Select all"]</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-deselect-all>@Localizer["Deselect"]</button>
+                <button type="button" class="btn btn-sm btn-danger" data-delete-selected disabled>@Localizer["Delete selected"]</button>
             </div>
         }
         else
@@ -31,7 +32,7 @@
         }
         @if (User?.Identity?.IsAuthenticated == true)
         {
-            <a asp-page="Create" class="btn btn-primary btn-sm">Create New</a>
+            <a asp-page="Create" class="btn btn-primary btn-sm">@Localizer["Create New"]</a>
         }
     </div>
 
@@ -44,7 +45,7 @@
 
     @if (count == 0)
     {
-        <div class="alert alert-info">No inventories found.</div>
+        <div class="alert alert-info">@Localizer["No inventories found."]</div>
     }
 
     <table class="table table-striped table-hover table-bordered">
@@ -60,10 +61,10 @@
                 {
                     <th class="me-4 text-end align-middle" style="width:1%;">#</th>
                 }
-                <th>Title</th>
-                <th>Description</th>
-                <th>Creator</th>
-                <th>Access Level</th>
+                <th>@Localizer["Title"]</th>
+                <th>@Localizer["Description"]</th>
+                <th>@Localizer["Creator"]</th>
+                <th>@Localizer["Access Level"]</th>
             </tr>
         </thead>
         <tbody>
@@ -71,7 +72,7 @@
                 var item = Model.Inventory[i];
                 var owner = item.Owner;
                 var ownerName = ((owner?.FirstName ?? "") + " " + (owner?.LastName ?? "")).Trim();
-                if (string.IsNullOrWhiteSpace(ownerName)) ownerName = owner?.UserName ?? "(user)";
+                if (string.IsNullOrWhiteSpace(ownerName)) ownerName = owner?.UserName ?? Localizer["(user)"].Value;
                 <tr data-inv-guid="@item.Guid">
                     @if (isAdmin)
                     {
@@ -94,7 +95,7 @@
                         }
                         else
                         {
-                            <span class="text-muted">(unknown)</span>
+                            <span class="text-muted">@Localizer["(unknown)"]</span>
                         }
                     </td>
                     <td>@DisplayPublic(item.IsPublic)</td>

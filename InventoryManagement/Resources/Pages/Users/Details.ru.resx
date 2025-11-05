@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="User Details" xml:space="preserve">
+    <value>Информация о пользователе</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Редактировать</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+
+  <data name="General" xml:space="preserve">
+    <value>Общее</value>
+  </data>
+  <data name="Created inventories" xml:space="preserve">
+    <value>Созданные инвентарии</value>
+  </data>
+  <data name="Allowed inventories" xml:space="preserve">
+    <value>Разрешённые инвентарии</value>
+  </data>
+  <data name="Likes" xml:space="preserve">
+    <value>Лайки</value>
+  </data>
+
+  <data name="Change password" xml:space="preserve">
+    <value>Сменить пароль</value>
+  </data>
+  <data name="Leave password fields empty to keep the current password." xml:space="preserve">
+    <value>Оставьте поля пароля пустыми, чтобы сохранить текущий пароль.</value>
+  </data>
+
+  <data name="User not found." xml:space="preserve">
+    <value>Пользователь не найден.</value>
+  </data>
+
+  <data name="First name" xml:space="preserve">
+    <value>Имя</value>
+  </data>
+  <data name="Last name" xml:space="preserve">
+    <value>Фамилия</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Эл. почта</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Админ</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Hidden" xml:space="preserve">
+    <value>Скрыто</value>
+  </data>
+
+  <data name="Select all" xml:space="preserve">
+    <value>Выбрать все</value>
+  </data>
+  <data name="Deselect" xml:space="preserve">
+    <value>Снять выбор</value>
+  </data>
+  <data name="Delete selected" xml:space="preserve">
+    <value>Удалить выбранные</value>
+  </data>
+
+  <data name="No inventories created." xml:space="preserve">
+    <value>Нет созданных инвентарей.</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Описание</value>
+  </data>
+
+  <data name="No inventories allowed." xml:space="preserve">
+    <value>Нет разрешённых инвентарей.</value>
+  </data>
+  <data name="Creator" xml:space="preserve">
+    <value>Создатель</value>
+  </data>
+  <data name="Access Level" xml:space="preserve">
+    <value>Уровень доступа</value>
+  </data>
+
+  <data name="No liked items." xml:space="preserve">
+    <value>Нет понравившихся предметов.</value>
+  </data>
+
+  <!-- Added missing keys -->
+  <data name="(user)" xml:space="preserve">
+    <value>(пользователь)</value>
+  </data>
+  <data name="Public" xml:space="preserve">
+    <value>Публичный</value>
+  </data>
+  <data name="Private" xml:space="preserve">
+    <value>Приватный</value>
+  </data>
+  <data name="Current password" xml:space="preserve">
+    <value>Текущий пароль</value>
+  </data>
+  <data name="New password" xml:space="preserve">
+    <value>Новый пароль</value>
+  </data>
+  <data name="Confirm password" xml:space="preserve">
+    <value>Подтвердите пароль</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="(unknown)" xml:space="preserve">
+    <value>(неизвестно)</value>
+  </data>
+
+</root>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,12 +1,13 @@
 ﻿@page
 @model InventoryManagement.Pages.Inventory.CreateModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Create Inventory";
+    ViewData["Title"] = Localizer["Create Inventory"].Value;
 }
 
-<h1>Create Inventory</h1>
-<h4 id="stepTitle">Inventory</h4>
+<h1>@Localizer["Create Inventory"]</h1>
+<h4 id="stepTitle">@Localizer["Inventory"]</h4>
 
 <hr />
 <div class="row">
@@ -19,19 +20,19 @@
 
             <section data-step="1">
                 <div class="form-group">
-                    <label asp-for="Input.Title" class="control-label"></label>
+                    <label asp-for="Input.Title" class="control-label">@Localizer["Title"]</label>
                     <input asp-for="Input.Title" class="form-control" />
                     <span asp-validation-for="Input.Title" class="text-danger"></span>
                 </div>
                 
                 <div class="form-group">
-                    <label asp-for="Input.Description" class="control-label"></label>
+                    <label asp-for="Input.Description" class="control-label">@Localizer["Description"]</label>
                     <ul class="nav nav-tabs mb-2" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link active" id="descTabRaw" role="tab">Raw</button>
+                            <button type="button" class="nav-link active" id="descTabRaw" role="tab">@Localizer["Raw"]</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button type="button" class="nav-link" id="descTabPreview" role="tab">Preview</button>
+                            <button type="button" class="nav-link" id="descTabPreview" role="tab">@Localizer["Preview"]</button>
                         </li>
                     </ul>
                     <div>
@@ -42,42 +43,42 @@
                 </div>
                 
                 <div class="form-group">
-                    <label asp-for="Input.CategoryId" class="control-label">Category</label>
+                    <label asp-for="Input.CategoryId" class="control-label">@Localizer["Category"]</label>
                     <select asp-for="Input.CategoryId" class="form-control" asp-items="Model.Categories">
                     </select>
                     <span asp-validation-for="Input.CategoryId" class="text-danger"></span>
                 </div>
                 
                 <div class="form-group">
-                    <label asp-for="Input.Image" class="control-label">Image</label>
+                    <label asp-for="Input.Image" class="control-label">@Localizer["Image"]</label>
                     <input asp-for="Input.Image" type="file" accept="image/*" class="form-control" id="imageInput" />
-                    <img id="imagePreview" src="#" alt="Preview" style="display:none; max-width:100%; max-height:200px; margin-top:10px;" />
+                    <img id="imagePreview" src="#" alt="@Localizer["Preview"]" style="display:none; max-width:100%; max-height:200px; margin-top:10px;" />
                     <span asp-validation-for="Input.Image" class="text-danger"></span>
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-3">
-                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-primary" data-next>Next</a>
+                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-primary" data-next>@Localizer["Next"]</a>
                 </div>
             </section>
 
             <section data-step="2">
-                <div class="form-text mb-2">Define a Custom Id pattern for items in this inventory. Reorder elements freely.</div>
+                <div class="form-text mb-2">@Localizer["Define a Custom Id pattern for items in this inventory. Reorder elements freely."]</div>
                 <div class="card mb-3">
                     <div class="card-body py-2 d-flex align-items-center gap-2">
-                        <strong class="me-2">Preview:</strong>
-                        <code id="customIdPreview" class="text-muted">(empty)</code>
+                        <strong class="me-2">@Localizer["Preview:"]</strong>
+                        <code id="customIdPreview" class="text-muted">@Localizer["(empty)"]</code>
                     </div>
                 </div>
 
                 <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-                    <span class="me-2">Add element:</span>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="FixedText">Text</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit6">Random 6 digits</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit9">Random 9 digits</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit20">Random 20-bit</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit32">Random 32-bit</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="DateTime">Date/Time</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Guid">Guid</button>
+                    <span class="me-2">@Localizer["Add element:"]</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="FixedText">@Localizer["Text"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit6">@Localizer["Random 6 digits"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Digit9">@Localizer["Random 9 digits"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit20">@Localizer["Random 20-bit"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Bit32">@Localizer["Random 32-bit"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="DateTime">@Localizer["Date/Time"]</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-customid="Guid">@Localizer["Guid"]</button>
                 </div>
 
                 <div id="customIdElements" class="d-grid gap-2"></div>
@@ -86,17 +87,17 @@
                     <div class="card shadow-sm" data-row>
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary" data-type-label>Element</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary" data-type-label>@Localizer["Element"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-end">
                                 <input type="hidden" data-prop="Type" />
                                 <div class="col-auto">
-                                    <label class="form-label small mb-0">Separator before</label>
+                                    <label class="form-label small mb-0">@Localizer["Separator before"]</label>
                                     <input class="form-control form-control-sm" data-prop="SeparatorBefore" maxlength="1" placeholder="-" />
                                 </div>
                                 <div class="col-auto">
-                                    <label class="form-label small mb-0">Separator after</label>
+                                    <label class="form-label small mb-0">@Localizer["Separator after"]</label>
                                     <input class="form-control form-control-sm" data-prop="SeparatorAfter" maxlength="1" placeholder="-" />
                                 </div>
                                 <div class="col d-flex flex-wrap align-items-end gap-2" data-specific></div>
@@ -107,21 +108,21 @@
 
                 <template id="templateSpecificFixedText">
                     <div class="d-flex flex-column">
-                        <label class="form-label small mb-0">Text</label>
-                        <input class="form-control form-control-sm" data-prop="FixedText" placeholder="Fixed text" />
+                        <label class="form-label small mb-0">@Localizer["Text"]</label>
+                        <input class="form-control form-control-sm" data-prop="FixedText" placeholder="@Localizer["Fixed text"]" />
                     </div>
                 </template>
 
                 <template id="templateSpecificDateTime">
                     <div class="d-flex flex-column">
-                        <label class="form-label small mb-0">Format</label>
+                        <label class="form-label small mb-0">@Localizer["Format"]</label>
                         <input class="form-control form-control-sm" data-prop="DateTimeFormat" placeholder="yyyyMMdd-HHmm" />
                     </div>
                 </template>
 
                 <template id="templateSpecificGuid">
                     <div class="d-flex flex-column" style="min-width: 120px;">
-                        <label class="form-label small mb-0">Guid</label>
+                        <label class="form-label small mb-0">@Localizer["Guid"]</label>
                         <input class="form-control form-control-sm" value="auto" disabled />
                     </div>
                 </template>
@@ -129,42 +130,42 @@
                 <template id="templateSpecificNumeric">
                     <div class="d-flex flex-wrap align-items-end gap-2">
                         <div class="d-flex flex-column" style="width: 80px;">
-                            <label class="form-label small mb-0">Padding</label>
+                            <label class="form-label small mb-0">@Localizer["Padding"]</label>
                             <input class="form-control form-control-sm" data-prop="PaddingChar" maxlength="1" placeholder="0" />
                         </div>
                         <div class="d-flex flex-column" style="width: 110px;">
-                            <label class="form-label small mb-0">Radix</label>
+                            <label class="form-label small mb-0">@Localizer["Radix"]</label>
                             <select class="form-select form-select-sm" data-prop="Radix">
-                                <option value="2">Binary</option>
-                                <option value="8">Octal</option>
-                                <option value="10" selected>Decimal</option>
-                                <option value="16">Hex</option>
+                                <option value="2">@Localizer["Binary"]</option>
+                                <option value="8">@Localizer["Octal"]</option>
+                                <option value="10" selected>@Localizer["Decimal"]</option>
+                                <option value="16">@Localizer["Hex"]</option>
                             </select>
                         </div>
                     </div>
                 </template>
 
                 <div class="d-flex justify-content-between gap-2 mt-3">
-                    <a href="@Url.Page(null, new { step = 1 })" class="btn btn-secondary" data-prev>Previous</a>
-                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-primary" data-next>Next</a>
+                    <a href="@Url.Page(null, new { step = 1 })" class="btn btn-secondary" data-prev>@Localizer["Previous"]</a>
+                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-primary" data-next>@Localizer["Next"]</a>
                 </div>
             </section>
 
             <section data-step="3">
-                <div class="form-text mb-3">Up to 3 of each type. Drag the card to reorder.</div>
+                <div class="form-text mb-3">@Localizer["Up to 3 of each type. Drag the card to reorder."]</div>
 
                 <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
                     <button type="button" class="btn btn-outline-primary" data-add-type="SingleLine">
-                        Single Line <span class="badge bg-secondary ms-1" data-count="SingleLine">0/3</span>
+                        @Localizer["Single Line"] <span class="badge bg-secondary ms-1" data-count="SingleLine">0/3</span>
                     </button>
                     <button type="button" class="btn btn-outline-primary" data-add-type="MultiLine">
-                        Multi Line <span class="badge bg-secondary ms-1" data-count="MultiLine">0/3</span>
+                        @Localizer["Multi Line"] <span class="badge bg-secondary ms-1" data-count="MultiLine">0/3</span>
                     </button>
                     <button type="button" class="btn btn-outline-primary" data-add-type="NumericLine">
-                        Numeric <span class="badge bg-secondary ms-1" data-count="NumericLine">0/3</span>
+                        @Localizer["Numeric"] <span class="badge bg-secondary ms-1" data-count="NumericLine">0/3</span>
                     </button>
                     <button type="button" class="btn btn-outline-primary" data-add-type="BoolLine">
-                        Boolean <span class="badge bg-secondary ms-1" data-count="BoolLine">0/3</span>
+                        @Localizer["Boolean"] <span class="badge bg-secondary ms-1" data-count="BoolLine">0/3</span>
                     </button>
                 </div>
 
@@ -172,18 +173,18 @@
                     <div class="card shadow-sm" data-type="SingleLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Single Line</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Single Line"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.SingleLine1.Title">Title</label>
-                                    <input asp-for="Input.SingleLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine1.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.SingleLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.SingleLine1.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.SingleLine1.Description">Description</label>
-                                    <input asp-for="Input.SingleLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine1.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.SingleLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.SingleLine1.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -194,18 +195,18 @@
                     <div class="card shadow-sm" data-type="SingleLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Single Line</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Single Line"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.SingleLine2.Title">Title</label>
-                                    <input asp-for="Input.SingleLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine2.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.SingleLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.SingleLine2.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.SingleLine2.Description">Description</label>
-                                    <input asp-for="Input.SingleLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine2.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.SingleLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.SingleLine2.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -216,18 +217,18 @@
                     <div class="card shadow-sm" data-type="SingleLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Single Line</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Single Line"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.SingleLine3.Title">Title</label>
-                                    <input asp-for="Input.SingleLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine3.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.SingleLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.SingleLine3.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.SingleLine3.Description">Description</label>
-                                    <input asp-for="Input.SingleLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.SingleLine3.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.SingleLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.SingleLine3.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -239,18 +240,18 @@
                     <div class="card shadow-sm" data-type="MultiLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Multi Line</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Multi Line"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.MultiLine1.Title">Title</label>
-                                    <input asp-for="Input.MultiLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine1.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.MultiLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.MultiLine1.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.MultiLine1.Description">Description</label>
-                                    <input asp-for="Input.MultiLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine1.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.MultiLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.MultiLine1.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -261,18 +262,18 @@
                     <div class="card shadow-sm" data-type="MultiLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Multi Line</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Multi Line"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.MultiLine2.Title">Title</label>
-                                    <input asp-for="Input.MultiLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine2.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.MultiLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.MultiLine2.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.MultiLine2.Description">Description</label>
-                                    <input asp-for="Input.MultiLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine2.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.MultiLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.MultiLine2.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -283,18 +284,18 @@
                     <div class="card shadow-sm" data-type="MultiLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Multi Line</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Multi Line"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.MultiLine3.Title">Title</label>
-                                    <input asp-for="Input.MultiLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine3.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.MultiLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.MultiLine3.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.MultiLine3.Description">Description</label>
-                                    <input asp-for="Input.MultiLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.MultiLine3.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.MultiLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.MultiLine3.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -306,18 +307,18 @@
                     <div class="card shadow-sm" data-type="NumericLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Numeric</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Numeric"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.NumericLine1.Title">Title</label>
-                                    <input asp-for="Input.NumericLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine1.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.NumericLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.NumericLine1.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.NumericLine1.Description">Description</label>
-                                    <input asp-for="Input.NumericLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine1.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.NumericLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.NumericLine1.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -328,18 +329,18 @@
                     <div class="card shadow-sm" data-type="NumericLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Numeric</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Numeric"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.NumericLine2.Title">Title</label>
-                                    <input asp-for="Input.NumericLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine2.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.NumericLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.NumericLine2.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.NumericLine2.Description">Description</label>
-                                    <input asp-for="Input.NumericLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine2.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.NumericLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.NumericLine2.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -350,18 +351,18 @@
                     <div class="card shadow-sm" data-type="NumericLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Numeric</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Numeric"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.NumericLine3.Title">Title</label>
-                                    <input asp-for="Input.NumericLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine3.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.NumericLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.NumericLine3.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.NumericLine3.Description">Description</label>
-                                    <input asp-for="Input.NumericLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.NumericLine3.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.NumericLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.NumericLine3.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -373,18 +374,18 @@
                     <div class="card shadow-sm" data-type="BoolLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Boolean</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Boolean"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.BoolLine1.Title">Title</label>
-                                    <input asp-for="Input.BoolLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine1.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.BoolLine1.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.BoolLine1.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.BoolLine1.Description">Description</label>
-                                    <input asp-for="Input.BoolLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine1.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.BoolLine1.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.BoolLine1.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -395,18 +396,18 @@
                     <div class="card shadow-sm" data-type="BoolLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Boolean</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Boolean"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.BoolLine2.Title">Title</label>
-                                    <input asp-for="Input.BoolLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine2.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.BoolLine2.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.BoolLine2.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.BoolLine2.Description">Description</label>
-                                    <input asp-for="Input.BoolLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine2.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.BoolLine2.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.BoolLine2.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -417,18 +418,18 @@
                     <div class="card shadow-sm" data-type="BoolLine" data-used="false">
                         <div class="card-body p-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge text-bg-secondary">Boolean</span>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>Remove</button>
+                                <span class="badge text-bg-secondary">@Localizer["Boolean"]</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-remove>@Localizer["Remove"]</button>
                             </div>
                             <div class="row g-2 align-items-start">
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label small mb-1" asp-for="Input.BoolLine3.Title">Title</label>
-                                    <input asp-for="Input.BoolLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="Title" />
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine3.Title">@Localizer["Title"]</label>
+                                    <input asp-for="Input.BoolLine3.Title" class="form-control form-control-sm" data-field="title" placeholder="@Localizer["Title"]" />
                                     <span asp-validation-for="Input.BoolLine3.Title" class="text-danger small"></span>
                                 </div>
                                 <div class="col-12 col-md-8">
-                                    <label class="form-label small mb-1" asp-for="Input.BoolLine3.Description">Description</label>
-                                    <input asp-for="Input.BoolLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="Description" />
+                                    <label class="form-label small mb-1" asp-for="Input.BoolLine3.Description">@Localizer["Description"]</label>
+                                    <input asp-for="Input.BoolLine3.Description" class="form-control form-control-sm" data-field="description" placeholder="@Localizer["Description"]" />
                                     <span asp-validation-for="Input.BoolLine3.Description" class="text-danger small"></span>
                                 </div>
                             </div>
@@ -439,8 +440,8 @@
                 </div>
 
                 <div class="d-flex justify-content-between gap-2 mt-3">
-                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-secondary" data-prev>Previous</a>
-                    <a href="@Url.Page(null, new { step = 4 })" class="btn btn-primary" data-next>Next</a>
+                    <a href="@Url.Page(null, new { step = 2 })" class="btn btn-secondary" data-prev>@Localizer["Previous"]</a>
+                    <a href="@Url.Page(null, new { step = 4 })" class="btn btn-primary" data-next>@Localizer["Next"]</a>
                 </div>
             </section>
 
@@ -452,10 +453,10 @@
                 </div>
 
                 <div id="allowedUsersSection" class="mt-3" style="display:none;">
-                    <label class="form-label">Allowed Users</label>
-                    <div class="form-text mb-2">Type a name to find users and add them. Visible only when inventory is not public.</div>
+                    <label class="form-label">@Localizer["Allowed Users"]</label>
+                    <div class="form-text mb-2">@Localizer["Type a name to find users and add them. Visible only when inventory is not public."]</div>
                     <div class="position-relative">
-                        <input type="text" id="userSearch" class="form-control" placeholder="Search users..." autocomplete="off" />
+                        <input type="text" id="userSearch" class="form-control" placeholder="@Localizer["Search users..."]" autocomplete="off" />
                         <div id="userSuggestions" class="list-group position-absolute w-100" style="z-index: 1050; display:none; max-height: 220px; overflow:auto;"></div>
                     </div>
                     <div id="selectedUsers" class="d-flex flex-wrap gap-2 mt-2"></div>
@@ -466,8 +467,8 @@
                 </div>
 
                 <div class="d-flex justify-content-between gap-2 mt-3">
-                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-secondary" data-prev>Previous</a>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <a href="@Url.Page(null, new { step = 3 })" class="btn btn-secondary" data-prev>@Localizer["Previous"]</a>
+                    <button type="submit" class="btn btn-primary">@Localizer["Create"]</button>
                 </div>
             </section>
         </form>
@@ -485,7 +486,7 @@
             const prevs = document.querySelectorAll('[data-prev]');
             const nexts = document.querySelectorAll('[data-next]');
             const titleEl = document.getElementById('stepTitle');
-            const titles = { 1: 'Details', 2: 'Custom Id', 3: 'Custom Fields', 4: 'Access Level' };
+            const titles = { 1: '@Localizer["Details"]', 2: '@Localizer["Custom Id"]', 3: '@Localizer["Custom Fields"]', 4: '@Localizer["Access Level"]' };
 
             function clamp(n){ return Math.max(1, Math.min(4, n|0)); }
 
@@ -828,7 +829,7 @@
             async function generatePreview(){
                 const elements = collectElements();
                 if (elements.length === 0){
-                    previewEl.textContent = '(empty)';
+                    previewEl.textContent = '@Localizer["(empty)"]';
                     return;
                 }
                 try {
@@ -841,9 +842,9 @@
                     });
                     if (!resp.ok) throw new Error('Failed');
                     const text = await resp.text();
-                    previewEl.textContent = text || '(empty)';
+                    previewEl.textContent = text || '@Localizer["(empty)"]';
                 } catch {
-                    previewEl.textContent = '(error)';
+                    previewEl.textContent = '@Localizer["(error)"]';
                 }
             }
 
@@ -859,13 +860,13 @@
                 const node = tpl.content.cloneNode(true);
                 const card = node.querySelector('[data-row]');
                 card.querySelector('[data-type-label]').textContent =
-                    type === 'FixedText' ? 'Text' :
-                    type === 'Digit6' ? 'Random 6 digits' :
-                    type === 'Digit9' ? 'Random 9 digits' :
-                    type === 'Bit20' ? 'Random 20-bit' :
-                    type === 'Bit32' ? 'Random 32-bit' :
-                    type === 'DateTime' ? 'Date/Time' :
-                    type === 'Guid' ? 'Guid' : 'Element';
+                    type === 'FixedText' ? '@Localizer["Text"]' :
+                    type === 'Digit6' ? '@Localizer["Random 6 digits"]' :
+                    type === 'Digit9' ? '@Localizer["Random 9 digits"]' :
+                    type === 'Bit20' ? '@Localizer["Random 20-bit"]' :
+                    type === 'Bit32' ? '@Localizer["Random 32-bit"]' :
+                    type === 'DateTime' ? '@Localizer["Date/Time"]' :
+                    type === 'Guid' ? '@Localizer["Guid"]' : '@Localizer["Element"]';
                 const typeInput = card.querySelector('[data-prop="Type"]');
                 typeInput.value = type;
                 const specificHost = card.querySelector('[data-specific]');
