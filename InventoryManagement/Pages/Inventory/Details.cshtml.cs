@@ -44,6 +44,48 @@ namespace InventoryManagement.Pages.Inventory
         [BindProperty]
         public EditInputModel Edit { get; set; } = new();
 
+        // Aggregation view model for insights tab
+        public AggregationResult? Aggregates { get; set; }
+
+        public sealed class AggregationResult
+        {
+            public int TotalItems { get; set; }
+            public double AverageLikesPerItem { get; set; }
+            public int MaxLikesPerItem { get; set; }
+            public double GlobalPercentPublicInventories { get; set; }
+            public double GlobalAvgAllowedUsersForPrivateInventories { get; set; }
+            public Dictionary<string, NumericStats> Numeric { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+            public Dictionary<string, TextStats> Text { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+            public Dictionary<string, BoolStats> Bool { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+            public sealed class NumericStats
+            {
+                public int Count { get; set; }
+                public double? Average { get; set; }
+                public double? Min { get; set; }
+                public double? Max { get; set; }
+            }
+
+            public sealed class CountedValue
+            {
+                public string Value { get; set; } = string.Empty;
+                public int Count { get; set; }
+            }
+
+            public sealed class TextStats
+            {
+                public int Count { get; set; }
+                public List<CountedValue> Top { get; set; } = new();
+            }
+
+            public sealed class BoolStats
+            {
+                public int TrueCount { get; set; }
+                public int FalseCount { get; set; }
+                public int NullCount { get; set; }
+            }
+        }
+
         public class EditInputModel
         {
             public int Version { get; set; }
@@ -125,6 +167,9 @@ namespace InventoryManagement.Pages.Inventory
                 var isAllowed = (inventory.AllowedUsers?.Any(u => u.Id == userId) == true);
                 CanModerate = CanEdit || (inventory.IsPublic ? isAuthenticated : isAllowed);
 
+                // Defer insights calculation to tab click
+                Aggregates = null;
+
                 if (EditMode && CanEdit)
                 {
                     PopulateEditModelFromInventory(inventory);
@@ -136,6 +181,125 @@ namespace InventoryManagement.Pages.Inventory
             }
 
             return NotFound();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OnGetInsightsAsync(Guid guid)
+        {
+            var inv = await _context.Inventories
+                .Include(i => i.Items)
+                    .ThenInclude(it => it.Likes)
+                .FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inv == null) return NotFound();
+
+            var result = await BuildAggregatesAsync(inv);
+            return new JsonResult(result);
+        }
+
+        private async Task<AggregationResult> BuildAggregatesAsync(Models.Inventory.Inventory inv)
+        {
+            var result = new AggregationResult();
+            var items = inv.Items ?? new List<Item>();
+            result.TotalItems = items.Count;
+
+            // Likes stats
+            if (items.Count > 0)
+            {
+                var likeCounts = items.Select(it => it.Likes?.Count ?? 0).ToList();
+                result.AverageLikesPerItem = likeCounts.Count > 0 ? likeCounts.Average() : 0.0;
+                result.MaxLikesPerItem = likeCounts.Count > 0 ? likeCounts.Max() : 0;
+            }
+
+            // Global visibility stats across all inventories
+            var totalInv = await _context.Inventories.AsNoTracking().CountAsync();
+            if (totalInv > 0)
+            {
+                var publicInv = await _context.Inventories.AsNoTracking().CountAsync(i => i.IsPublic);
+                result.GlobalPercentPublicInventories = (double)publicInv / totalInv * 100.0;
+
+                var privateAllowedCounts = await _context.Inventories.AsNoTracking()
+                    .Where(i => !i.IsPublic)
+                    .Select(i => i.AllowedUsers.Count)
+                    .ToListAsync();
+                result.GlobalAvgAllowedUsersForPrivateInventories = privateAllowedCounts.Count > 0 ? privateAllowedCounts.Average() : 0.0;
+            }
+
+            string Label(string fallback, CustomField? cf)
+            {
+                var t = cf?.Title;
+                return string.IsNullOrWhiteSpace(t) ? fallback : t!;
+            }
+
+            void AddNumeric(string label, Func<Item, double?> selector, CustomField? cf)
+            {
+                if (cf?.IsUsed != true) return;
+                var vals = items.Select(selector).Where(v => v.HasValue).Select(v => v!.Value).ToList();
+                if (vals.Count == 0) return;
+                result.Numeric[label] = new AggregationResult.NumericStats
+                {
+                    Count = vals.Count,
+                    Average = vals.Average(),
+                    Min = vals.Min(),
+                    Max = vals.Max()
+                };
+            }
+
+            void AddText(string label, Func<Item, string?> selector, CustomField? cf)
+            {
+                if (cf?.IsUsed != true) return;
+                var groups = items
+                    .Select(selector)
+                    .Select(s => (s ?? string.Empty).Trim())
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .GroupBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => new { Key = g.Key, Count = g.Count() })
+                    .OrderByDescending(x => x.Count)
+                    .ThenBy(x => x.Key)
+                    .Take(5)
+                    .ToList();
+                if (groups.Count == 0) return;
+                result.Text[label] = new AggregationResult.TextStats
+                {
+                    Count = groups.Sum(g => g.Count),
+                    Top = groups.Select(g => new AggregationResult.CountedValue { Value = g.Key, Count = g.Count }).ToList()
+                };
+            }
+
+            void AddBool(string label, Func<Item, bool?> selector, CustomField? cf)
+            {
+                if (cf?.IsUsed != true) return;
+                int t = 0, f = 0, n = 0;
+                foreach (var v in items.Select(selector))
+                {
+                    if (!v.HasValue) n++;
+                    else if (v.Value) t++;
+                    else f++;
+                }
+                if (t + f + n == 0) return;
+                result.Bool[label] = new AggregationResult.BoolStats { TrueCount = t, FalseCount = f, NullCount = n };
+            }
+
+            // Numeric fields
+            AddNumeric(Label("Numeric 1", inv.NumericLine1), it => it.NumericLine1, inv.NumericLine1);
+            AddNumeric(Label("Numeric 2", inv.NumericLine2), it => it.NumericLine2, inv.NumericLine2);
+            AddNumeric(Label("Numeric 3", inv.NumericLine3), it => it.NumericLine3, inv.NumericLine3);
+
+            // Single-line text fields
+            AddText(Label("Single line 1", inv.SingleLine1), it => it.SingleLine1, inv.SingleLine1);
+            AddText(Label("Single line 2", inv.SingleLine2), it => it.SingleLine2, inv.SingleLine2);
+            AddText(Label("Single line 3", inv.SingleLine3), it => it.SingleLine3, inv.SingleLine3);
+
+            // Multi-line text fields
+            AddText(Label("Multi line 1", inv.MultiLine1), it => it.MultiLine1, inv.MultiLine1);
+            AddText(Label("Multi line 2", inv.MultiLine2), it => it.MultiLine2, inv.MultiLine2);
+            AddText(Label("Multi line 3", inv.MultiLine3), it => it.MultiLine3, inv.MultiLine3);
+
+            // Boolean fields
+            AddBool(Label("Boolean 1", inv.BoolLine1), it => it.BoolLine1, inv.BoolLine1);
+            AddBool(Label("Boolean 2", inv.BoolLine2), it => it.BoolLine2, inv.BoolLine2);
+            AddBool(Label("Boolean 3", inv.BoolLine3), it => it.BoolLine3, inv.BoolLine3);
+
+            return result;
         }
 
         private async Task PopulateCategoriesSelectListAsync(int? selectedId)
@@ -743,7 +907,11 @@ namespace InventoryManagement.Pages.Inventory
                     if (!string.Equals(x.SeparatorBefore ?? string.Empty, y.SeparatorBefore ?? string.Empty, StringComparison.Ordinal)) return false;
                     if (!string.Equals(x.SeparatorAfter ?? string.Empty, y.SeparatorAfter ?? string.Empty, StringComparison.Ordinal)) return false;
                     if (!string.Equals(x.FixedText ?? string.Empty, y.FixedText ?? string.Empty, StringComparison.Ordinal)) return false;
-                    if (!string.Equals(x.DateTimeFormat ?? string.Empty, y.DateTimeFormat ?? string.Empty, StringComparison.Ordinal)) return false;
+                    if (!string.IsNullOrEmpty(x.DateTimeFormat) || !string.IsNullOrEmpty(y.DateTimeFormat))
+                    {
+                        // tolerate null vs empty
+                        if (!string.Equals(x.DateTimeFormat ?? string.Empty, y.DateTimeFormat ?? string.Empty, StringComparison.Ordinal)) return false;
+                    }
                     if (!string.Equals(x.PaddingChar ?? string.Empty, y.PaddingChar ?? string.Empty, StringComparison.Ordinal)) return false;
                     if (!string.Equals(x.Radix ?? string.Empty, y.Radix ?? string.Empty, StringComparison.Ordinal)) return false;
                 }
