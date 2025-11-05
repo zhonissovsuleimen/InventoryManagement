@@ -12,7 +12,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-
+  
   <data name="Create Inventory" xml:space="preserve">
     <value>Создать Инвентарь</value>
   </data>
@@ -43,7 +43,7 @@
   <data name="Previous" xml:space="preserve">
     <value>Предыдущий шаг</value>
   </data>
-
+  
   <data name="Define a Custom Id pattern for items in this inventory. Reorder elements freely." xml:space="preserve">
     <value>Определите шаблон пользовательского идентификатора для предметов в этом инвентаре. Свободно меняйте порядок элементов.</value>
   </data>
@@ -113,7 +113,7 @@
   <data name="Hex" xml:space="preserve">
     <value>Шеснацетиричный</value>
   </data>
-
+  
   <data name="Up to 3 of each type. Drag the card to reorder." xml:space="preserve">
     <value>До 3 штук каждого типа. Перетащите карту, чтобы изменить порядок.</value>
   </data>
@@ -127,13 +127,11 @@
     <value>Число</value>
   </data>
   <data name="Boolean" xml:space="preserve">
-    <value>Булев (перевод лол)</value>
+    <value>Булев</value>
   </data>
-
   <data name="Create" xml:space="preserve">
     <value>Создать</value>
   </data>
-
   <data name="Allowed Users" xml:space="preserve">
     <value>Разрешенные пользователи</value>
   </data>
@@ -146,7 +144,7 @@
   <data name="Remove (aria)" xml:space="preserve">
     <value>Убрать</value>
   </data>
-
+  
   <data name="Details" xml:space="preserve">
     <value>Детали</value>
   </data>
@@ -159,10 +157,5 @@
   <data name="Access Level" xml:space="preserve">
     <value>Уровень доступа</value>
   </data>
-
+  
 </root>
-
-
-
-
-
