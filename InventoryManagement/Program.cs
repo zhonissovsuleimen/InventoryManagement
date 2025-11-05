@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
 
 namespace InventoryManagement
 {
@@ -53,14 +54,17 @@ namespace InventoryManagement
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
-                // dotnet run seed
-                if (args.Length > 0 && args[0].Equals("seed", StringComparison.OrdinalIgnoreCase))
+
+                using (var scope = app.Services.CreateScope())
                 {
-                    using var scope = app.Services.CreateScope();
-                    Console.WriteLine("Seeding data");
-                    await Seed.SeedAll(scope.ServiceProvider);
-                    Console.WriteLine("Seeding data done");
-                    return;
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+                    var shouldSeed = !await userManager.Users.AnyAsync();
+                    if (shouldSeed)
+                    {
+                        Console.WriteLine("Seeding data");
+                        await Seed.SeedAll(scope.ServiceProvider);
+                        Console.WriteLine("Seeding data done");
+                    }
                 }
             }
             else
