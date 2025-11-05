@@ -25,7 +25,10 @@ namespace InventoryManagement.Pages.Inventory
 
         public async Task OnGetAsync()
         {
-            Inventory = await _context.Inventories.AsNoTracking().ToListAsync();
+            Inventory = await _context.Inventories
+                .Include(i => i.Owner)
+                .AsNoTracking()
+                .ToListAsync();
             var user = await _userManager.GetUserAsync(User);
             IsAdmin = user?.IsAdmin == true;
         }

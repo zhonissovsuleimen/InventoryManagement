@@ -230,7 +230,9 @@
                         @if (inv?.Owner != null)
                         {
                             <dt class="col-sm-3">Owner</dt>
-                            <dd class="col-sm-9">@ownerFullName (@inv.Owner.Email)</dd>
+                            <dd class="col-sm-9">
+                                <a asp-page="/Users/Details" asp-route-id="@inv.Owner.Id">@ownerFullName (@inv.Owner.Email)</a>
+                            </dd>
                         }
 
                         <dt class="col-sm-3">Access Level</dt>
@@ -301,7 +303,7 @@
                                 var display = string.IsNullOrWhiteSpace(fullName) ? u.UserName : fullName;
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>
-                                        <span class="fw-semibold">@display</span>
+                                        <a asp-page="/Users/Details" asp-route-id="@u.Id" class="fw-semibold">@display</a>
                                         @if (!string.IsNullOrWhiteSpace(u.Email))
                                         {
                                             <span class="text-muted"> (@u.Email)</span>

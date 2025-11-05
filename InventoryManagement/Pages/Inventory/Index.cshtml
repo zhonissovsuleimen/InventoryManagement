@@ -62,12 +62,16 @@
                 }
                 <th>Title</th>
                 <th>Description</th>
+                <th>Creator</th>
                 <th>Access Level</th>
             </tr>
         </thead>
         <tbody>
             @for (int i = 0; i < count; i++) {
                 var item = Model.Inventory[i];
+                var owner = item.Owner;
+                var ownerName = ((owner?.FirstName ?? "") + " " + (owner?.LastName ?? "")).Trim();
+                if (string.IsNullOrWhiteSpace(ownerName)) ownerName = owner?.UserName ?? "(user)";
                 <tr data-inv-guid="@item.Guid">
                     @if (isAdmin)
                     {
@@ -83,6 +87,16 @@
                         <a asp-page="./Details" asp-route-guid="@item.Guid">@item.Title</a>
                     </td>
                     <td>@DisplayDescription(Markdown.ToPlainText(item.Description))</td>
+                    <td>
+                        @if (owner != null)
+                        {
+                            <a asp-page="/Users/Details" asp-route-id="@owner.Id">@ownerName</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">(unknown)</span>
+                        }
+                    </td>
                     <td>@DisplayPublic(item.IsPublic)</td>
                 </tr>
             }
