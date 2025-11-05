@@ -23,5 +23,9 @@ namespace InventoryManagement.Models
         public bool? BoolLine2 { get; set; }
         public bool? BoolLine3 { get; set; }
         public List<ItemLike> Likes { get; set; } = new();
+
+        // Concurrency and auditing
+        public int Version { get; set; } = 1;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
 }

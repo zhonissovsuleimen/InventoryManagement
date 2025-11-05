@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using InventoryManagement.Data;
 using InventoryManagement.Models;
+using System.Security.Claims;
 
 namespace InventoryManagement.Pages.Items
 {
@@ -16,6 +17,7 @@ namespace InventoryManagement.Pages.Items
         }
 
         public Item Item { get; set; } = default!;
+        public bool CanEdit { get; set; }
 
         public async Task<IActionResult> OnGetAsync(Guid? guid)
         {
@@ -31,6 +33,18 @@ namespace InventoryManagement.Pages.Items
             if (item == null) return NotFound();
 
             Item = item;
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var currentUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                CanEdit = (currentUser?.IsAdmin == true) || (Item.Owner?.Id == userId);
+            }
+            else
+            {
+                CanEdit = false;
+            }
+
             return Page();
         }
     }

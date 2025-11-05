@@ -415,7 +415,9 @@ namespace InventoryManagement.Migrations
                     NumericLine3 = table.Column<double>(type: "double precision", nullable: true),
                     BoolLine1 = table.Column<bool>(type: "boolean", nullable: true),
                     BoolLine2 = table.Column<bool>(type: "boolean", nullable: true),
-                    BoolLine3 = table.Column<bool>(type: "boolean", nullable: true)
+                    BoolLine3 = table.Column<bool>(type: "boolean", nullable: true),
+                    Version = table.Column<int>(type: "integer", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

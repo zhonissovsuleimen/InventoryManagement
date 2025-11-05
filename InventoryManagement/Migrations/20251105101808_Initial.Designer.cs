@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105044628_Initial")]
+    [Migration("20251105101808_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -373,6 +373,12 @@ namespace InventoryManagement.Migrations
 
                     b.Property<string>("SingleLine3")
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

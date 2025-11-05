@@ -49,13 +49,13 @@
             @{
                 var inv = Model.Item.Inventory;
 
-                var fields = new List<(string PropName, string Kind, short? Position, string Title, object? Value)>();
+                var fields = new List<(string PropName, string Kind, short? Position, string Title, string? Description, object? Value)>();
 
                 void Add(string propName, string kind, InventoryManagement.Models.Inventory.CustomField? cf, object? value)
                 {
                     if (cf == null || !cf.IsUsed) return;
                     var title = string.IsNullOrWhiteSpace(cf.Title) ? propName : cf.Title;
-                    fields.Add((propName, kind, cf.Position, title, value));
+                    fields.Add((propName, kind, cf.Position, title, cf.Description, value));
                 }
 
                 Add("SingleLine1", "single", inv?.SingleLine1, Model.Item.SingleLine1);
@@ -80,7 +80,16 @@
 
             @foreach (var f in fields)
             {
-                <dt class="col-sm-3">@f.Title</dt>
+                <dt class="col-sm-3">
+                    <span class="me-2">@f.Title</span>
+                    @if (!string.IsNullOrWhiteSpace(f.Description))
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-muted" viewBox="0 0 16 16" style="cursor:help;" title="@f.Description" aria-hidden="true" focusable="false" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="false">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                        </svg>
+                    }
+                </dt>
                 <dd class="col-sm-9">
                     @if (f.Kind == "single")
                     {
@@ -105,12 +114,27 @@
 
         <div class="d-flex gap-2 mt-3">
             <a asp-page="../Inventory/Details" asp-route-guid="@Model.Item.Inventory.Guid" class="btn btn-secondary btn-sm">Back to Inventory</a>
+            @if (Model.CanEdit)
+            {
+                <a asp-page="./Edit" asp-route-guid="@Model.Item.Guid" class="btn btn-primary btn-sm">Edit</a>
+            }
         </div>
     </div>
 </div>
 
 @section Scripts {
 <script>
+(function(){
+  try {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (el) {
+      if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        new bootstrap.Tooltip(el);
+      }
+    });
+  } catch (e) {}
+})();
+
 (() => {
   const likeBtn = document.getElementById('likeBtn');
   const likeCount = document.getElementById('likeCount');

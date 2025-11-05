@@ -1,0 +1,242 @@
+@page
+@model InventoryManagement.Pages.Items.EditModel
+
+@{
+    ViewData["Title"] = "Edit Item";
+}
+
+<h1>Edit Item</h1>
+
+<div class="row">
+    <div class="col-md-10 col-lg-8">
+        <dl class="row">
+            <dt class="col-sm-3">Custom ID</dt>
+            <dd class="col-sm-9">@Model.Item?.CustomId</dd>
+
+            <dt class="col-sm-3">Inventory</dt>
+            <dd class="col-sm-9"><a asp-page="../Inventory/Details" asp-route-guid="@Model.Item?.Inventory.Guid">@Model.Item?.Inventory.Title</a></dd>
+
+            <dt class="col-sm-3">Owner</dt>
+            <dd class="col-sm-9">@Model.Item?.Owner?.UserName (@Model.Item?.Owner?.Email)</dd>
+
+            <dt class="col-sm-3">Likes</dt>
+            <dd class="col-sm-9">@(Model.Item?.Likes?.Count ?? 0)</dd>
+        </dl>
+
+        <form method="post" novalidate id="editForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Guid" />
+            <input type="hidden" id="editVersion" asp-for="Version" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @{
+                var inv = Model.Inventory;
+                var fields = new List<(string PropName, string FieldKind, short? Position, string? Title, string? Description, object? Value)>();
+
+                void Add(string prop, string kind, InventoryManagement.Models.Inventory.CustomField? cf, object? value)
+                {
+                    if (cf != null && cf.IsUsed) fields.Add((prop, kind, cf.Position, cf.Title, cf.Description, value));
+                }
+
+                Add("SingleLine1", "single", inv?.SingleLine1, Model.Input.SingleLine1);
+                Add("SingleLine2", "single", inv?.SingleLine2, Model.Input.SingleLine2);
+                Add("SingleLine3", "single", inv?.SingleLine3, Model.Input.SingleLine3);
+
+                Add("MultiLine1", "multi", inv?.MultiLine1, Model.Input.MultiLine1);
+                Add("MultiLine2", "multi", inv?.MultiLine2, Model.Input.MultiLine2);
+                Add("MultiLine3", "multi", inv?.MultiLine3, Model.Input.MultiLine3);
+
+                Add("NumericLine1", "numeric", inv?.NumericLine1, Model.Input.NumericLine1);
+                Add("NumericLine2", "numeric", inv?.NumericLine2, Model.Input.NumericLine2);
+                Add("NumericLine3", "numeric", inv?.NumericLine3, Model.Input.NumericLine3);
+
+                Add("BoolLine1", "bool", inv?.BoolLine1, Model.Input.BoolLine1);
+                Add("BoolLine2", "bool", inv?.BoolLine2, Model.Input.BoolLine2);
+                Add("BoolLine3", "bool", inv?.BoolLine3, Model.Input.BoolLine3);
+
+                fields = fields.OrderBy(f => f.Position ?? short.MaxValue).ToList();
+            }
+
+            @foreach (var f in fields)
+            {
+                <div class="mb-3">
+                    <label class="form-label d-flex align-items-center gap-2">
+                        <span>@(string.IsNullOrWhiteSpace(f.Title) ? f.PropName : f.Title)</span>
+                        @if (!string.IsNullOrWhiteSpace(f.Description))
+                        {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-muted" viewBox="0 0 16 16" style="cursor:help;" title="@f.Description" aria-hidden="true" focusable="false" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="false">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2 .176-.492 .246-.686 .246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                            </svg>
+                        }
+                    </label>
+
+                    @if (f.FieldKind == "single")
+                    {
+                        <input type="text" name="Input.@f.PropName" class="form-control" value="@((f.Value as string) ?? string.Empty)" data-edit-field />
+                    }
+                    else if (f.FieldKind == "multi")
+                    {
+                        <textarea name="Input.@f.PropName" class="form-control" data-edit-field>@((f.Value as string) ?? string.Empty)</textarea>
+                    }
+                    else if (f.FieldKind == "numeric")
+                    {
+                        var val = f.Value?.ToString() ?? "";
+                        <input type="number" name="Input.@f.PropName" step="any" class="form-control" value="@val" data-edit-field />
+                    }
+                    else if (f.FieldKind == "bool")
+                    {
+                        var isChecked = f.Value is bool b && b;
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="Input.@f.PropName" value="true" @(isChecked ? "checked" : "") data-edit-field />
+                            <input type="hidden" name="Input.@f.PropName" value="false" />
+                        </div>
+                    }
+
+                    @if (f.PropName == "SingleLine1") { <span asp-validation-for="Input.SingleLine1" class="text-danger"></span> }
+                    else if (f.PropName == "SingleLine2") { <span asp-validation-for="Input.SingleLine2" class="text-danger"></span> }
+                    else if (f.PropName == "SingleLine3") { <span asp-validation-for="Input.SingleLine3" class="text-danger"></span> }
+                    else if (f.PropName == "MultiLine1") { <span asp-validation-for="Input.MultiLine1" class="text-danger"></span> }
+                    else if (f.PropName == "MultiLine2") { <span asp-validation-for="Input.MultiLine2" class="text-danger"></span> }
+                    else if (f.PropName == "MultiLine3") { <span asp-validation-for="Input.MultiLine3" class="text-danger"></span> }
+                    else if (f.PropName == "NumericLine1") { <span asp-validation-for="Input.NumericLine1" class="text-danger"></span> }
+                    else if (f.PropName == "NumericLine2") { <span asp-validation-for="Input.NumericLine2" class="text-danger"></span> }
+                    else if (f.PropName == "NumericLine3") { <span asp-validation-for="Input.NumericLine3" class="text-danger"></span> }
+                    else if (f.PropName == "BoolLine1") { <span asp-validation-for="Input.BoolLine1" class="text-danger"></span> }
+                    else if (f.PropName == "BoolLine2") { <span asp-validation-for="Input.BoolLine2" class="text-danger"></span> }
+                    else if (f.PropName == "BoolLine3") { <span asp-validation-for="Input.BoolLine3" class="text-danger"></span> }
+                </div>
+            }
+
+            <div class="d-flex align-items-center gap-3 mt-2">
+                <button type="submit" class="btn btn-primary" id="saveButton">Save</button>
+                <span id="autosaveStatus" class="text-muted small" aria-live="polite"></span>
+                <a asp-page="./Details" asp-route-guid="@Model.Guid" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Pages/Shared/_ValidationScriptsPartial.cshtml" />
+    <script>
+        (function () {
+            try {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.forEach(function (el) {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                        new bootstrap.Tooltip(el);
+                    }
+                });
+            } catch (e) {}
+        })();
+
+        (function(){
+            const form = document.getElementById('editForm');
+            const saveBtn = document.getElementById('saveButton');
+            const statusEl = document.getElementById('autosaveStatus');
+            const versionEl = document.getElementById('editVersion');
+            const token = form?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            const itemGuid = '@Model.Guid';
+
+            const countdownSeconds = 10;
+            let timerId = null;
+            let tickId = null;
+            let secondsLeft = countdownSeconds;
+            const changedGroups = new Set(); // using only 'customFields'
+
+            function setBtnCountdownText(){ if (saveBtn) saveBtn.textContent = `Save in ${secondsLeft}s`; }
+            function resetBtnText(){ if (saveBtn) saveBtn.textContent = 'Save'; }
+
+            function schedule(){
+                clearTimeout(timerId); clearInterval(tickId);
+                secondsLeft = countdownSeconds;
+                setBtnCountdownText();
+                tickId = setInterval(() => { secondsLeft -= 1; if (secondsLeft <= 0) { clearInterval(tickId); } setBtnCountdownText(); }, 1000);
+                timerId = setTimeout(() => { autosave().catch(()=>{}); }, countdownSeconds * 1000);
+            }
+
+            function collectCustomFields(){
+                function val(name){
+                    const checkbox = form.querySelector(`input[type="checkbox"][name="Input.${name}"]`);
+                    if (checkbox) return checkbox.checked;
+                    const input = form.querySelector(`[name="Input.${name}"]`);
+                    return input ? input.value : null;
+                }
+                function num(name){
+                    const v = val(name); if (v===null || v==='') return null; const n = Number(v); return Number.isNaN(n) ? null : n;
+                }
+                function bool(name){
+                    const v = val(name); return !!v;
+                }
+                return {
+                    SingleLine1: val('SingleLine1') || '',
+                    SingleLine2: val('SingleLine2') || '',
+                    SingleLine3: val('SingleLine3') || '',
+                    MultiLine1: val('MultiLine1') || '',
+                    MultiLine2: val('MultiLine2') || '',
+                    MultiLine3: val('MultiLine3') || '',
+                    NumericLine1: num('NumericLine1'),
+                    NumericLine2: num('NumericLine2'),
+                    NumericLine3: num('NumericLine3'),
+                    BoolLine1: bool('BoolLine1'),
+                    BoolLine2: bool('BoolLine2'),
+                    BoolLine3: bool('BoolLine3')
+                };
+            }
+
+            function snapshot(){
+                return Object.assign({ Version: parseInt(versionEl?.value || '0') || 0 }, collectCustomFields());
+            }
+
+            function markChanged(){
+                changedGroups.add('customFields');
+                schedule();
+            }
+
+            form?.querySelectorAll('[data-edit-field]')?.forEach(el => {
+                el.addEventListener('input', markChanged);
+                el.addEventListener('change', markChanged);
+            });
+
+            async function autosave(){
+                clearTimeout(timerId); clearInterval(tickId);
+                if (changedGroups.size === 0) { resetBtnText(); return; }
+                statusEl.textContent = 'Saving...';
+                try {
+                    const body = {
+                        Version: parseInt(versionEl?.value || '0') || 0,
+                        ChangedGroups: Array.from(changedGroups),
+                        Changes: snapshot(),
+                        Original: snapshot()
+                    };
+                    const res = await fetch(`${window.location.pathname}?handler=AutoSave&guid=${encodeURIComponent(itemGuid)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token, 'X-RequestVerificationToken': token },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(body)
+                    });
+                    if (!res.ok) throw new Error('Failed');
+                    const data = await res.json();
+                    if (data && data.ok){
+                        const applied = new Set(Array.isArray(data.appliedGroups) ? data.appliedGroups.map(x=>String(x).toLowerCase()) : []);
+                        if (applied.has('customfields')) changedGroups.delete('customFields');
+                        if (typeof data.version === 'number') versionEl.value = String(data.version);
+                        if (Array.isArray(data.conflicts) && data.conflicts.length){
+                            const msgs = data.conflicts.map(c => `Conflict: ${c.message}`).join(' ');
+                            statusEl.innerHTML = `<span class="text-warning">${msgs}</span>`;
+                        } else {
+                            statusEl.textContent = 'Saved.';
+                        }
+                    } else {
+                        statusEl.innerHTML = `<span class="text-danger">Failed to save.</span>`;
+                    }
+                } catch {
+                    statusEl.innerHTML = `<span class="text-danger">Failed to save.</span>`;
+                } finally {
+                    resetBtnText();
+                }
+            }
+        })();
+    </script>
+}
