@@ -137,7 +137,9 @@
                             <form method="post" asp-page-handler="Edit" id="editForm" class="d-inline" enctype="multipart/form-data">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="guid" value="@inv.Guid" />
-                                <button type="submit" class="btn btn-primary btn-sm w-100">Save</button>
+                                <input type="hidden" id="editVersion" name="Edit.Version" value="@Model.Edit.Version" />
+                                <button type="submit" id="saveButton" class="btn btn-primary btn-sm w-100">Save</button>
+                                <div id="autosaveStatus" class="text-muted small mt-1 text-start" aria-live="polite"></div>
                             </form>
                         }
                         <form method="get" class="d-inline">
@@ -421,7 +423,6 @@
                                                 <dd class="col-sm-9">@ce.SeparatorAfter.ToString()</dd>
                                             }
 
-                                            @* Type specific hints *@
                                             @if (element is InventoryManagement.Models.Inventory.CustomId.Element.AbstractNumericElement num)
                                             {
                                                 <dt class="col-sm-3">Radix</dt>
@@ -722,7 +723,6 @@
     });
   }
 
-  // Tag removal in edit mode
   (function(){
     if (!@Model.EditMode.ToString().ToLower() || !@Model.CanEdit.ToString().ToLower()) return;
     const tagContainer = document.getElementById('detailTabsContent');
@@ -748,7 +748,6 @@
     });
   })();
 
-  // Allowed users search (edit mode) similar to Create
   (function(){
     const isPublicEl = document.getElementById('editIsPublic');
     const section = document.getElementById('allowedUsersSection');
@@ -758,7 +757,7 @@
     const userIdsContainer = document.getElementById('userIdsContainer');
     const template = userIdsContainer ? userIdsContainer.querySelector('input[data-template="user-id"]') : null;
 
-    if (!searchInput || !section) return; // only in edit mode
+    if (!searchInput || !section) return;
 
     const selectedMap = new Map();
 
@@ -798,6 +797,7 @@
         hidden.setAttribute('form', 'editForm');
         userIdsContainer.appendChild(hidden);
       }
+      document.dispatchEvent(new CustomEvent('edit-changed', { detail: { group: 'visibility' } }));
     }
 
     function removeUser(id){
@@ -807,6 +807,7 @@
       if (chip) chip.remove();
       const hidden = userIdsContainer.querySelector(`input[type="hidden"][data-user-id="${id}"]`);
       if (hidden) hidden.remove();
+      document.dispatchEvent(new CustomEvent('edit-changed', { detail: { group: 'visibility' } }));
     }
 
     function renderSuggestion(item){
@@ -855,7 +856,6 @@
       }
     });
 
-    // preload from server model
     try {
       const preset = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit.UserIds ?? new List<string>()));
       const arr = Array.isArray(preset) ? preset : [];
@@ -863,7 +863,6 @@
     } catch {}
   })();
 
-  // Tag suggestions
   (function(){
     const newTagInput = document.getElementById('newTag');
     const tagList = document.getElementById('tagSuggestions');
@@ -900,6 +899,184 @@
     document.addEventListener('click', (e) => {
       if (!(tagList.contains(e.target) || e.target === newTagInput)) clearTagList();
     });
+  })();
+
+  (function(){
+    if (!@Model.EditMode.ToString().ToLower() || !@Model.CanEdit.ToString().ToLower()) return;
+
+    const saveBtn = document.getElementById('saveButton');
+    const statusEl = document.getElementById('autosaveStatus');
+    const editForm = document.getElementById('editForm');
+    const token = editForm?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    const versionEl = document.getElementById('editVersion');
+
+    const countdownSeconds = 10;
+    let timerId = null;
+    let tickId = null;
+    let secondsLeft = countdownSeconds;
+    const changedGroups = new Set();
+
+    function setBtnCountdownText(){
+      if (!saveBtn) return;
+      saveBtn.textContent = `Saving in ${secondsLeft} seconds`;
+    }
+    function resetBtnText(){ if (saveBtn) saveBtn.textContent = 'Save'; }
+
+    function schedule(){
+      clearTimeout(timerId); clearInterval(tickId);
+      secondsLeft = countdownSeconds;
+      setBtnCountdownText();
+      tickId = setInterval(() => {
+        secondsLeft -= 1;
+        if (secondsLeft <= 0){ clearInterval(tickId); }
+        setBtnCountdownText();
+      }, 1000);
+      timerId = setTimeout(async () => { await autosave(); }, countdownSeconds * 1000);
+    }
+
+    function collectGeneral(){
+      return {
+        Title: document.getElementById('editTitle')?.value || '',
+        Description: document.getElementById('editDescription')?.value || '',
+        CategoryId: (() => { const v = document.getElementById('editCategory')?.value; return v ? parseInt(v) : null; })()
+      };
+    }
+    function collectVisibility(){
+      const isPublic = !!document.getElementById('editIsPublic')?.checked;
+      const ids = Array.from(document.querySelectorAll('#userIdsContainer input[type="hidden"][name="Edit.UserIds"]')).map(i => i.value);
+      return { IsPublic: isPublic, UserIds: ids };
+    }
+    function collectCustomFields(){
+      function read(prefix){
+        const obj = {};
+        obj.Title = document.querySelector(`[name="Edit.${prefix}.Title"]`)?.value || '';
+        obj.Description = document.querySelector(`[name="Edit.${prefix}.Description"]`)?.value || '';
+        const isUsedVal = document.querySelector(`[name="Edit.${prefix}.IsUsed"]`)?.value;
+        obj.IsUsed = (isUsedVal === 'true' || isUsedVal === 'True');
+        const posVal = document.querySelector(`[name="Edit.${prefix}.Position"]`)?.value;
+        obj.Position = posVal ? parseInt(posVal) : null;
+        return obj;
+      }
+      return {
+        SingleLine1: read('SingleLine1'), SingleLine2: read('SingleLine2'), SingleLine3: read('SingleLine3'),
+        MultiLine1: read('MultiLine1'), MultiLine2: read('MultiLine2'), MultiLine3: read('MultiLine3'),
+        NumericLine1: read('NumericLine1'), NumericLine2: read('NumericLine2'), NumericLine3: read('NumericLine3'),
+        BoolLine1: read('BoolLine1'), BoolLine2: read('BoolLine2'), BoolLine3: read('BoolLine3')
+      };
+    }
+    function collectCustomId(){
+      const rows = document.querySelectorAll('#customIdElements [data-row]');
+      const list = [];
+      rows.forEach((row, idx) => {
+        const get = sel => row.querySelector(sel)?.value || '';
+        const type = get('[data-prop="Type"]');
+        const e = {
+          Type: type,
+          Position: idx,
+          SeparatorBefore: get('[data-prop="SeparatorBefore"]').slice(0,1) || null,
+          SeparatorAfter: get('[data-prop="SeparatorAfter"]').slice(0,1) || null
+        };
+        if (type === 'FixedText') e.FixedText = get('[data-prop="FixedText"]');
+        else if (type === 'DateTime') e.DateTimeFormat = get('[data-prop="DateTimeFormat"]') || 'yyyy';
+        else if (type) {
+          e.PaddingChar = (get('[data-prop="PaddingChar"]').slice(0,1) || null);
+          e.Radix = get('[data-prop="Radix"]') || '10';
+        }
+        list.push(e);
+      });
+      return list;
+    }
+
+    function snapshot(){
+      return {
+        Title: collectGeneral().Title,
+        Description: collectGeneral().Description,
+        CategoryId: collectGeneral().CategoryId,
+        IsPublic: collectVisibility().IsPublic,
+        UserIds: collectVisibility().UserIds,
+        SingleLine1: collectCustomFields().SingleLine1,
+        SingleLine2: collectCustomFields().SingleLine2,
+        SingleLine3: collectCustomFields().SingleLine3,
+        MultiLine1: collectCustomFields().MultiLine1,
+        MultiLine2: collectCustomFields().MultiLine2,
+        MultiLine3: collectCustomFields().MultiLine3,
+        NumericLine1: collectCustomFields().NumericLine1,
+        NumericLine2: collectCustomFields().NumericLine2,
+        NumericLine3: collectCustomFields().NumericLine3,
+        BoolLine1: collectCustomFields().BoolLine1,
+        BoolLine2: collectCustomFields().BoolLine2,
+        BoolLine3: collectCustomFields().BoolLine3,
+        CustomIdElements: collectCustomId()
+      };
+    }
+
+    let baseline = snapshot();
+
+    function markChanged(group){
+      if (!group) return;
+      changedGroups.add(group);
+      schedule();
+    }
+
+    document.getElementById('editTitle')?.addEventListener('input', () => markChanged('general'));
+    document.getElementById('editDescription')?.addEventListener('input', () => markChanged('general'));
+    document.getElementById('editCategory')?.addEventListener('change', () => markChanged('general'));
+    document.getElementById('editIsPublic')?.addEventListener('change', () => markChanged('visibility'));
+    document.getElementById('allowedUsersSection')?.addEventListener('change', () => markChanged('visibility'));
+    document.getElementById('allowedUsersSection')?.addEventListener('click', (e) => {
+      if (e.target.closest('[data-user-id]') || e.target.closest('.btn-close')) markChanged('visibility');
+    });
+    document.getElementById('customFields')?.addEventListener('input', () => markChanged('customFields'));
+    document.getElementById('customIdElements')?.addEventListener('input', () => markChanged('customId'));
+    document.addEventListener('edit-changed', (e) => { if (e?.detail?.group) markChanged(e.detail.group); });
+
+    async function autosave(){
+      clearTimeout(timerId); clearInterval(tickId);
+      const groups = Array.from(changedGroups);
+      if (groups.length === 0) { resetBtnText(); return; }
+      statusEl.textContent = 'Saving...';
+      try {
+        const body = {
+          Version: parseInt(versionEl?.value || '0') || 0,
+          ChangedGroups: groups,
+          Changes: Object.assign({ Version: parseInt(versionEl?.value || '0') || 0 }, snapshot()),
+          Original: Object.assign({ Version: parseInt(versionEl?.value || '0') || 0 }, baseline)
+        };
+        const res = await fetch(`${window.location.pathname}?handler=AutoSave&guid=${encodeURIComponent(invGuid)}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': token,
+            'X-RequestVerificationToken': token
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        if (data && data.ok){
+          const applied = new Set(Array.isArray(data.appliedGroups) ? data.appliedGroups.map(x=>String(x).toLowerCase()) : []);
+          groups.forEach(g => { if (applied.has(String(g).toLowerCase())) changedGroups.delete(g); });
+          if (typeof data.version === 'number'){
+            versionEl.value = String(data.version);
+          }
+          baseline = snapshot();
+          if (Array.isArray(data.conflicts) && data.conflicts.length > 0){
+            const msgs = data.conflicts.map(c => `Conflict in ${c.group}: ${c.message}`).join(' ');
+            statusEl.innerHTML = `<span class="text-warning">${msgs}</span>`;
+          } else {
+            statusEl.textContent = 'Saved.';
+          }
+        } else {
+          statusEl.innerHTML = `<span class="text-danger">Failed to save.</span>`;
+        }
+      } catch {
+        statusEl.innerHTML = `<span class="text-danger">Failed to save.</span>`;
+      } finally {
+        resetBtnText();
+      }
+    }
+
   })();
 })();
 </script>

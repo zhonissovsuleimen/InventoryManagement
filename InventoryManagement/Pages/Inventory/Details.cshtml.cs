@@ -46,7 +46,8 @@ namespace InventoryManagement.Pages.Inventory
 
         public class EditInputModel
         {
-            // General info
+            public int Version { get; set; }
+
             [Required]
             public string? Title { get; set; }
             [Required]
@@ -57,10 +58,8 @@ namespace InventoryManagement.Pages.Inventory
             public bool IsPublic { get; set; }
             public List<string> UserIds { get; set; } = new();
 
-            // Custom Id
             public List<CustomIdElementInput> CustomIdElements { get; set; } = new();
 
-            // Custom fields configuration
             public CustomField? SingleLine1 { get; set; }
             public CustomField? SingleLine2 { get; set; }
             public CustomField? SingleLine3 { get; set; }
@@ -117,7 +116,6 @@ namespace InventoryManagement.Pages.Inventory
             {
                 Inventory = inventory;
 
-                // compute edit permission
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var currentUser = string.IsNullOrEmpty(userId)
                     ? null
@@ -130,6 +128,7 @@ namespace InventoryManagement.Pages.Inventory
                 if (EditMode && CanEdit)
                 {
                     PopulateEditModelFromInventory(inventory);
+                    Edit.Version = inventory.Version;
                     await PopulateCategoriesSelectListAsync(Edit.CategoryId);
                 }
 
@@ -147,14 +146,12 @@ namespace InventoryManagement.Pages.Inventory
 
         private void PopulateEditModelFromInventory(Models.Inventory.Inventory inv)
         {
-            // General info
             Edit.Title = inv.Title;
             Edit.Description = inv.Description;
             Edit.CategoryId = inv.Category?.Id;
             Edit.IsPublic = inv.IsPublic;
             Edit.UserIds = inv.AllowedUsers?.Select(u => u.Id).ToList() ?? new List<string>();
 
-            // Custom fields
             Edit.SingleLine1 = CloneCustomField(inv.SingleLine1);
             Edit.SingleLine2 = CloneCustomField(inv.SingleLine2);
             Edit.SingleLine3 = CloneCustomField(inv.SingleLine3);
@@ -168,7 +165,6 @@ namespace InventoryManagement.Pages.Inventory
             Edit.BoolLine2 = CloneCustomField(inv.BoolLine2);
             Edit.BoolLine3 = CloneCustomField(inv.BoolLine3);
 
-            // Custom ID
             Edit.CustomIdElements = new List<CustomIdElementInput>();
             if (inv.CustomId?.Elements != null)
             {
@@ -495,17 +491,27 @@ namespace InventoryManagement.Pages.Inventory
             var canEdit = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId);
             if (!canEdit) return Forbid();
 
-            // Server-side validation
             if (!ModelState.IsValid)
             {
-                Inventory = inv; // to render page again
+                Inventory = inv;
                 CanEdit = true;
                 EditMode = true;
                 await PopulateCategoriesSelectListAsync(Edit.CategoryId);
                 return Page();
             }
 
-            // Update general info (non auto-generated fields)
+            if (Edit.Version != inv.Version)
+            {
+                ModelState.AddModelError(string.Empty, $"The inventory was changed by someone else. Your version {Edit.Version}, current version {inv.Version}. Please review changes or try again.");
+                Inventory = inv;
+                CanEdit = true;
+                EditMode = true;
+                PopulateEditModelFromInventory(inv);
+                Edit.Version = inv.Version;
+                await PopulateCategoriesSelectListAsync(Edit.CategoryId);
+                return Page();
+            }
+
             if (!string.IsNullOrWhiteSpace(Edit.Title)) inv.Title = Edit.Title.Trim();
             inv.Description = Edit.Description ?? string.Empty;
 
@@ -518,7 +524,6 @@ namespace InventoryManagement.Pages.Inventory
                 }
             }
 
-            // Image upload via AzureBlobulator3000
             if (Edit.Image != null && Edit.Image.Length > 0)
             {
                 var uploadedUrl = await AzureBlobulator3000.UploadImageAsync(Edit.Image);
@@ -529,7 +534,6 @@ namespace InventoryManagement.Pages.Inventory
             }
 
             inv.IsPublic = Edit.IsPublic;
-            // Allowed users management
             if (!inv.IsPublic)
             {
                 var selectedIds = (Edit.UserIds ?? new List<string>()).Distinct().ToList();
@@ -542,7 +546,6 @@ namespace InventoryManagement.Pages.Inventory
                 inv.AllowedUsers.Clear();
             }
 
-            // Update Custom Fields
             inv.SingleLine1 = Edit.SingleLine1;
             inv.SingleLine2 = Edit.SingleLine2;
             inv.SingleLine3 = Edit.SingleLine3;
@@ -556,7 +559,6 @@ namespace InventoryManagement.Pages.Inventory
             inv.BoolLine2 = Edit.BoolLine2;
             inv.BoolLine3 = Edit.BoolLine3;
 
-            // Update CustomId
             if (Edit.CustomIdElements != null && Edit.CustomIdElements.Count > 0)
             {
                 if (inv.CustomId == null)
@@ -596,14 +598,299 @@ namespace InventoryManagement.Pages.Inventory
             }
             else
             {
-                // No elements -> remove custom id
                 inv.CustomId = null!;
             }
 
             inv.UpdatedAt = DateTime.UtcNow;
+            inv.Version += 1;
             await _context.SaveChangesAsync();
 
             return RedirectToPage(new { guid });
+        }
+
+        public sealed class AutoSaveRequest
+        {
+            public int Version { get; set; }
+            public HashSet<string>? ChangedGroups { get; set; }
+            public EditInputModel? Changes { get; set; }
+            public EditInputModel? Original { get; set; }
+        }
+
+        public sealed class ConflictInfo
+        {
+            public string Group { get; set; } = string.Empty;
+            public string Message { get; set; } = string.Empty;
+        }
+
+        public sealed class AutoSaveResult
+        {
+            public bool Ok { get; set; }
+            public int Version { get; set; }
+            public List<string> AppliedGroups { get; set; } = new();
+            public List<ConflictInfo> Conflicts { get; set; } = new();
+        }
+
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostAutoSaveAsync(Guid guid, [FromBody] AutoSaveRequest req)
+        {
+            if (req == null) return BadRequest();
+            var inv = await _context.Inventories
+                .Include(i => i.Owner)
+                .Include(i => i.Category)
+                .Include(i => i.AllowedUsers)
+                .Include(i => i.CustomId)
+                    .ThenInclude(cid => cid.Elements)
+                .FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inv == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = string.IsNullOrEmpty(userId)
+                ? null
+                : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            var canEdit = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId);
+            if (!canEdit) return Forbid();
+
+            var result = new AutoSaveResult { Ok = true, Version = inv.Version };
+            var changed = req.ChangedGroups ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            bool appliedAny = false;
+            bool sameVersion = req.Version == inv.Version;
+
+            bool GeneralEquals(EditInputModel? original)
+            {
+                if (original == null) return false;
+                var catId = inv.Category?.Id;
+                return string.Equals(inv.Title ?? string.Empty, original.Title ?? string.Empty, StringComparison.Ordinal)
+                    && string.Equals(inv.Description ?? string.Empty, original.Description ?? string.Empty, StringComparison.Ordinal)
+                    && Nullable.Equals(catId, original.CategoryId);
+            }
+            bool VisibilityEquals(EditInputModel? original)
+            {
+                if (original == null) return false;
+                var isPublicEq = inv.IsPublic == original.IsPublic;
+                var origIds = new HashSet<string>(original.UserIds ?? new List<string>());
+                var serverIds = new HashSet<string>(inv.AllowedUsers?.Select(u => u.Id) ?? Enumerable.Empty<string>());
+                return isPublicEq && origIds.SetEquals(serverIds);
+            }
+            static bool CustomFieldEquals(CustomField? a, CustomField? b)
+            {
+                if (a == null && b == null) return true;
+                if (a == null || b == null) return false;
+                return a.IsUsed == b.IsUsed
+                    && (a.Position ?? short.MaxValue) == (b.Position ?? short.MaxValue)
+                    && string.Equals(a.Title ?? string.Empty, b.Title ?? string.Empty, StringComparison.Ordinal)
+                    && string.Equals(a.Description ?? string.Empty, b.Description ?? string.Empty, StringComparison.Ordinal);
+            }
+            bool CustomFieldsEquals(EditInputModel? original)
+            {
+                if (original == null) return false;
+                return CustomFieldEquals(inv.SingleLine1, original.SingleLine1)
+                    && CustomFieldEquals(inv.SingleLine2, original.SingleLine2)
+                    && CustomFieldEquals(inv.SingleLine3, original.SingleLine3)
+                    && CustomFieldEquals(inv.MultiLine1, original.MultiLine1)
+                    && CustomFieldEquals(inv.MultiLine2, original.MultiLine2)
+                    && CustomFieldEquals(inv.MultiLine3, original.MultiLine3)
+                    && CustomFieldEquals(inv.NumericLine1, original.NumericLine1)
+                    && CustomFieldEquals(inv.NumericLine2, original.NumericLine2)
+                    && CustomFieldEquals(inv.NumericLine3, original.NumericLine3)
+                    && CustomFieldEquals(inv.BoolLine1, original.BoolLine1)
+                    && CustomFieldEquals(inv.BoolLine2, original.BoolLine2)
+                    && CustomFieldEquals(inv.BoolLine3, original.BoolLine3);
+            }
+            bool CustomIdEquals(List<CustomIdElementInput>? original)
+            {
+                var server = new List<CustomIdElementInput>();
+                if (inv.CustomId?.Elements != null)
+                {
+                    foreach (var e in inv.CustomId.Elements.Where(x => x != null).OrderBy(x => x.Position ?? short.MaxValue).ThenBy(x => x.Id))
+                    {
+                        var item = new CustomIdElementInput
+                        {
+                            Type = e.GetType().Name.Replace("Element", ""),
+                            SeparatorBefore = e.SeparatorBefore?.ToString(),
+                            SeparatorAfter = e.SeparatorAfter?.ToString(),
+                            Position = e.Position
+                        };
+                        if (e is AbstractNumericElement num)
+                        {
+                            item.PaddingChar = num.PaddingChar?.ToString();
+                            item.Radix = ((int)num.Radix).ToString();
+                        }
+                        else if (e is DateTimeElement dt)
+                        {
+                            item.DateTimeFormat = dt.DateTimeFormat;
+                        }
+                        else if (e is FixedTextElement ft)
+                        {
+                            item.FixedText = ft.FixedText;
+                        }
+                        server.Add(item);
+                    }
+                }
+
+                var a = server;
+                var b = (original ?? new List<CustomIdElementInput>())
+                        .Where(x => x != null)
+                        .OrderBy(x => x.Position ?? short.MaxValue)
+                        .ThenBy(x => x.Type)
+                        .ToList();
+                if (a.Count != b.Count) return false;
+                for (int i = 0; i < a.Count; i++)
+                {
+                    var x = a[i];
+                    var y = b[i];
+                    if (!string.Equals(x.Type, y.Type, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(x.SeparatorBefore ?? string.Empty, y.SeparatorBefore ?? string.Empty, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(x.SeparatorAfter ?? string.Empty, y.SeparatorAfter ?? string.Empty, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(x.FixedText ?? string.Empty, y.FixedText ?? string.Empty, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(x.DateTimeFormat ?? string.Empty, y.DateTimeFormat ?? string.Empty, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(x.PaddingChar ?? string.Empty, y.PaddingChar ?? string.Empty, StringComparison.Ordinal)) return false;
+                    if (!string.Equals(x.Radix ?? string.Empty, y.Radix ?? string.Empty, StringComparison.Ordinal)) return false;
+                }
+                return true;
+            }
+
+            void ApplyGeneral(EditInputModel? change)
+            {
+                if (change == null) return;
+                if (!string.IsNullOrWhiteSpace(change.Title)) inv.Title = change.Title.Trim();
+                inv.Description = change.Description ?? string.Empty;
+                if (change.CategoryId.HasValue)
+                {
+                    var cat = _context.Categories.FirstOrDefault(c => c.Id == change.CategoryId.Value);
+                    if (cat != null) inv.Category = cat;
+                }
+            }
+            async Task ApplyVisibilityAsync(EditInputModel? change)
+            {
+                if (change == null) return;
+                inv.IsPublic = change.IsPublic;
+                if (!inv.IsPublic)
+                {
+                    var ids = (change.UserIds ?? new List<string>()).Distinct().ToList();
+                    var users = await _context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+                    inv.AllowedUsers.Clear();
+                    foreach (var u in users) inv.AllowedUsers.Add(u);
+                }
+                else
+                {
+                    inv.AllowedUsers.Clear();
+                }
+            }
+            void ApplyCustomFields(EditInputModel? change)
+            {
+                if (change == null) return;
+                inv.SingleLine1 = change.SingleLine1;
+                inv.SingleLine2 = change.SingleLine2;
+                inv.SingleLine3 = change.SingleLine3;
+                inv.MultiLine1 = change.MultiLine1;
+                inv.MultiLine2 = change.MultiLine2;
+                inv.MultiLine3 = change.MultiLine3;
+                inv.NumericLine1 = change.NumericLine1;
+                inv.NumericLine2 = change.NumericLine2;
+                inv.NumericLine3 = change.NumericLine3;
+                inv.BoolLine1 = change.BoolLine1;
+                inv.BoolLine2 = change.BoolLine2;
+                inv.BoolLine3 = change.BoolLine3;
+            }
+            void ApplyCustomId(EditInputModel? change)
+            {
+                if (change == null) return;
+                var list = change.CustomIdElements ?? new List<CustomIdElementInput>();
+                if (list.Count == 0)
+                {
+                    inv.CustomId = null!;
+                    return;
+                }
+                if (inv.CustomId == null)
+                {
+                    inv.CustomId = new CustomId { Guid = Guid.NewGuid(), Elements = new List<AbstractElement>() };
+                }
+                else if (inv.CustomId.Elements != null) inv.CustomId.Elements.Clear();
+                else inv.CustomId.Elements = new List<AbstractElement>();
+
+                short pos = 0;
+                foreach (var e in list.OrderBy(e => e.Position ?? short.MaxValue))
+                {
+                    AbstractElement? element = e.Type switch
+                    {
+                        "FixedText" => new FixedTextElement { FixedText = e.FixedText ?? string.Empty },
+                        "Digit6" => new Digit6Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Digit9" => new Digit9Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Bit20" => new Bit20Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "Bit32" => new Bit32Element { PaddingChar = ParseChar(e.PaddingChar), Radix = ParseRadix(e.Radix) },
+                        "DateTime" => new DateTimeElement { DateTimeFormat = string.IsNullOrWhiteSpace(e.DateTimeFormat) ? "yyyy" : e.DateTimeFormat },
+                        "Guid" => new GuidElement(),
+                        _ => null
+                    };
+                    if (element == null) continue;
+                    element.SeparatorBefore = ParseChar(e.SeparatorBefore);
+                    element.SeparatorAfter = ParseChar(e.SeparatorAfter);
+                    element.Position = pos++;
+                    inv.CustomId.Elements.Add(element);
+                }
+            }
+
+            async Task<bool> ApplyGroupAsync(string group)
+            {
+                var g = group.ToLowerInvariant();
+                if (sameVersion)
+                {
+                    if (g == "general") { ApplyGeneral(req.Changes); return true; }
+                    if (g == "visibility") { await ApplyVisibilityAsync(req.Changes); return true; }
+                    if (g == "customfields") { ApplyCustomFields(req.Changes); return true; }
+                    if (g == "customid") { ApplyCustomId(req.Changes); return true; }
+                    return false;
+                }
+                else
+                {
+                    if (g == "general")
+                    {
+                        if (GeneralEquals(req.Original)) { ApplyGeneral(req.Changes); return true; }
+                        result.Conflicts.Add(new ConflictInfo { Group = "general", Message = "General info was modified by someone else." });
+                        return false;
+                    }
+                    if (g == "visibility")
+                    {
+                        if (VisibilityEquals(req.Original)) { await ApplyVisibilityAsync(req.Changes); return true; }
+                        result.Conflicts.Add(new ConflictInfo { Group = "visibility", Message = "Access level or allowed users were modified by someone else." });
+                        return false;
+                    }
+                    if (g == "customfields")
+                    {
+                        if (CustomFieldsEquals(req.Original)) { ApplyCustomFields(req.Changes); return true; }
+                        result.Conflicts.Add(new ConflictInfo { Group = "customFields", Message = "Custom fields were modified by someone else." });
+                        return false;
+                    }
+                    if (g == "customid")
+                    {
+                        if (CustomIdEquals(req.Original?.CustomIdElements)) { ApplyCustomId(req.Changes); return true; }
+                        result.Conflicts.Add(new ConflictInfo { Group = "customId", Message = "Custom ID structure was modified by someone else." });
+                        return false;
+                    }
+                    return false;
+                }
+            }
+
+            foreach (var group in changed)
+            {
+                var ok = await ApplyGroupAsync(group);
+                if (ok)
+                {
+                    result.AppliedGroups.Add(group);
+                    appliedAny = true;
+                }
+            }
+
+            if (appliedAny)
+            {
+                inv.UpdatedAt = DateTime.UtcNow;
+                inv.Version += 1;
+                await _context.SaveChangesAsync();
+                result.Version = inv.Version;
+            }
+
+            return new JsonResult(result);
         }
 
         public async Task<IActionResult> OnPostGenerateCustomId()

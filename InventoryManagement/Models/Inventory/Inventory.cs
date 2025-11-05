@@ -10,6 +10,10 @@ namespace InventoryManagement.Models.Inventory
     {
         public int Id { get; set; }
         public Guid Guid { get; set; } = Guid.NewGuid();
+        
+        [ConcurrencyCheck]
+        public int Version { get; set; } = 0;
+
         [Required]
         public string Title { get; set; }
         [Required]
