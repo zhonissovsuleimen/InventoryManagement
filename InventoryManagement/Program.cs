@@ -104,22 +104,22 @@ namespace InventoryManagement
 
             var app = builder.Build();
 
-            // Apply migrations and seed on startup (works in Azure/Production and Development)
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 try
                 {
                     var db = services.GetRequiredService<ApplicationDbContext>();
-                    await db.Database.MigrateAsync();
 
-                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
-                    var shouldSeed = !await userManager.Users.AnyAsync();
-                    if (shouldSeed)
+                    if (app.Environment.IsDevelopment())
                     {
-                        Console.WriteLine("Seeding data");
+                        Console.WriteLine("Development environment detected: dropping database...");
+                        await db.Database.EnsureDeletedAsync();
+                        Console.WriteLine("Applying migrations...");
+                        await db.Database.MigrateAsync();
+                        Console.WriteLine("Reseeding data...");
                         await Seed.SeedAll(services);
-                        Console.WriteLine("Seeding data done");
+                        Console.WriteLine("Development database reseed completed.");
                     }
                 }
                 catch (Exception ex)
