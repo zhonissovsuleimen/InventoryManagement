@@ -62,6 +62,9 @@
   <data name="Admin" xml:space="preserve">
     <value>Админ</value>
   </data>
+  <data name="De-Admin" xml:space="preserve">
+    <value>Снять Админ права</value>
+  </data>
   <data name="Password" xml:space="preserve">
     <value>Пароль</value>
   </data>
@@ -133,6 +136,19 @@
   </data>
 
 </root>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

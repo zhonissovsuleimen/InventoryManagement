@@ -30,6 +30,7 @@ namespace InventoryManagement.Pages.Users
         public List<Item> LikedItems { get; set; } = [];
         public bool IsSelf { get; set; }
         public bool EditMode { get; set; }
+        public bool IsAdmin { get; set; }
 
         public class EditInput
         {
@@ -60,7 +61,9 @@ namespace InventoryManagement.Pages.Users
         {
             if (string.IsNullOrWhiteSpace(Id)) return NotFound();
 
-            var currentUserId = _userManager.GetUserId(User);
+            var currentUser = await _userManager.GetUserAsync(User);
+            IsAdmin = currentUser?.IsAdmin == true;
+            var currentUserId = currentUser?.Id;
             IsSelf = !string.IsNullOrEmpty(currentUserId) && string.Equals(currentUserId, Id, StringComparison.Ordinal);
 
             UserModel = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == Id);
@@ -90,11 +93,14 @@ namespace InventoryManagement.Pages.Users
                 .OrderBy(i => i.Id)
                 .ToListAsync();
 
-            if (IsSelf && edit == true)
+            if (edit == true && (IsSelf || IsAdmin))
             {
                 EditMode = true;
-                Input.FirstName = UserModel.FirstName;
-                Input.LastName = UserModel.LastName;
+                if (IsSelf)
+                {
+                    Input.FirstName = UserModel.FirstName;
+                    Input.LastName = UserModel.LastName;
+                }
             }
 
             return Page();
@@ -191,6 +197,38 @@ namespace InventoryManagement.Pages.Users
             return new JsonResult(new { deleted });
         }
 
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostMakeAdminAsync()
+        {
+            var current = await _userManager.GetUserAsync(User);
+            if (current?.IsAdmin != true) return Forbid();
+            if (string.IsNullOrWhiteSpace(Id)) return NotFound();
+
+            var target = await _context.Users.FirstOrDefaultAsync(u => u.Id == Id);
+            if (target == null) return NotFound();
+
+            target.IsAdmin = true;
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage(new { id = Id, edit = true });
+        }
+
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostRemoveAdminAsync()
+        {
+            var current = await _userManager.GetUserAsync(User);
+            if (current?.IsAdmin != true) return Forbid();
+            if (string.IsNullOrWhiteSpace(Id)) return NotFound();
+
+            var target = await _context.Users.FirstOrDefaultAsync(u => u.Id == Id);
+            if (target == null) return NotFound();
+
+            target.IsAdmin = false;
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage(new { id = Id, edit = true });
+        }
+
         private async Task<PageResult> ReloadWithErrorsAsync()
         {
             UserModel = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == Id);
@@ -217,6 +255,8 @@ namespace InventoryManagement.Pages.Users
                 .ToListAsync();
             IsSelf = true;
             EditMode = true;
+            var currentUser = await _userManager.GetUserAsync(User);
+            IsAdmin = currentUser?.IsAdmin == true;
             return Page();
         }
     }
