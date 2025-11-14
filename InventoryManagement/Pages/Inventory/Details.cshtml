@@ -254,7 +254,9 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     @foreach (var tag in inv.Tags.OrderBy(t => t.Name))
                                     {
-                                        <span class="badge rounded-pill bg-secondary px-3 py-2">@tag.Name</span>
+                                        <span class="badge rounded-pill bg-secondary px-3 py-2">
+                                            @tag.Name
+                                        </span>
                                     }
                                 </div>
                             </dd>
@@ -494,7 +496,7 @@
 
                 @if (User?.Identity?.IsAuthenticated == true)
                 {
-                    <form method="post" asp-page-handler="AddTag" class="d-flex gap-2 align-items-start position-relative">
+                    <form method="post" asp-page-handler="AddTag" class="d-flex gap-2 align-items-stretch position-relative">
                         <input type="hidden" name="guid" value="@inv.Guid" />
                         <div class="flex-grow-1">
                             <div class="form-floating">
@@ -503,7 +505,7 @@
                             </div>
                             <div id="tagSuggestions" class="list-group position-absolute w-100" style="z-index:1050; display:none; max-height:220px; overflow:auto;"></div>
                         </div>
-                        <button class="btn btn-primary" type="submit">Add</button>
+                        <button class="btn btn-primary h-100" type="submit">Add</button>
                     </form>
                 }
                 else
@@ -962,7 +964,7 @@
     });
 
     try {
-      const preset = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit.UserIds ?? new List<string>()));
+      const preset = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Edit?.UserIds ?? new List<string>()));
       const arr = Array.isArray(preset) ? preset : [];
       arr.forEach(id => addUser(id, id));
     } catch {}

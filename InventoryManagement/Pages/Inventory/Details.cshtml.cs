@@ -514,10 +514,47 @@ namespace InventoryManagement.Pages.Inventory
         public sealed class TagNameInput { public string? Tag { get; set; } }
 
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostAddTagAsync(Guid guid, [FromForm] string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag)) return BadRequest();
+
+            var inv = await _context.Inventories
+                .Include(i => i.Tags)
+                .FirstOrDefaultAsync(i => i.Guid == guid);
+            if (inv == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Forbid();
+
+            var name = tag.Trim();
+            if (name.Length > 64) name = name.Substring(0, 64);
+
+            var existingTag = await _context.Set<Tag>()
+                .FirstOrDefaultAsync(t => t.Name.ToLower() == name.ToLower());
+
+            if (existingTag == null)
+            {
+                existingTag = new Tag { Name = name };
+                _context.Tags.Add(existingTag);
+            }
+
+            if (inv.Tags == null) inv.Tags = new List<Tag>();
+
+            var already = inv.Tags.Any(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (!already)
+            {
+                inv.Tags.Add(existingTag);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage(new { guid });
+        }
+
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostRemoveTagAsync(Guid guid, [FromBody] TagNameInput input)
         {
-            var name = input?.Tag?.Trim().ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(name)) return BadRequest();
+            var raw = input?.Tag?.Trim();
+            if (string.IsNullOrWhiteSpace(raw)) return BadRequest();
 
             var inv = await _context.Inventories
                 .Include(i => i.Owner)
@@ -532,7 +569,7 @@ namespace InventoryManagement.Pages.Inventory
             var canEdit = (currentUser?.IsAdmin == true) || (inv.Owner?.Id == userId);
             if (!canEdit) return Forbid();
 
-            var tag = inv.Tags.FirstOrDefault(t => t.Name == name);
+            var tag = inv.Tags.FirstOrDefault(t => string.Equals(t.Name, raw, StringComparison.OrdinalIgnoreCase));
             if (tag == null)
             {
                 return new JsonResult(new { removed = false });
@@ -540,7 +577,7 @@ namespace InventoryManagement.Pages.Inventory
 
             inv.Tags.Remove(tag);
             await _context.SaveChangesAsync();
-            return new JsonResult(new { removed = true, tag = name });
+            return new JsonResult(new { removed = true, tag = tag.Name });
         }
 
         public sealed class DeleteItemsInput { public List<Guid>? Guids { get; set; } }
