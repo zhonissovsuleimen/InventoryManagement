@@ -113,8 +113,6 @@ namespace InventoryManagement
 
                     if (app.Environment.IsDevelopment())
                     {
-                        Console.WriteLine("Development environment detected: dropping database...");
-                        await db.Database.EnsureDeletedAsync();
                         Console.WriteLine("Applying migrations...");
                         await db.Database.MigrateAsync();
                         Console.WriteLine("Reseeding data...");
