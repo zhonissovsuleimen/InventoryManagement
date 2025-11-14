@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace InventoryManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251105181230_Initial")]
+    [Migration("20251114083125_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -756,6 +756,7 @@ namespace InventoryManagement.Migrations
                     b.HasOne("InventoryManagement.Models.AppUser", "Owner")
                         .WithMany("OwnedInventories")
                         .HasForeignKey("Owner_UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Inventory_Owner");
 
                     b.OwnsOne("InventoryManagement.Models.Inventory.CustomField", "BoolLine1", b1 =>

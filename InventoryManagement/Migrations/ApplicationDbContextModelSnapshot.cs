@@ -753,6 +753,7 @@ namespace InventoryManagement.Migrations
                     b.HasOne("InventoryManagement.Models.AppUser", "Owner")
                         .WithMany("OwnedInventories")
                         .HasForeignKey("Owner_UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Inventory_Owner");
 
                     b.OwnsOne("InventoryManagement.Models.Inventory.CustomField", "BoolLine1", b1 =>

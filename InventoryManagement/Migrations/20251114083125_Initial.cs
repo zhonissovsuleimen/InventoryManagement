@@ -326,7 +326,8 @@ namespace InventoryManagement.Migrations
                         name: "FK_Inventory_Owner",
                         column: x => x.Owner_UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

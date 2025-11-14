@@ -133,7 +133,8 @@ namespace InventoryManagement.Data
                 .HasOne(i => i.Owner)
                 .WithMany(u => u.OwnedInventories)
                 .HasForeignKey("Owner_UserId")
-                .HasConstraintName("FK_Inventory_Owner");
+                .HasConstraintName("FK_Inventory_Owner")
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Inventory>()
                 .HasMany(i => i.AllowedUsers)
