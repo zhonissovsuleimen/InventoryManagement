@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagement.Services;
 
-public record InventorySearchResult(Guid Guid, string Title, string Description, string? ImageUrl, string? OwnerId);
+public record InventorySearchResult(Guid Guid, string Title, string Description, string? ImageUrl, string? OwnerId, IReadOnlyList<string> MatchedTags);
 
 public class InventorySearch
 {
@@ -13,9 +13,10 @@ public class InventorySearch
     public async Task<List<InventorySearchResult>> SearchAsync(string query, int limit = 3)
     {
         var term = (query ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(term)) return [];
+        if (string.IsNullOrWhiteSpace(term)) return new List<InventorySearchResult>();
 
         const double trigramThreshold = 0.05;
+
         var results = await _db.Inventories
             .AsNoTracking()
             .Include(i => i.Owner)
@@ -23,7 +24,8 @@ public class InventorySearch
             .Where(i =>
                 i.SearchVector!.Matches(EF.Functions.PlainToTsQuery("simple", term)) ||
                 EF.Functions.TrigramsSimilarity(i.Title, term) > trigramThreshold ||
-                EF.Functions.TrigramsSimilarity(i.Description ?? "", term) > trigramThreshold
+                EF.Functions.TrigramsSimilarity(i.Description ?? "", term) > trigramThreshold ||
+                i.Tags.Any(t => EF.Functions.TrigramsSimilarity(t.Name, term) > trigramThreshold || EF.Functions.ILike(t.Name, term + "%"))
             )
             .Select(i => new
             {
@@ -35,7 +37,19 @@ public class InventorySearch
             })
             .OrderByDescending(x => x.Rank)
             .Take(limit)
-            .Select(x => new InventorySearchResult(x.i.Guid, x.i.Title, x.i.Description, x.i.ImageUrl, x.i.Owner != null ? x.i.Owner.Id : null))
+            .Select(x => new InventorySearchResult(
+                x.i.Guid,
+                x.i.Title,
+                x.i.Description,
+                x.i.ImageUrl,
+                x.i.Owner != null ? x.i.Owner.Id : null,
+                x.i.Tags
+                    .Where(t => EF.Functions.TrigramsSimilarity(t.Name, term) > trigramThreshold || EF.Functions.ILike(t.Name, term + "%"))
+                    .OrderBy(t => t.Name)
+                    .Select(t => t.Name)
+                    .Take(5)
+                    .ToList()
+            ))
             .ToListAsync();
 
         return results;

@@ -155,8 +155,10 @@
                         const a = document.createElement('a');
                         a.className = 'dropdown-item';
                         a.href = '/Inventory/Details?guid=' + encodeURIComponent(i.guid);
+                        const tagsHtml = (i.matchedTags && i.matchedTags.length) ? (`<div class="mt-1">` + i.matchedTags.slice(0,5).map(t => `<span class="badge bg-secondary me-1 small">${escapeHtml(t)}</span>`).join('') + `</div>`) : '';
                         a.innerHTML = `<div class="fw-semibold text-truncate">${escapeHtml(i.title)}</div>` +
-                                      `<div class="small text-muted text-truncate">${escapeHtml((i.description||'').toString())}</div>`;
+                                      `<div class="small text-muted text-truncate">${escapeHtml((i.description||'').toString())}</div>` +
+                                      tagsHtml;
                         results.appendChild(a);
                     }
                     const divider = document.createElement('div');
