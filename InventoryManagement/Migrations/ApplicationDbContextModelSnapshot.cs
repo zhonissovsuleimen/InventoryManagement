@@ -76,6 +76,24 @@ namespace InventoryManagement.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
+                    b.Property<string>("SalesforceAccessToken")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalesforceAccountId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalesforceContactId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalesforceInstanceUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SalesforceRefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("SalesforceTokenExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<NpgsqlTsVector>("SearchVector")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("tsvector")

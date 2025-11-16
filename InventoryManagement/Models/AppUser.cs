@@ -15,5 +15,12 @@ namespace InventoryManagement.Models
 
         public List<Inventory.Inventory> OwnedInventories { get; set; } = [];
         public List<Inventory.Inventory> AllowedInventories { get; set; } = [];
+
+        public string? SalesforceAccountId { get; set; }
+        public string? SalesforceContactId { get; set; }
+        public string? SalesforceInstanceUrl { get; set; }
+        public string? SalesforceAccessToken { get; set; }
+        public string? SalesforceRefreshToken { get; set; }
+        public DateTime? SalesforceTokenExpiresAt { get; set; }
     }
 }

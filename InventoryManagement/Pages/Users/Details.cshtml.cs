@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Web;
 
 namespace InventoryManagement.Pages.Users
 {
@@ -56,6 +58,30 @@ namespace InventoryManagement.Pages.Users
 
         [BindProperty]
         public EditInput Input { get; set; } = new();
+
+        public class SalesforceInput
+        {
+            [Required]
+            [Display(Name = "Account name")]
+            public string? AccountName { get; set; }
+
+            [Display(Name = "Contact first name")]
+            public string? ContactFirstName { get; set; }
+
+            [Display(Name = "Contact last name")]
+            public string? ContactLastName { get; set; }
+
+            [EmailAddress]
+            [Display(Name = "Contact email")]
+            public string? ContactEmail { get; set; }
+
+            [Phone]
+            [Display(Name = "Contact phone")]
+            public string? ContactPhone { get; set; }
+        }
+
+        [BindProperty]
+        public SalesforceInput SalesforceForm { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(bool? edit)
         {
@@ -227,6 +253,39 @@ namespace InventoryManagement.Pages.Users
             await _context.SaveChangesAsync();
 
             return RedirectToPage(new { id = Id, edit = true });
+        }
+
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OnPostStartSalesforceAsync()
+        {
+            if (string.IsNullOrWhiteSpace(Id)) return NotFound();
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null || !(string.Equals(currentUser.Id, Id, StringComparison.Ordinal) || currentUser.IsAdmin))
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return await ReloadWithErrorsAsync();
+            }
+
+            var stateObj = new
+            {
+                userId = Id,
+                form = SalesforceForm
+            };
+            var stateJson = JsonSerializer.Serialize(stateObj);
+            var stateBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateJson));
+
+            var callback = new UriBuilder(Request.Scheme, Request.Host.Host, Request.Host.Port ?? -1, "/signin-salesforce").Uri.ToString();
+
+            var clientId = Environment.GetEnvironmentVariable("SALESFORCE_CONSUMER_KEY") ?? string.Empty;
+            var scope = HttpUtility.UrlEncode("api refresh_token offline_access web");
+            var authUrl = $"https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id={HttpUtility.UrlEncode(clientId)}&redirect_uri={HttpUtility.UrlEncode(callback)}&state={HttpUtility.UrlEncode(stateBase64)}&scope={scope}";
+
+            return Redirect(authUrl);
         }
 
         private async Task<PageResult> ReloadWithErrorsAsync()

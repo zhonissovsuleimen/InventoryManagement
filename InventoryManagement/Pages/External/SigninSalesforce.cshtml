@@ -1,0 +1,19 @@
+@page "/signin-salesforce"
+@model InventoryManagement.Pages.External.SigninSalesforceModel
+@{
+    ViewData["Title"] = "Salesforce signin";
+}
+
+<h2>Salesforce result</h2>
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+else
+{
+    <div class="alert alert-warning">No message.</div>
+}
+
+<div>
+    <a asp-page="/Index" class="btn btn-secondary">Home</a>
+</div>

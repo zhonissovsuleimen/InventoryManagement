@@ -34,6 +34,7 @@ namespace InventoryManagement
 
             builder.Services.AddScoped<GoogleSignInService>();
             builder.Services.AddScoped<GitHubSignInService>();
+            builder.Services.AddSingleton<SalesforceService>();
 
             builder.Services
                 .AddAuthentication()

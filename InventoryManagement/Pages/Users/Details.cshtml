@@ -18,11 +18,28 @@
     <span>@FullName()</span>
     @if ((Model.IsSelf || Model.IsAdmin) && !Model.EditMode)
     {
-        <form method="get" class="m-0">
-            <input type="hidden" name="id" value="@Model.Id" />
-            <input type="hidden" name="edit" value="true" />
-            <button type="submit" class="btn btn-outline-primary btn-sm">@Localizer["Edit"]</button>
-        </form>
+        <div class="d-flex gap-2">
+            <form method="get" class="m-0">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="hidden" name="edit" value="true" />
+                <button type="submit" class="btn btn-outline-primary btn-sm">@Localizer["Edit"]</button>
+            </form>
+            @* Use forms for Salesforce actions so the buttons match vertically *@
+            @if (u != null && !string.IsNullOrWhiteSpace(u.SalesforceContactId))
+            {
+                <form method="get" asp-page="/Users/ExportToSalesforce" class="m-0">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">@Localizer["Salesforce"]</button>
+                </form>
+            }
+            else
+            {
+                <form method="get" asp-page="/Users/ExportToSalesforce" class="m-0">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-success btn-sm">@Localizer["Export to Salesforce"]</button>
+                </form>
+            }
+        </div>
     }
 </h1>
 

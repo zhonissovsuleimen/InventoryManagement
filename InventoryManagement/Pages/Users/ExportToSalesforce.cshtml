@@ -1,0 +1,103 @@
+@page "{id?}"
+@model InventoryManagement.Pages.Users.ExportToSalesforceModel
+@{
+    ViewData["Title"] = "Export to Salesforce";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input class="form-control" value="@((Model.Input.ContactFirstName ?? "") + (string.IsNullOrWhiteSpace(Model.Input.ContactFirstName) ? "" : " ") + (Model.Input.ContactLastName ?? ""))" readonly />
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label asp-for="Input.Title" class="form-label">Title</label>
+            <input asp-for="Input.Title" class="form-control" />
+            <span asp-validation-for="Input.Title" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Input.AccountName" class="form-label">Account</label>
+            <input asp-for="Input.AccountName" class="form-control" />
+            <span asp-validation-for="Input.AccountName" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label asp-for="Input.ContactEmail" class="form-label">Email</label>
+            <input asp-for="Input.ContactEmail" class="form-control" />
+            <span asp-validation-for="Input.ContactEmail" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Input.Phone" class="form-label">Phone</label>
+            <input asp-for="Input.Phone" class="form-control" />
+            <span asp-validation-for="Input.Phone" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Input.MobilePhone" class="form-label">Mobile</label>
+            <input asp-for="Input.MobilePhone" class="form-control" />
+            <span asp-validation-for="Input.MobilePhone" class="text-danger"></span>
+        </div>
+    </div>
+
+    <hr />
+    <fieldset class="mb-3">
+        <legend class="small">Mailing Address</legend>
+
+        <div class="mb-3">
+            <label asp-for="Input.MailingStreet" class="form-label">Street</label>
+            <input asp-for="Input.MailingStreet" class="form-control" />
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label asp-for="Input.MailingCity" class="form-label">City</label>
+                <input asp-for="Input.MailingCity" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Input.MailingState" class="form-label">State</label>
+                <input asp-for="Input.MailingState" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Input.MailingPostalCode" class="form-label">Postal code</label>
+                <input asp-for="Input.MailingPostalCode" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Input.MailingCountry" class="form-label">Country</label>
+                <input asp-for="Input.MailingCountry" class="form-control" />
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="mb-3">
+        <label asp-for="Input.Description" class="form-label">Notes</label>
+        <textarea asp-for="Input.Description" class="form-control" rows="4"></textarea>
+    </div>
+
+    <div class="mb-3">
+        @if (Model.IsLinked)
+        {
+            <button type="submit" class="btn btn-primary">Update</button>
+        }
+        else
+        {
+            <button type="submit" class="btn btn-success">Export</button>
+        }
+        <a asp-page="/Users/Details" asp-route-id="@Model.Id" class="btn btn-secondary ms-2">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="~/Pages/Shared/_ValidationScriptsPartial.cshtml" />
+}
