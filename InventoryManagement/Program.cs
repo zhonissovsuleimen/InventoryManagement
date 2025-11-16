@@ -116,9 +116,17 @@ namespace InventoryManagement
                     {
                         Console.WriteLine("Applying migrations...");
                         await db.Database.MigrateAsync();
-                        Console.WriteLine("Reseeding data...");
-                        await Seed.SeedAll(services);
-                        Console.WriteLine("Development database reseed completed.");
+                        var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                        if (!await userManager.Users.AnyAsync())
+                        {
+                            Console.WriteLine("Reseeding data...");
+                            await Seed.SeedAll(services);
+                            Console.WriteLine("Development database reseed completed.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Users already exist, skipping reseed.");
+                        }
                     }
                 }
                 catch (Exception ex)
