@@ -38,9 +38,11 @@ namespace InventoryManagement.Pages.Users
             [Display(Name = "Account name")]
             public string? AccountName { get; set; }
 
+            [Required]
             [Display(Name = "Contact first name")]
             public string? ContactFirstName { get; set; }
 
+            [Required]
             [Display(Name = "Contact last name")]
             public string? ContactLastName { get; set; }
 

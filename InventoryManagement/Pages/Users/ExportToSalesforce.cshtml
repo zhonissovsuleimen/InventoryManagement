@@ -15,9 +15,17 @@
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input class="form-control" value="@((Model.Input.ContactFirstName ?? "") + (string.IsNullOrWhiteSpace(Model.Input.ContactFirstName) ? "" : " ") + (Model.Input.ContactLastName ?? ""))" readonly />
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label asp-for="Input.ContactFirstName" class="form-label">First name</label>
+            <input asp-for="Input.ContactFirstName" class="form-control" />
+            <span asp-validation-for="Input.ContactFirstName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Input.ContactLastName" class="form-label">Last name</label>
+            <input asp-for="Input.ContactLastName" class="form-control" />
+            <span asp-validation-for="Input.ContactLastName" class="text-danger"></span>
+        </div>
     </div>
 
     <div class="row g-3 mb-3">
@@ -58,46 +66,40 @@
         <div class="mb-3">
             <label asp-for="Input.MailingStreet" class="form-label">Street</label>
             <input asp-for="Input.MailingStreet" class="form-control" />
+            <span asp-validation-for="Input.MailingStreet" class="text-danger"></span>
         </div>
 
-        <div class="row g-3">
+        <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label asp-for="Input.MailingCity" class="form-label">City</label>
                 <input asp-for="Input.MailingCity" class="form-control" />
+                <span asp-validation-for="Input.MailingCity" class="text-danger"></span>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label asp-for="Input.MailingState" class="form-label">State</label>
                 <input asp-for="Input.MailingState" class="form-control" />
+                <span asp-validation-for="Input.MailingState" class="text-danger"></span>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label asp-for="Input.MailingPostalCode" class="form-label">Postal code</label>
                 <input asp-for="Input.MailingPostalCode" class="form-control" />
-            </div>
-            <div class="col-md-2">
-                <label asp-for="Input.MailingCountry" class="form-label">Country</label>
-                <input asp-for="Input.MailingCountry" class="form-control" />
+                <span asp-validation-for="Input.MailingPostalCode" class="text-danger"></span>
             </div>
         </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.MailingCountry" class="form-label">Country</label>
+            <input asp-for="Input.MailingCountry" class="form-control" />
+            <span asp-validation-for="Input.MailingCountry" class="text-danger"></span>
+        </div>
+
     </fieldset>
 
     <div class="mb-3">
         <label asp-for="Input.Description" class="form-label">Notes</label>
         <textarea asp-for="Input.Description" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Input.Description" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
-        @if (Model.IsLinked)
-        {
-            <button type="submit" class="btn btn-primary">Update</button>
-        }
-        else
-        {
-            <button type="submit" class="btn btn-success">Export</button>
-        }
-        <a asp-page="/Users/Details" asp-route-id="@Model.Id" class="btn btn-secondary ms-2">Cancel</a>
-    </div>
+    <button type="submit" class="btn btn-primary">Export to Salesforce</button>
 </form>
-
-@section Scripts {
-    <partial name="~/Pages/Shared/_ValidationScriptsPartial.cshtml" />
-}
