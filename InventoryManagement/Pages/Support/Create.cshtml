@@ -32,7 +32,17 @@
     <div class="mb-3">
         <label class="form-label">Admin's e-mail</label>
         <select class="form-select" asp-for="AdminEmail">
-            <option value="rixikap583@agenra.com">rixikap583@agenra.com</option>
+            @if (Model.AdminEmails != null && Model.AdminEmails.Count > 0)
+            {
+                foreach (var e in Model.AdminEmails)
+                {
+                    <option value="@e" selected="@(e == Model.AdminEmail ? "selected" : null)">@e</option>
+                }
+            }
+            else
+            {
+                <option value="">No admins available</option>
+            }
         </select>
     </div>
     <div class="mb-3">

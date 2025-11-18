@@ -2,16 +2,21 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using InventoryManagement.Services;
+using Microsoft.AspNetCore.Identity;
+using InventoryManagement.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryManagement.Pages.Support
 {
     public class CreateModel : PageModel
     {
         private readonly DropboxService _dropbox;
+        private readonly UserManager<AppUser> _userManager;
 
-        public CreateModel(DropboxService dropbox)
+        public CreateModel(DropboxService dropbox, UserManager<AppUser> userManager)
         {
             _dropbox = dropbox;
+            _userManager = userManager;
         }
 
         [BindProperty]
@@ -19,7 +24,7 @@ namespace InventoryManagement.Pages.Support
         [BindProperty]
         public string Priority { get; set; } = "Average";
         [BindProperty]
-        public string AdminEmail { get; set; } = "rixikap583@agenra.com";
+        public string AdminEmail { get; set; } = string.Empty;
         [BindProperty]
         public string Summary { get; set; } = string.Empty;
         [BindProperty]
@@ -31,16 +36,35 @@ namespace InventoryManagement.Pages.Support
 
         public string? Message { get; set; }
 
-        public void OnGet(string? fromUrl, string? inventoryTitle)
+        public List<string> AdminEmails { get; set; } = new();
+
+        public async Task OnGetAsync(string? fromUrl, string? inventoryTitle)
         {
             FromLink = fromUrl ?? string.Empty;
             InventoryTitle = inventoryTitle ?? string.Empty;
             ReportedBy = User.Identity?.Name ?? string.Empty;
             IsInventoryFixed = !string.IsNullOrEmpty(inventoryTitle);
+
+            // Load admin emails
+            AdminEmails = await _userManager.Users
+                .Where(u => u.IsAdmin && !string.IsNullOrEmpty(u.Email))
+                .Select(u => u.Email!)
+                .ToListAsync();
+
+            if (string.IsNullOrEmpty(AdminEmail) && AdminEmails.Count > 0)
+            {
+                AdminEmail = AdminEmails[0];
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            // Ensure admin emails available when redisplaying page
+            AdminEmails = await _userManager.Users
+                .Where(u => u.IsAdmin && !string.IsNullOrEmpty(u.Email))
+                .Select(u => u.Email!)
+                .ToListAsync();
+
             ReportedBy = User.Identity?.Name ?? string.Empty;
 
             var ticket = new
