@@ -103,6 +103,9 @@ namespace InventoryManagement
             builder.Services.AddScoped<ItemLikeService>();
             builder.Services.AddScoped<InventorySearch>();
 
+            builder.Services.AddHttpClient();
+            builder.Services.AddScoped<DropboxService>();
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())

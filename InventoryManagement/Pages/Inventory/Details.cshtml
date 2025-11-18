@@ -5,6 +5,7 @@
 @{
     var inv = Model.Inventory;
     ViewData["Title"] = "Details";
+    ViewData["InventoryTitle"] = inv?.Title;
 
     var allowedCount = (inv != null && !inv.IsPublic) ? (inv.AllowedUsers?.Count ?? 0) : 0;
     var usersLabel = allowedCount == 1 ? "user" : "users";
@@ -734,7 +735,7 @@
 
       if (ag.numeric && Object.keys(ag.numeric).length){
         parts.push('<h6 class="mt-3">Numeric fields</h6>');
-        parts.push('<div class="row g-3">');
+        parts.push('<div class="row g-3'>');
         for (const [label, s] of Object.entries(ag.numeric)){
           parts.push(`<div class="col-md-6"><div class="card h-100"><div class="card-body">`
             + `<div class="d-flex justify-content-between align-items-start"><span class="fw-semibold">${escapeHtml(label)}</span><span class="badge text-bg-light">${s.count} values</span></div>`
@@ -747,11 +748,11 @@
       if (ag.text && Object.keys(ag.text).length){
         parts.push('<h6 class="mt-4">Text fields (top values)</h6>');
         for (const [label, s] of Object.entries(ag.text)){
-          parts.push('<div class="card"><div class="card-body">' 
+          parts.push('<div class="card"><div class="card-body">') 
 
             + `<div class="d-flex justify-content-between align-items-start"><span class="fw-semibold">${escapeHtml(label)}</span><span class="badge text-bg-light">${s.count} total</span></div>`);
           if (Array.isArray(s.top) && s.top.length){
-            parts.push('<ul class="mt-2 mb-0 small">');
+            parts.push('<ul class="mt-2 mb-0 small'>');
             for (const v of s.top){
               parts.push(`<li>${escapeHtml(String(v.value))} (<span class="fw-semibold">${v.count}</span>)</li>`);
             }
@@ -765,7 +766,7 @@
 
       if (ag.bool && Object.keys(ag.bool).length){
         parts.push('<h6 class="mt-4">Boolean fields</h6>');
-        parts.push('<div class="row g-3">');
+        parts.push('<div class="row g-3'>');
         for (const [label, s] of Object.entries(ag.bool)){
           parts.push(`<div class="col-md-6"><div class="card h-100"><div class="card-body">`
             + `<div class="fw-semibold">${escapeHtml(label)}</div>`

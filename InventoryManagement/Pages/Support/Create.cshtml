@@ -1,0 +1,108 @@
+@page
+@model InventoryManagement.Pages.Support.CreateModel
+@{
+    ViewData["Title"] = "Create support ticket";
+}
+
+<h3>Create support ticket</h3>
+
+<form method="post" id="supportForm">
+    <div class="mb-3">
+        <label class="form-label">Inventory</label>
+        <div class="position-relative">
+            @if (Model.IsInventoryFixed)
+            {
+                <input asp-for="InventoryTitle" class="form-control" autocomplete="off" id="inventoryTitle" readonly />
+            }
+            else
+            {
+                <input asp-for="InventoryTitle" class="form-control" autocomplete="off" id="inventoryTitle" placeholder="Type to search inventories..." />
+            }
+            <div id="inventorySuggestions" class="list-group position-absolute w-100 shadow" style="z-index:1050; display:none; max-height:40vh; overflow:auto;"></div>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Priority</label>
+        <select class="form-select" asp-for="Priority">
+            <option value="High">High</option>
+            <option value="Average">Average</option>
+            <option value="Low">Low</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Admin's e-mail</label>
+        <select class="form-select" asp-for="AdminEmail">
+            <option value="rixikap583@agenra.com">rixikap583@agenra.com</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Summary</label>
+        <textarea class="form-control" asp-for="Summary" rows="6"></textarea>
+    </div>
+
+    <input type="hidden" asp-for="ReportedBy" />
+    <input type="hidden" asp-for="FromLink" />
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <a asp-page="/" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+
+@if (Model.Message != null)
+{
+    <div class="alert alert-info mt-3">@Model.Message</div>
+}
+
+@section Scripts {
+<script>
+(() => {
+    const input = document.getElementById('inventoryTitle');
+    const list = document.getElementById('inventorySuggestions');
+    if (!input || !list) return;
+
+    let abort = null;
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+
+    function hide(){ list.style.display = 'none'; list.innerHTML = ''; }
+
+    function render(items){
+        list.innerHTML = '';
+        if (!Array.isArray(items) || items.length === 0) { hide(); return; }
+        for (const it of items){
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action';
+            btn.innerHTML = `<div class="fw-semibold text-truncate">${escapeHtml(it.title)}</div><div class="small text-muted text-truncate">${escapeHtml(it.description||'')}</div>`;
+            btn.addEventListener('click', () => {
+                input.value = it.title || '';
+                hide();
+            });
+            list.appendChild(btn);
+        }
+        list.style.display = 'block';
+    }
+
+    const debounce = (fn, ms) => { let t = null; return (...args) => { if (t) clearTimeout(t); t = setTimeout(()=>fn(...args), ms); }; };
+
+    async function query(q){
+        if (abort) abort.abort();
+        abort = new AbortController();
+        try{
+            const res = await fetch(`/api/search/inventories?query=${encodeURIComponent(q)}`, { signal: abort.signal });
+            if (!res.ok){ hide(); return; }
+            const data = await res.json();
+            render(data);
+        } catch(e){ }
+    }
+
+    const onChange = debounce(() => {
+        const term = (input.value || '').trim();
+        if (term.length === 0) { hide(); return; }
+        query(term);
+    }, 200);
+
+    input.addEventListener('input', onChange);
+    input.addEventListener('focus', () => { if (list.children.length) list.style.display='block'; });
+    document.addEventListener('click', (e) => { if (!list.contains(e.target) && e.target !== input) hide(); });
+})();
+</script>
+}
